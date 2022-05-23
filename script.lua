@@ -17,7 +17,7 @@ local place_id = game.PlaceId
 local floor_data = require(Rs.Database.Locations)
 
 local floor_ids = {}
-for i, v in next, floor_data.floors do
+for i, v in next, floor_data.floors do -- probably remove this
     for i2, v2 in next, v do
         if i2 == "PlaceId" then
            floor_ids[i] = v2
