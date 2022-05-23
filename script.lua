@@ -66,7 +66,11 @@ function GetClosestMob()
     
     local mobs = workspace.Mobs
     for _, v in next, mobs:GetChildren() do
-        if v.Entity.Health.Value <= 0 then continue end -- dont attack already dead mobs
+        local _, err = pcall(function()
+            if v.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs
+        end)
+
+        if err then continue end
 
         local magnitude = (v:GetPivot().Position - hrp.Position).Magnitude
         
