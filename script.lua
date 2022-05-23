@@ -10,6 +10,20 @@ end
 
 local Players = game:GetService("Players")
 local Rs = game:GetService("ReplicatedStorage")
+local uis = game:GetService("UserInputService")
+
+local place_id = game.PlaceId
+
+local floor_data = require(Rs.Database.Locations)
+
+local floor_ids = {}
+for i, v in next, floor_data.floors do
+    for i2, v2 in next, v do
+        if i2 == "PlaceId" then
+           floor_ids[i] = v2
+        end
+    end
+end
 
 local plr = Players.LocalPlayer
 getgenv().char = plr.Character or plr.CharacterAdded:Wait()
@@ -30,13 +44,19 @@ plr.CharacterAdded:Connect(function(new)
 end)
 
 local script
-for _, v in next, getnilinstances() do
-    if v.Name == "MainModule" then
-        script = v
-        
-        break
-    end
+function recursive_find_module()
+    for _, v in next, getnilinstances() do
+        if v.Name == "MainModule" then
+            script = v
+            
+            break
+        end
+    end 
+    
+    if not script then recursive_find_module() end
 end
+
+recursive_find_module()
 
 function GetClosestMob()
     local closest_magnitude = math.huge
@@ -100,7 +120,14 @@ do
     
     local section2 = page2:addSection("Locations")
     
+    local no_tp = {542351431, 582198062}
     for _, v in next, workspace:GetChildren() do
+        if table.find(no_tp, place_id) then
+            gui:Notify("Can't TP", "Teleport Not Supported On This Floor (f1 or f7)", function() end)
+
+            break
+        end
+
         if v.Name == "TeleportSystem" then
             for _, v2 in next, v:GetChildren() do
                 section2:addButton("probably boss room", function()
@@ -119,9 +146,36 @@ do
     local page3 = gui:addPage("Misc")
     
     local section3 = page3:addSection("Character")
+
+    local oldWS = humanoid.WalkSpeed
+    local index_WS; index_WS = hookmetamethod(game, "__index", function(self, i)
+        if self == humanoid and i == "WalkSpeed" then
+            return oldWS
+        end
+        
+        return index_WS(self, i) 
+    end)
+    
+    local newindex_WS; newindex_WS = hookmetamethod(game, "__newindex", function(self, i, v)
+        if self == humanoid and i == "WalkSpeed" then
+            v = settings.WalkSpeed
+        end
+        
+        if self == humanoid and i == "JumpPower" then
+            v = settings.JumpPower 
+        end
+        
+        return newindex_WS(self, i, v)
+    end)
     
     section3:addSlider("WalkSpeed", humanoid.WalkSpeed, 0, 50, function(v)
         settings.WalkSpeed = v
         humanoid.WalkSpeed = v
     end)
 end
+
+uis.InputBegan:Connect(function(key)
+    if key.KeyCode == Enum.KeyCode.RightShift then
+        gui:toggle() 
+    end
+end)
