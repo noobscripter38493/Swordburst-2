@@ -1,3 +1,11 @@
+if syn then
+    syn.queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()") 
+end
+
+if executed then return warn'executing twice crashes' end
+
+getgenv().executed = true
+
 local Players = game:GetService("Players")
 local Rs = game:GetService("ReplicatedStorage")
 
