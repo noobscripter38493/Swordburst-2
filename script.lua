@@ -53,6 +53,8 @@ function recursive_find_module()
         end
     end 
     
+    wait(1)
+    
     if not script then recursive_find_module() end
 end
 
