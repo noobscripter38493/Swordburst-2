@@ -167,10 +167,6 @@ do
             v = settings.WalkSpeed
         end
         
-        if self == humanoid and i == "JumpPower" then
-            v = settings.JumpPower 
-        end
-        
         return newindex_WS(self, i, v)
     end)
     
