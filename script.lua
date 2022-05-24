@@ -70,7 +70,7 @@ function GetClosestMob()
             if v.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs
         end)
 
-        if err then continue end
+        if err or v:FindFirstChild("Immortal") then continue end
 
         local magnitude = (v:GetPivot().Position - hrp.Position).Magnitude
         
