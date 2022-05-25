@@ -105,7 +105,7 @@ do -- page 1
             end
         end 
         
-        if closest_magnitude <= settings.KA_Range then
+        if closest_magnitude <= settings.KA_Range then -- make attack players too
             return closest_mob
         end
         
