@@ -1,6 +1,6 @@
 if not game:IsLoaded() then game.Loaded:Wait() end
 
-if executed then return warn"executing twice crashes" end
+if executed then return warn'executing twice crashes' end
 
 getgenv().executed = true
 
@@ -36,25 +36,25 @@ getgenv().hrp = char:WaitForChild("HumanoidRootPart")
 getgenv().humanoid = char:WaitForChild("Humanoid")
 
 getgenv().settings = {
-    -- probably autofarm eventually
     KA = false,
     KA_Range = 20,
     WalkSpeed = humanoid.WalkSpeed,
-    invisible = false
+    speed = false,
+    invisible = false,
+    InfSprint = false
 }
 
 plr.CharacterAdded:Connect(function(new)
     char = new
     hrp = char:WaitForChild("HumanoidRootPart")
     humanoid = char:WaitForChild("Humanoid")
-    humanoid.WalkSpeed = settings.WalkSpeed
 end)
 
-local script
+local game_module
 function recursive_find_module()
-    for _, v in next, getnilinstances() do
+    for _, v in next, getnilinstances() do -- shortened this before but ahd scoping issue (Could fix lazy) so reverted back
         if v.Name == "MainModule" then
-            script = v
+            game_module = v
             
             return
         end
@@ -62,7 +62,7 @@ function recursive_find_module()
 
     wait(1)
     
-    if not script then recursive_find_module() end
+    if not game_module then recursive_find_module() end
 end
 
 recursive_find_module()
@@ -112,7 +112,7 @@ do -- page 1
         return nil
     end
     
-    local combat = require(script.Services.Combat)
+    local combat = require(game_module.Services.Combat)
     local hashed = getupvalues(combat.Init)[2]
     local Event = Rs.Event
     
@@ -122,7 +122,7 @@ do -- page 1
                 local mob = GetClosestMob()
     
                 if mob and not mob:FindFirstChild("Immortal") then
-                    Event:FireServer("Combat", hashed, {"Attack", nil, "1", mob})
+                    Event:FireServer("Combat", hashed, {"Attack", nil, "1", mob}) -- nil = skill (i think)
                 end
             end
         end
@@ -137,7 +137,7 @@ do -- page 2
     local no_tp = {542351431, 582198062}
     for _, v in next, workspace:GetChildren() do
         if table.find(no_tp, place_id) then
-            gui:Notify("Can't TP", "Teleport Not Supported On This Floor (f1 or f7)", function() end)
+            gui:Notify("Can't TP", "Teleport Not Supported On This Floor (f1 or f7)")
 
             break
         end
@@ -184,6 +184,28 @@ do -- page 3
             invisibility:Disconnect()
         end
     end)
+
+    section3_1:addToggle("Infinite Sprint", false, function(bool)
+        settings.InfSprint = bool
+    end)
+
+    local Event = Rs.Event
+    local infsprint; infsprint = hookmetamethod(game, "__namecall", function(self, ...)
+        local ncm = getnamecallmethod()
+        local args = {...}
+        
+        if settings.InfSprint then
+            if self == Event and ncm == "FireServer" then
+                if args[1] == "Actions" then
+                    if args[2][2] == "Step" then
+                        return -- void
+                    end
+                end
+            end
+        end
+        
+        return infsprint(self, unpack(args))
+    end)
 end
 
 do -- page 4
@@ -193,28 +215,41 @@ do -- page 4
 
     local oldWS = humanoid.WalkSpeed
     local index_WS; index_WS = hookmetamethod(game, "__index", function(self, i)
-        if self == humanoid and i == "WalkSpeed" then
-            return oldWS
+        if settings.speed then
+            if self == humanoid and i == "WalkSpeed" then
+                return oldWS
+            end
         end
         
         return index_WS(self, i) 
     end)
     
-    local newindex_WS; newindex_WS = hookmetamethod(game, "__newindex", function(self, i, v) -- allow sprint eventually
-        if self == humanoid and i == "WalkSpeed" then
-            v = settings.WalkSpeed
-        end
-        
-        if self == humanoid and i == "JumpPower" then
-            v = settings.JumpPower 
+    local newindex_WS; newindex_WS = hookmetamethod(game, "__newindex", function(self, i, v)
+        if settings.speed then 
+            if self == humanoid and i == "WalkSpeed" then
+                v = settings.WalkSpeed
+            end
         end
         
         return newindex_WS(self, i, v)
     end)
     
+    section4_1:addToggle("WalkSpeed Toggle", false, function(bool)
+        settings.speed = bool
+        
+        if not bool then
+            humanoid.WalkSpeed = 20
+        else
+            humanoid.WalkSpeed = settings.WalkSpeed
+        end
+    end)
+
     section4_1:addSlider("WalkSpeed", humanoid.WalkSpeed, 0, 50, function(v)
         settings.WalkSpeed = v
-        humanoid.WalkSpeed = v
+
+        if settings.speed then
+            humanoid.WalkSpeed = v
+        end
     end)
 
     section4_1:addToggle("Infinite Zoom Distance", false, function(bool)
@@ -226,7 +261,7 @@ do -- page 4
     end)
 
     section4_1:addKeybind("GUI Toggle Keybind (Click 2x to Change)", Enum.KeyCode.RightShift, function()
-        gui:toggle()
+        gui:toggle() 
     end)
 end
 
