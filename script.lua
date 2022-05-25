@@ -17,7 +17,7 @@ local place_id = game.PlaceId
 local floor_data = require(Rs.Database.Locations)
 
 local floor_ids = {}
-for i, v in next, floor_data.floors do -- probably remove this
+for i, v in next, floor_data.floors do
     for i2, v2 in next, v do
         if i2 == "PlaceId" then
            floor_ids[i] = v2
@@ -33,7 +33,9 @@ getgenv().humanoid = char:WaitForChild("Humanoid")
 getgenv().settings = {
     KA = false,
     KA_Range = 20,
-    WalkSpeed = humanoid.WalkSpeed
+    WalkSpeed = humanoid.WalkSpeed,
+    invisible = false,
+    GUI_Keybind = Enum.KeyCode.RightShift
 }
 
 plr.CharacterAdded:Connect(function(new)
@@ -49,10 +51,10 @@ function recursive_find_module()
         if v.Name == "MainModule" then
             script = v
             
-            break
+            return
         end
     end 
-    
+
     wait(1)
     
     if not script then recursive_find_module() end
@@ -60,49 +62,50 @@ end
 
 recursive_find_module()
 
-function GetClosestMob()
-    local closest_magnitude = math.huge
-    local closest_mob
-    
-    local mobs = workspace.Mobs
-    for _, v in next, mobs:GetChildren() do
-        local _, err = pcall(function()
-            if v.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs
-        end)
-
-        if err or v:FindFirstChild("Immortal") then continue end
-
-        local magnitude = (v:GetPivot().Position - hrp.Position).Magnitude
-        
-        if magnitude < closest_magnitude then
-            closest_magnitude = magnitude
-            closest_mob = v
-        end
-    end 
-    
-    if closest_magnitude <= settings.KA_Range then
-        return closest_mob
-    end
-    
-    return nil
-end
-
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/GreenDeno/Venyx-UI-Library/main/source.lua"))()
 
 local gui = lib.new("SB2 Script")
 
-do
-    local page1 = gui:addPage("Farm")
+local page1
+do -- page 1
+    page1 = gui:addPage("Farm")
     
-    local section1 = page1:addSection("Combat")
+    local section1_1 = page1:addSection("Combat")
     
-    section1:addToggle("KillAura", false, function(bool)
+    section1_1:addToggle("KillAura", false, function(bool)
         settings.KA = bool
     end)
     
-    section1:addSlider("KillAura Range", 20, 0, 25, function(v)
+    section1_1:addSlider("KillAura Range", 20, 0, 25, function(v)
         settings.KA_Range = v
     end)
+
+    function GetClosestMob()
+        local closest_magnitude = math.huge
+        local closest_mob
+        
+        local mobs = workspace.Mobs
+        for _, v in next, mobs:GetChildren() do
+            local _, err = pcall(function()
+                if v.Entity.Health.Value <= 0 then error't' end -- dont attack already dead mobs
+            end)
+    
+            if err or v:FindFirstChild("Immortal") then continue end -- should work I think
+    
+            local magnitude = (v:GetPivot().Position - hrp.Position).Magnitude
+            
+            if magnitude < closest_magnitude then
+                closest_magnitude = magnitude
+                closest_mob = v
+            end
+        end 
+        
+        if closest_magnitude <= settings.KA_Range then
+            return closest_mob
+        end
+        
+        return nil
+    end
     
     local combat = require(script.Services.Combat)
     local hashed = getupvalues(combat.Init)[2]
@@ -113,7 +116,7 @@ do
             if settings.KA then
                 local mob = GetClosestMob()
     
-                if mob then
+                if mob and not mob:FindFirstChild("Immortal") then
                     Event:FireServer("Combat", hashed, {"Attack", nil, "1", mob})
                 end
             end
@@ -121,10 +124,10 @@ do
     end)()
 end
 
-do
+do -- page 2
     local page2 = gui:addPage("Teleports")
     
-    local section2 = page2:addSection("Locations")
+    local section2_1 = page2:addSection("Locations")
     
     local no_tp = {542351431, 582198062}
     for _, v in next, workspace:GetChildren() do
@@ -136,7 +139,7 @@ do
 
         if v.Name == "TeleportSystem" then
             for _, v2 in next, v:GetChildren() do
-                section2:addButton("probably boss room", function()
+                section2_1:addButton("probably boss room", function() -- eventually make these show proper names (tower door seems possible)
                     firetouchinterest(hrp, v2, 0)
     
                     wait(.5)
@@ -148,10 +151,40 @@ do
     end
 end
 
-do
-    local page3 = gui:addPage("Misc")
+do -- page 3
+    local page4 = gui:addPage("Character")
+
+    local section3_1 = page4:addSection("Character")
+
+    local invisibility
+    section3_1:addToggle("Invisibility (Client Sided Character)", false, function(bool)
+        settings.invisibile = bool
+
+        if bool then
+            local old_root = char:FindFirstChild("Root", true)
+            local new_root = old_root:Clone()
+
+            new_root.Parent = old_root.Parent
+            old_root:Destroy()
+
+            invisibility = plr.CharacterAdded:Connect(function(new)
+                local old_root = new:WaitForChild("LowerTorso"):WaitForChild("Root")
+                local new_root = old_root:Clone()
+
+                new_root.Parent = old_root.Parent
+                old_root:Destroy()
+            end)
+
+        elseif invisibility then
+            invisibility:Disconnect()
+        end
+    end)
+end
+
+do -- page 4
+    local page4 = gui:addPage("Misc")
     
-    local section3 = page3:addSection("Character")
+    local section4_1 = page4:addSection("Misc Features")
 
     local oldWS = humanoid.WalkSpeed
     local index_WS; index_WS = hookmetamethod(game, "__index", function(self, i)
@@ -167,17 +200,29 @@ do
             v = settings.WalkSpeed
         end
         
+        if self == humanoid and i == "JumpPower" then
+            v = settings.JumpPower 
+        end
+        
         return newindex_WS(self, i, v)
     end)
     
-    section3:addSlider("WalkSpeed", humanoid.WalkSpeed, 0, 50, function(v)
+    section4_1:addSlider("WalkSpeed", humanoid.WalkSpeed, 0, 50, function(v)
         settings.WalkSpeed = v
         humanoid.WalkSpeed = v
     end)
+
+    section4_1:addToggle("Infinite Zoom Distance", false, function(bool)
+        if bool then
+            plr.CameraMaxZoomDistance = math.huge
+        else
+            plr.CameraMaxZoomDistance = 15
+        end
+    end)
+
+    section4_1:addKeybind("GUI Toggle Keybind (Click 2x to Change)", Enum.KeyCode.RightShift, function()
+        gui:toggle()
+    end)
 end
 
-uis.InputBegan:Connect(function(key)
-    if key.KeyCode == Enum.KeyCode.RightShift then
-        gui:toggle() 
-    end
-end)
+gui:SelectPage(page1, true)
