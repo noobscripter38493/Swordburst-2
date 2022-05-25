@@ -1,11 +1,17 @@
 if not game:IsLoaded() then game.Loaded:Wait() end
 
-if executed then return warn'executing twice crashes' end
+if executed then return warn"executing twice crashes" end
 
 getgenv().executed = true
 
-if syn then
+if syn then -- synapse
     syn.queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()") 
+    
+elseif queue_on_teleport then -- krnl
+    queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()") 
+    
+else
+    warn"failed to find execute on teleport function"
 end
 
 local Players = game:GetService("Players")
@@ -16,7 +22,7 @@ local place_id = game.PlaceId
 local floor_data = require(Rs.Database.Locations)
 
 local floor_ids = {}
-for i, v in next, floor_data.floors do
+for i, v in next, floor_data.floors do -- probably remove this
     for i2, v2 in next, v do
         if i2 == "PlaceId" then
            floor_ids[i] = v2
