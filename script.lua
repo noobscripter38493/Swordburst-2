@@ -10,7 +10,6 @@ end
 
 local Players = game:GetService("Players")
 local Rs = game:GetService("ReplicatedStorage")
-local uis = game:GetService("UserInputService")
 
 local place_id = game.PlaceId
 
@@ -31,11 +30,11 @@ getgenv().hrp = char:WaitForChild("HumanoidRootPart")
 getgenv().humanoid = char:WaitForChild("Humanoid")
 
 getgenv().settings = {
+    -- probably autofarm eventually
     KA = false,
     KA_Range = 20,
     WalkSpeed = humanoid.WalkSpeed,
-    invisible = false,
-    GUI_Keybind = Enum.KeyCode.RightShift
+    invisible = false
 }
 
 plr.CharacterAdded:Connect(function(new)
@@ -195,7 +194,7 @@ do -- page 4
         return index_WS(self, i) 
     end)
     
-    local newindex_WS; newindex_WS = hookmetamethod(game, "__newindex", function(self, i, v)
+    local newindex_WS; newindex_WS = hookmetamethod(game, "__newindex", function(self, i, v) -- allow sprint eventually
         if self == humanoid and i == "WalkSpeed" then
             v = settings.WalkSpeed
         end
