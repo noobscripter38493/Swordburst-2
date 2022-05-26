@@ -201,7 +201,7 @@ do -- page 3
             end
         end
         
-        return infsprint(self, unpack(args))
+        return infsprint(self, ...)
     end)
 end
 
