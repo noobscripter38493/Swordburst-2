@@ -50,22 +50,19 @@ plr.CharacterAdded:Connect(function(new)
     humanoid = char:WaitForChild("Humanoid")
 end)
 
-local game_module
 function recursive_find_module()
-    for _, v in next, getnilinstances() do -- shortened this before but ahd scoping issue (Could fix lazy) so reverted back
+    for _, v in next, getnilinstances() do
         if v.Name == "MainModule" then
-            game_module = v
-            
-            return
+            return v
         end
     end 
 
-    wait(1)
+    wait(.5)
     
-    if not game_module then recursive_find_module() end
+    recursive_find_module()
 end
 
-recursive_find_module()
+getgenv().game_module = recursive_find_module()
 
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/GreenDeno/Venyx-UI-Library/main/source.lua"))()
 
