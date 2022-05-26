@@ -57,7 +57,7 @@ function recursive_find_module()
         end
     end 
 
-    wait(.5)
+    wait(1)
     
     recursive_find_module()
 end
