@@ -104,7 +104,7 @@ do -- page 1
                             if character.Entity.Health.Value <= 0 then error't' end -- dont attack dead players
                         end)
 
-                        if err or v:FindFirstChild("Immortal") then continue end -- should work I think
+                        if err or v:FindFirstChild("Immortal") or not Rs.Profiles[v.Name].Settings.PvP.Value then continue end -- should work I think
 
                         local magnitude = (character:GetPivot().Position - hrp.Position).Magnitude
                         
