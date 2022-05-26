@@ -113,9 +113,9 @@ do -- page 1
     local hashed = getupvalues(combat.Init)[2]
     local Event = Rs.Event
     
-    coroutine.wrap(function()
+    coroutine.wrap(function() -- use signals instead of checking every .3s eventually
         while true do wait(.3) -- don't edit this, attempting to atk faster breaks
-            if settings.KA then
+            if settings.KA then 
                 local mob = GetClosestMob()
     
                 if mob and not mob:FindFirstChild("Immortal") then
