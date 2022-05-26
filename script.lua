@@ -59,7 +59,7 @@ function recursive_find_module()
 
     wait(1)
     
-    recursive_find_module()
+    return recursive_find_module()
 end
 
 getgenv().game_module = recursive_find_module()
