@@ -5,7 +5,7 @@ if executed then return warn'executing twice crashes' end
 getgenv().executed = true
 
 if syn then -- synapse
-    syn.queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()") 
+    syn.queue_on_teleport("https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua") 
     
 elseif queue_on_teleport then -- krnl
     queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()") 
@@ -41,7 +41,8 @@ getgenv().settings = {
     WalkSpeed = humanoid.WalkSpeed,
     speed = false,
     invisible = false,
-    InfSprint = false
+    InfSprint = false,
+    AttackPlayers = false
 }
 
 plr.CharacterAdded:Connect(function(new)
@@ -70,26 +71,15 @@ local gui = lib.new("SB2 Script")
 
 local page1
 do -- page 1
-    page1 = gui:addPage("Farm")
-    
-    local section1_1 = page1:addSection("Combat")
-    
-    section1_1:addToggle("KillAura", false, function(bool)
-        settings.KA = bool
-    end)
-    
-    section1_1:addSlider("KillAura Range", 20, 0, 25, function(v)
-        settings.KA_Range = v
-    end)
-
-    function GetClosestMob()
+    function GetClosestEnemy()
         local closest_magnitude = math.huge
-        local closest_mob
+        local closest_enemy
         
         local mobs = workspace.Mobs
+
         for _, v in next, mobs:GetChildren() do
             local _, err = pcall(function()
-                if v.Entity.Health.Value <= 0 then error't' end -- dont attack already dead mobs
+                if v.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs
             end)
     
             if err or v:FindFirstChild("Immortal") then continue end -- should work I think
@@ -98,16 +88,57 @@ do -- page 1
             
             if magnitude < closest_magnitude then
                 closest_magnitude = magnitude
-                closest_mob = v
+                closest_enemy = v
             end
-        end 
+        end
         
-        if closest_magnitude <= settings.KA_Range then -- make attack players too
-            return closest_mob
+        if settings.AttackPlayers then
+            local Players = game:GetService("Players")
+
+            for _, v in next, Players:GetChildren() do
+                if v ~= plr then
+                    if v.Character then
+                        local character = v.Character
+
+                        local _, err = pcall(function()
+                            if character.Entity.Health.Value <= 0 then error't' end -- dont attack dead players
+                        end)
+
+                        if err or v:FindFirstChild("Immortal") then continue end -- should work I think
+
+                        local magnitude = (character:GetPivot().Position - hrp.Position).Magnitude
+                        
+                        if magnitude < closest_magnitude then
+                            closest_magnitude = magnitude
+                            closest_enemy = character
+                        end
+                    end
+                end
+            end
+        end
+        
+        if closest_magnitude <= settings.KA_Range then 
+            return closest_enemy
         end
         
         return nil
     end
+
+    page1 = gui:addPage("Farm")
+    
+    local section1_1 = page1:addSection("Combat")
+    
+    section1_1:addToggle("KillAura", false, function(bool)
+        settings.KA = bool
+    end)
+
+    section1_1:addToggle("Attack Players", false, function(bool)
+        settings.AttackPlayers = bool
+    end)
+    
+    section1_1:addSlider("KillAura Range", 20, 0, 25, function(v)
+        settings.KA_Range = v
+    end)
     
     local combat = require(game_module.Services.Combat)
     local hashed = getupvalues(combat.Init)[2]
@@ -116,10 +147,10 @@ do -- page 1
     coroutine.wrap(function() -- use signals instead of checking every .3s eventually
         while true do wait(.3) -- don't edit this, attempting to atk faster breaks
             if settings.KA then 
-                local mob = GetClosestMob()
+                local enemy = GetClosestEnemy()
     
-                if mob and not mob:FindFirstChild("Immortal") then
-                    Event:FireServer("Combat", hashed, {"Attack", nil, "1", mob}) -- nil = skill (i think)
+                if enemy and not enemy:FindFirstChild("Immortal") then
+                    Event:FireServer("Combat", hashed, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
                 end
             end
         end
