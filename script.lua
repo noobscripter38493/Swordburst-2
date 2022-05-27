@@ -166,7 +166,7 @@ do -- page 2
     for _, v in next, workspace:GetChildren() do
         if table.find(no_tp, place_id) then
             gui:Notify("Can't TP", "Teleport Not Supported On This Floor (f1 or f7)")
-
+            -- make tp tab not show if not supported
             break
         end
 
