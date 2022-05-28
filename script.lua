@@ -429,8 +429,6 @@ do
             orion.Enabled = not orion.Enabled
         end
     })  
-
-    print(gui_bind)
 end
 
 lib:Init()
