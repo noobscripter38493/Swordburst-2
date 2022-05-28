@@ -385,13 +385,13 @@ do
         end
     })
     
+    local orion = game.CoreGui.Orion
+    
     local gui_bind = Misc_tab:AddBind({
         Name = "GUI Keybind",
         Default = Enum.KeyCode.RightShift,
         Hold = false,
         Callback = function()
-            local orion = game.CoreGui.Orion
-            
             orion.Enabled = not orion.Enabled
         end
     })  
