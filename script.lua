@@ -37,7 +37,8 @@ getgenv().settings = {
     WalkSpeed = humanoid.WalkSpeed,
     speed = false,
     InfSprint = false,
-    AttackPlayers = false
+    AttackPlayers = false,
+    Animation = getrenv()._G.CalculateCombatStyle
 }
 
 plr.CharacterAdded:Connect(function(new)
@@ -110,7 +111,7 @@ do
         game.RunService.RenderStepped:Connect(function()
             range.Position = game.Players.LocalPlayer.Character:GetPivot().Position -- 
         end)
-    ]]
+        ]]
 
     function GetClosestEnemy()
         local closest_magnitude = math.huge
@@ -261,6 +262,39 @@ do
         PremiumOnly = false
     })
 
+    local animations = game.ReplicatedStorage.Database.Animations
+    local profiles = game.ReplicatedStorage.Profiles
+    local animSettings = profiles[plr.Name].AnimSettings
+
+    local ANIMATIONS = {}
+    for _, v in next, animations:GetChildren() do
+        if v.Name ~= "Misc" and v.Name ~= "Spear" and v.Name ~= "Daggers" and v.Name ~= "Dagger" and v.Name ~= "SwordShield" then
+            table.insert(ANIMATIONS, v.Name)
+            
+            if not animSettings:FindFirstChild(v.Name) then
+                local string_value = Instance.new("StringValue", animSettings)
+                
+                string_value.Name = v.Name
+                string_value.Value = ""
+            end
+        end
+    end 
+
+    Character_tab:AddDropdown({
+        Name = "Weapon Animations (Breaks Skills For Now)", 
+        Default = getrenv()._G.CalculateCombatStyle(),
+        Options = ANIMATIONS,
+        Callback = function(animation)
+            settings.Animation = animation
+        end
+    })
+
+    local combat = require(game_module.Services.Combat)
+    
+    hookfunction(combat.CalculateCombatStyle, function()
+        return settings.Animation
+    end)
+
     local invisibility
     Character_tab:AddToggle({
         Name = "Invisibility (Client Sided Character)", 
@@ -385,13 +419,13 @@ do
         end
     })
     
-    local orion = game.CoreGui.Orion
-    
     local gui_bind = Misc_tab:AddBind({
         Name = "GUI Keybind",
         Default = Enum.KeyCode.RightShift,
         Hold = false,
         Callback = function()
+            local orion = game.CoreGui.Orion
+            
             orion.Enabled = not orion.Enabled
         end
     })  
