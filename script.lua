@@ -1,9 +1,5 @@
 if not game:IsLoaded() then game.Loaded:Wait() end
 
-if executed then return warn'executing twice crashes' end
-
-getgenv().executed = true
-
 if syn then -- synapse
     syn.queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()") 
     
@@ -40,7 +36,6 @@ getgenv().settings = {
     KA_Range = 20,
     WalkSpeed = humanoid.WalkSpeed,
     speed = false,
-    invisible = false,
     InfSprint = false,
     AttackPlayers = false
 }
@@ -65,13 +60,17 @@ end
 
 getgenv().game_module = recursive_find_module()
 
-local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/GreenDeno/Venyx-UI-Library/main/source.lua"))()
+local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
 
-local gui = lib.new("SB2 Script")
+local window = lib:MakeWindow({
+    Name = "SB2 Script",
+    HidePremium = false,
+    SaveConfig = false,
+    ConfigFolder = false
+})
 
-local page1
-do -- page 1
-    function GetClosestEnemy() --[[ re writing kill aura to use touched events 
+do
+    --[[ re writing kill aura to use touched events 
         
         3 hours later: nvm i cant - leaving this here for anyone who wants to fix
 
@@ -112,6 +111,8 @@ do -- page 1
             range.Position = game.Players.LocalPlayer.Character:GetPivot().Position -- 
         end)
         ]]
+
+    function GetClosestEnemy()
         local closest_magnitude = math.huge
         local closest_enemy
         
@@ -163,22 +164,41 @@ do -- page 1
         
         return nil
     end
+    
+    local farm_tab = window:MakeTab({
+        Name = "Farm",
+        Icon = "",
+        PremiumOnly = false
+    })
+    
+    farm_tab:AddToggle({
+        Name = "Kill Aura",
+        Default = false,
+        Callback = function(bool)
+            settings.KA = bool
+        end
+    })
 
-    page1 = gui:addPage("Farm")
+    farm_tab:AddToggle({
+        Name = "Attack Players",
+        Default = false,
+        Callback = function(bool)
+            settings.AttackPlayers = bool
+        end
+    })
     
-    local section1_1 = page1:addSection("Combat")
-    
-    section1_1:addToggle("KillAura", false, function(bool)
-        settings.KA = bool
-    end)
-
-    section1_1:addToggle("Attack Players", false, function(bool)
-        settings.AttackPlayers = bool
-    end)
-    
-    section1_1:addSlider("KillAura Range", 20, 0, 25, function(v)
-        settings.KA_Range = v
-    end)
+    farm_tab:AddSlider({
+        Name = "Kill Aura Range",
+        Min = 0,
+        Max = 25,
+        Default = 20,
+        Color = Color3.new(255, 255, 255),
+        Increment = 1,
+        ValueName = "Range",
+        Callback = function(v)
+            settings.KA_Range = v
+        end
+    })
     
     local combat = require(game_module.Services.Combat)
     local hashed = getupvalues(combat.Init)[2]
@@ -197,68 +217,78 @@ do -- page 1
     end)()
 end
 
-do -- page 2
-    local page2 = gui:addPage("Teleports")
-    
-    local section2_1 = page2:addSection("Locations")
-    
+do 
+    local teleports_tab = window:MakeTab({
+        Name = "Teleports",
+        Icon = "",
+        PremiumOnly = false
+    })
     local no_tp = {542351431, 582198062}
+
     for _, v in next, workspace:GetChildren() do
         if table.find(no_tp, place_id) then
-            gui:Notify("Can't TP", "Teleport Not Supported On This Floor (f1 or f7)")
-            -- make tp tab not show if not supported
+            lib:MakeNotification({
+                Name = "Can't TP",
+                Content = "Can't TP. Teleport Not Supported On This Floor (f1 or f7)",
+                Image = "",
+                Time = 10
+            }) 
+
             break
         end
 
         if v.Name == "TeleportSystem" then
             for _, v2 in next, v:GetChildren() do
-                section2_1:addButton("probably boss room", function() -- eventually make these show proper names (tower door seems possible)
-                    firetouchinterest(hrp, v2, 0)
-    
-                    wait(.5)
-                    
-                    firetouchinterest(hrp, v2, 1)
-                end)
+                teleports_tab:AddButton({
+                    Name = "probably boss room", 
+                    Callback = function() -- eventually make these show proper names (tower door seems possible)
+                        firetouchinterest(hrp, v2, 0)
+        
+                        wait(.5)
+                        
+                        firetouchinterest(hrp, v2, 1)
+                    end
+                })
             end
         end
     end
 end
 
-do -- page 3
-    local page4 = gui:addPage("Character")
-
-    local section3_1 = page4:addSection("Character")
+do
+    local Character_tab = window:MakeTab({
+        Name = "Character",
+        Icon = "",
+        PremiumOnly = false
+    })
 
     local invisibility
-    section3_1:addToggle("Invisibility (Client Sided Character)", false, function(bool)
-        settings.invisibile = bool
-
-        if bool then
-            local old_root = char:FindFirstChild("Root", true)
-            local new_root = old_root:Clone()
-
-            new_root.Parent = old_root.Parent
-            old_root:Destroy()
-
-            invisibility = plr.CharacterAdded:Connect(function(new)
-                local old_root = new:WaitForChild("LowerTorso"):WaitForChild("Root")
+    Character_tab:AddToggle({
+        Name = "Invisibility (Client Sided Character)", 
+        Default = false, 
+        Callback = function(bool)
+            if bool then
+                local old_root = char:FindFirstChild("Root", true)
                 local new_root = old_root:Clone()
 
                 new_root.Parent = old_root.Parent
                 old_root:Destroy()
-            end)
 
-        elseif invisibility then
-            invisibility:Disconnect()
+                invisibility = plr.CharacterAdded:Connect(function(new)
+                    local old_root = new:WaitForChild("LowerTorso"):WaitForChild("Root")
+                    local new_root = old_root:Clone()
+
+                    new_root.Parent = old_root.Parent
+                    old_root:Destroy()
+                end)
+
+            elseif invisibility then
+                invisibility:Disconnect()
+            end
         end
-    end)
-
-    section3_1:addToggle("Infinite Sprint", false, function(bool)
-        settings.InfSprint = bool
-    end)
+    })
 
     local Event = Rs.Event
-    local infsprint; infsprint = hookmetamethod(game, "__namecall", function(self, ...)
+    local infSprint; infSprint = hookmetamethod(game, "__namecall", function(self, ...)
         local ncm = getnamecallmethod()
         local args = {...}
         
@@ -271,15 +301,17 @@ do -- page 3
                 end
             end
         end
-        
-        return infsprint(self, ...)
-    end)
-end
 
-do -- page 4
-    local page4 = gui:addPage("Misc")
-    
-    local section4_1 = page4:addSection("Misc Features")
+        return infSprint(self, ...)
+    end)
+
+    Character_tab:AddToggle({
+        Name = "Infinite Sprint",
+        Default = false,
+        Callback = function(bool)
+            settings.InfSprint = bool
+        end
+    })
 
     local oldWS = humanoid.WalkSpeed
     local index_WS; index_WS = hookmetamethod(game, "__index", function(self, i)
@@ -301,36 +333,70 @@ do -- page 4
         
         return newindex_WS(self, i, v)
     end)
-    
-    section4_1:addToggle("WalkSpeed Toggle", false, function(bool)
-        settings.speed = bool
-        
-        if not bool then
-            humanoid.WalkSpeed = 20
-        else
-            humanoid.WalkSpeed = settings.WalkSpeed
+
+    Character_tab:AddToggle({
+        Name = "WalkSpeed Toggle",
+        Default = false,
+        Callback = function(bool)
+            settings.speed = bool
+            
+            if bool then
+                humanoid.WalkSpeed = settings.WalkSpeed 
+            else
+                humanoid.WalkSpeed = oldWS
+            end
         end
-    end)
+    })
 
-    section4_1:addSlider("WalkSpeed", humanoid.WalkSpeed, 0, 50, function(v)
-        settings.WalkSpeed = v
+    Character_tab:AddSlider({
+        Name = "WalkSpeed",
+        Min = 0,
+        Max = 50,
+        Default = oldWS,
+        Color = Color3.new(255, 255, 255),
+        Increment = 1,
+        ValueName = "Speed",
+        Callback = function(speed)
+            settings.WalkSpeed = speed
 
-        if settings.speed then
-            humanoid.WalkSpeed = v
+            if settings.speed then
+                humanoid.WalkSpeed = speed
+            end
         end
-    end)
-
-    section4_1:addToggle("Infinite Zoom Distance", false, function(bool)
-        if bool then
-            plr.CameraMaxZoomDistance = math.huge
-        else
-            plr.CameraMaxZoomDistance = 15
-        end
-    end)
-
-    section4_1:addKeybind("GUI Toggle Keybind (Click 2x to Change)", Enum.KeyCode.RightShift, function()
-        gui:toggle() 
-    end)
+    })
 end
 
-gui:SelectPage(page1, true)
+do 
+    local Misc_tab = window:MakeTab({
+        Name = "Misc",
+        Icon = "",
+        PremiumOnly = false
+    })
+    
+    Misc_tab:AddToggle({
+        Name = "Infinite Zoom Distance",
+        Default = false,
+        Callback = function(bool)
+            if bool then
+                plr.CameraMaxZoomDistance = math.huge
+            else
+                plr.CameraMaxZoomDistance = 15
+            end
+        end
+    })
+    
+    local gui_bind = Misc_tab:AddBind({
+        Name = "GUI Keybind",
+        Default = Enum.KeyCode.RightShift,
+        Hold = false,
+        Callback = function()
+            local orion = game.CoreGui.Orion
+            
+            orion.Enabled = not orion.Enabled
+        end
+    })  
+
+    print(gui_bind)
+end
+
+lib:Init()
