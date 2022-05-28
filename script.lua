@@ -110,7 +110,7 @@ do
         game.RunService.RenderStepped:Connect(function()
             range.Position = game.Players.LocalPlayer.Character:GetPivot().Position -- 
         end)
-        ]]
+    ]]
 
     function GetClosestEnemy()
         local closest_magnitude = math.huge
