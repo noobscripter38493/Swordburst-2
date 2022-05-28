@@ -71,7 +71,47 @@ local gui = lib.new("SB2 Script")
 
 local page1
 do -- page 1
-    function GetClosestEnemy() -- re writing kill aura to use touched and touchended events
+    function GetClosestEnemy() --[[ re writing kill aura to use touched events 
+        
+        3 hours later: nvm i cant - leaving this here for anyone who wants to fix
+
+        game.Players.LocalPlayer.CameraMaxZoomDistance = math.huge
+
+        local range = Instance.new("Part", game.Players.LocalPlayer.Character) -- this is the KA range part
+        range.Size = Vector3.new(50, 50, 50)
+        range.CanCollide = false
+        range.Transparency = .4 -- .4 for debugging
+
+        local stopper = {}
+
+        local mobs = workspace.Mobs
+        range.Touched:Connect(function(enemy) -- creates a touchtransmitter // this event fires so much for 1 mob
+            local parent = enemy.Parent
+
+            if table.find(mobs:GetChildren(), parent) then
+                local touchingparts = range:GetTouchingParts()
+
+
+                if not table.find(stopper, parent) then -- doesn't work well becuase this event fires constantly, even when the mob is beside you
+                    table.insert(stopper, parent)
+                else
+                    return
+                end
+
+                while table.find(touchingparts, enemy) and not parent:FindFirstChild("Immortal") do -- doesnt work at all well on mobs without parts (floor 1)
+                    touchingparts = range:GetTouchingParts()
+
+                    Event:FireServer("Combat", hashed, {"Attack", nil, "1", parent}) -- works for a moment (lags a bit) and stops working after a while 
+
+                    wait(.3)
+                end
+            end
+        end)
+
+        game.RunService.RenderStepped:Connect(function()
+            range.Position = game.Players.LocalPlayer.Character:GetPivot().Position -- 
+        end)
+        ]]
         local closest_magnitude = math.huge
         local closest_enemy
         
