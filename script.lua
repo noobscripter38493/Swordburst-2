@@ -71,7 +71,7 @@ local gui = lib.new("SB2 Script")
 
 local page1
 do -- page 1
-    function GetClosestEnemy()
+    function GetClosestEnemy() -- re writing kill aura to use touched and untouched events
         local closest_magnitude = math.huge
         local closest_enemy
         
