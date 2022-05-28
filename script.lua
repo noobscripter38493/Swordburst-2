@@ -281,7 +281,7 @@ do
     end 
 
     Character_tab:AddDropdown({
-        Name = "Weapon Animations (Breaks Skills For Now)", 
+        Name = "Weapon Animations (Breaks Skills For Now)", -- should probably just load my own animation tracks and stop theirs
         Default = getrenv()._G.CalculateCombatStyle(),
         Options = ANIMATIONS,
         Callback = function(animation)
