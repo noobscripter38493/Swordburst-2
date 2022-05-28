@@ -226,7 +226,7 @@ do -- page 3
             if self == Event and ncm == "FireServer" then
                 if args[1] == "Actions" then
                     if args[2][2] == "Step" then
-                        return -- void
+                        return -- void // no return check detection (if remote:FireServer() then print'detected' end)
                     end
                 end
             end
