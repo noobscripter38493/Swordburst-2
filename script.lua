@@ -230,7 +230,10 @@ do
         if table.find(no_tp, place_id) then
             lib:MakeNotification({
                 Name = "Can't TP",
-                Content = "Can't TP. Teleport Not Supported On This Floor (f1 or f7)",
+                Content = "Can't TP. Teleport Not Supported On This Floor (f1 or f7)", --[[
+                    these 2 floors have StreamingEnabled on, and it's not an editable property :C
+                    (https://developer.roblox.com/en-us/api-reference/property/Workspace/StreamingEnabled)
+                    ]]
                 Image = "",
                 Time = 10
             }) 
@@ -419,16 +422,25 @@ do
         end
     })
     
+    local orion = game.CoreGui.Orion
     local gui_bind = Misc_tab:AddBind({
         Name = "GUI Keybind",
         Default = Enum.KeyCode.RightShift,
         Hold = false,
         Callback = function()
-            local orion = game.CoreGui.Orion
-            
             orion.Enabled = not orion.Enabled
         end
     })  
+end
+
+do
+    local credits = window:MakeTab({
+        Name = "Credits",
+        Icon = "",
+        PremiumOnly = false
+    })
+    
+    
 end
 
 lib:Init()
