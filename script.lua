@@ -120,18 +120,18 @@ do
                     if player or touching:FindFirstAncestor("Mobs") and touching.Name == "HumanoidRootPart" then
                         local enemy = touching.Parent
                         
-                        if not table.find(attacking, enemy) then
+                        if not table.find(attacking, enemy) then -- the touched event will spam - to prevent multiple attacking loops on the same mob
                             table.insert(attacking, enemy)
                             
                             while true do 
-                                local i = table.find(attacking, enemy)
+                                local i = table.find(attacking, enemy) -- update the position of the element i constantly
                                 
                                 local _, err = pcall(function()
-                                    if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs
+                                    if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
                                 end)
 
                                 if err or enemy:FindFirstChild("Immortal") or (hrp.Position - touching.Position).Magnitude > settings.KA_Range then
-                                    table.remove(attacking, i)
+                                    table.remove(attacking, i) -- if an enemy walks away but is still alive or it's dead or immortal
                                     
                                     break 
                                 end
