@@ -292,7 +292,7 @@ do
     local combat = require(game_module.Services.Combat)
     
     hookfunction(combat.CalculateCombatStyle, function()
-        return settings.Animation
+        return settings.Animation  -- the game uses this function for both animations & skills so it breaks skills
     end)
 
     local invisibility
