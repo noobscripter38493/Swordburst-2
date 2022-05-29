@@ -78,12 +78,8 @@ do
         Icon = "",
         PremiumOnly = false
     })
-    
-    local combat = require(game_module.Services.Combat)
-    local hashed = getupvalues(combat.Init)[2]
-    local Event = Rs.Event
 
-    local range = Instance.new("Part", workspace) 
+    local range = Instance.new("Part", workspace)
     range.Size = Vector3.new(25, 25, 25)
     range.CanCollide = false
     range.Transparency = 1
@@ -92,8 +88,12 @@ do
         range.CFrame = game.Players.LocalPlayer.Character:GetPivot()
     end)
 
+    local combat = require(game_module.Services.Combat)
+    local hashed = getupvalues(combat.Init)[2]
+    local Event = Rs.Event
+
     local ka
-    local player
+    getgenv().player_is_touching = nil
     farm_tab:AddToggle({
         Name = "Kill Aura (Improved)", -- now attacks multiple enemies at the same time
         Default = false,
@@ -103,13 +103,13 @@ do
             local attacking = {} -- to overwrite attacking table when toggled off
             if bool then
                 ka = range.Touched:Connect(function(touching)
-                    player = nil
+                    player_is_touching = nil
                     
                     if settings.AttackPlayers then
                         for _, v in next, Players:GetChildren() do
                             if v ~= plr and v.Character then
                                 if v.Character:FindFirstChild("HumanoidRootPart") == touching then
-                                    player = true
+                                    player_is_touching = true
                                             
                                     break
                                 end
@@ -117,7 +117,7 @@ do
                         end
                     end
                     
-                    if player or touching:FindFirstAncestor("Mobs") and touching.Name == "HumanoidRootPart" then
+                    if player_is_touching or touching:FindFirstAncestor("Mobs") and touching.Name == "HumanoidRootPart" then
                         local enemy = touching.Parent
                         
                         if not table.find(attacking, enemy) then -- the touched event will spam - to prevent multiple attacking loops on the same mob
@@ -155,7 +155,7 @@ do
         Default = false,
         Callback = function(bool)
             settings.AttackPlayers = bool
-            player = nil
+            player_is_touching = nil
         end
     })
     
