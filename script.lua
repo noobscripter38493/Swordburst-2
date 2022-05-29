@@ -231,8 +231,9 @@ do
             lib:MakeNotification({
                 Name = "Can't TP",
                 Content = "Can't TP. Teleport Not Supported On This Floor (f1 or f7)", --[[
-                    these 2 floors have StreamingEnabled on, (meaning parts dont spawn until u approach them) and it's not an editable property :C
-                    (https://developer.roblox.com/en-us/api-reference/property/Workspace/StreamingEnabled)
+                    these 2 floors have a lower streaming radius, (meaning parts dont spawn until u approach them) and it's not an editable property
+                    
+                    (https://developer.roblox.com/en-us/api-reference/property/Workspace/StreamingMinRadius)
                     ]]
                 Image = "",
                 Time = 10
