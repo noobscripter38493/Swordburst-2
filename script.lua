@@ -83,7 +83,7 @@ do
     local hashed = getupvalues(combat.Init)[2]
     local Event = Rs.Event
 
-    local range = Instance.new("Part", game.Players.LocalPlayer.Character) 
+    local range = Instance.new("Part", workspace) 
     range.Size = Vector3.new(25, 25, 25)
     range.CanCollide = false
     range.Transparency = 1
