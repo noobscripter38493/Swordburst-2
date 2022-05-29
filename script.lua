@@ -110,6 +110,8 @@ do
                             if v ~= plr and v.Character then
                                 if v.Character:FindFirstChild("HumanoidRootPart") == touching then
                                     player = true
+                                            
+                                    break
                                 end
                             end
                         end
