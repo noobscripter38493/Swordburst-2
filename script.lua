@@ -1,7 +1,9 @@
+-- for me: loadfile('Scriptz/sb2 script.lua')()
+
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 if syn then -- synapse
-    syn.queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()") 
+    syn.queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
     
 elseif queue_on_teleport then -- krnl
     queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()") 
@@ -71,114 +73,79 @@ local window = lib:MakeWindow({
 })
 
 do
-    --[[ re writing kill aura to use touched events // allows to hit multiple enemies at once
-        
-        3 hours later: nvm i cant - leaving this here for anyone who wants to fix
-
-        game.Players.LocalPlayer.CameraMaxZoomDistance = math.huge
-
-        local range = Instance.new("Part", game.Players.LocalPlayer.Character) -- this is the KA range part and it is destroyed when you die
-        range.Size = Vector3.new(50, 50, 50)
-        range.CanCollide = false
-        range.Transparency = .4 -- .4 for debugging
-
-        local stopper = {}
-
-        local mobs = workspace.Mobs
-        range.Touched:Connect(function(enemy) -- creates a touchtransmitter // this event fires so much for 1 mob
-            local parent = enemy.Parent
-
-            if table.find(mobs:GetChildren(), parent) then
-                local touchingparts = range:GetTouchingParts()
-                local found = table.find(stopper, parent)
-
-                if not found then -- doesn't work well becuase this event fires constantly, even when the mob is beside you
-                    table.insert(stopper, parent)
-                else
-                    return
-                end
-                
-                while found and not parent:FindFirstChild("Immortal") do -- doesnt work at all well on mobs without parts (floor 1)
-                    touchingparts = range:GetTouchingParts()
-
-                    Event:FireServer("Combat", hashed, {"Attack", nil, "1", parent}) -- works for a moment (lags a bit) and stops working after a while 
-
-                    wait(.3)
-                end
-    
-                table.remove()
-            end
-        end)
-
-        game.RunService.RenderStepped:Connect(function()
-            range.Position = game.Players.LocalPlayer.Character:GetPivot().Position -- 
-        end)
-        ]]
-
-    function GetClosestEnemy()
-        local closest_magnitude = math.huge
-        local closest_enemy
-        
-        local mobs = workspace.Mobs
-
-        for _, v in next, mobs:GetChildren() do
-            local _, err = pcall(function()
-                if v.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs
-            end)
-    
-            if err or v:FindFirstChild("Immortal") then continue end -- should work I think
-    
-            local magnitude = (v:GetPivot().Position - hrp.Position).Magnitude
-            
-            if magnitude < closest_magnitude then
-                closest_magnitude = magnitude
-                closest_enemy = v
-            end
-        end
-        
-        if settings.AttackPlayers then
-            local Players = game:GetService("Players")
-
-            for _, v in next, Players:GetChildren() do
-                if v ~= plr then
-                    if v.Character then
-                        local character = v.Character
-
-                        local _, err = pcall(function()
-                            if character.Entity.Health.Value <= 0 then error't' end -- dont attack dead players
-                        end)
-
-                        if err or v:FindFirstChild("Immortal") or not Rs.Profiles[v.Name].Settings.PvP.Value then continue end -- should work I think
-
-                        local magnitude = (character:GetPivot().Position - hrp.Position).Magnitude
-                        
-                        if magnitude < closest_magnitude then
-                            closest_magnitude = magnitude
-                            closest_enemy = character
-                        end
-                    end
-                end
-            end
-        end
-        
-        if closest_magnitude <= settings.KA_Range then 
-            return closest_enemy
-        end
-        
-        return nil
-    end
-    
     local farm_tab = window:MakeTab({
         Name = "Farm",
         Icon = "",
         PremiumOnly = false
     })
     
+    local combat = require(game_module.Services.Combat)
+    local hashed = getupvalues(combat.Init)[2]
+    local Event = Rs.Event
+
+    local range = Instance.new("Part", game.Players.LocalPlayer.Character) 
+    range.Size = Vector3.new(25, 25, 25)
+    range.CanCollide = false
+    range.Transparency = 1
+
+    game.RunService.RenderStepped:Connect(function()
+        range.CFrame = game.Players.LocalPlayer.Character:GetPivot()
+    end)
+
+    local ka
+    local player
     farm_tab:AddToggle({
-        Name = "Kill Aura",
+        Name = "Kill Aura (Improved)",
         Default = false,
         Callback = function(bool)
             settings.KA = bool
+
+            local attacking = {} -- to overwrite attacking table when toggled off
+            if bool then
+                ka = range.Touched:Connect(function(touching)
+                    player = nil
+                    
+                    if settings.AttackPlayers then
+                        for _, v in next, Players:GetChildren() do
+                            if v ~= plr and v.Character then
+                                if v.Character:FindFirstChild("HumanoidRootPart") == touching then
+                                    player = true
+                                end
+                            end
+                        end
+                    end
+                    
+                    if player or touching:FindFirstAncestor("Mobs") and touching.Name == "HumanoidRootPart" then
+                        local enemy = touching.Parent
+                        local i = table.find(attacking, enemy)
+                        
+                        if not i then
+                            table.insert(attacking, enemy)
+                            
+                            while true do 
+                                local i = table.find(attacking, enemy)
+                                
+                                local _, err = pcall(function()
+                                    if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs
+                                end)
+
+                                if err or enemy:FindFirstChild("Immortal") or (hrp.Position - touching.Position).Magnitude > settings.KA_Range then
+                                    table.remove(attacking, i)
+                                    
+                                    break 
+                                end
+                                
+                                Event:FireServer("Combat", hashed, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
+                                
+                                wait(.3) 
+                            end
+                        end
+                    end
+                end)
+
+            elseif ka then
+                ka:Disconnect()
+            end
         end
     })
 
@@ -187,6 +154,7 @@ do
         Default = false,
         Callback = function(bool)
             settings.AttackPlayers = bool
+            player = nil
         end
     })
     
@@ -202,22 +170,6 @@ do
             settings.KA_Range = v
         end
     })
-    
-    local combat = require(game_module.Services.Combat)
-    local hashed = getupvalues(combat.Init)[2]
-    local Event = Rs.Event
-    
-    coroutine.wrap(function() -- use signals instead of checking every .3s eventually
-        while true do wait(.3) -- don't edit this, attempting to atk faster breaks
-            if settings.KA then 
-                local enemy = GetClosestEnemy()
-    
-                if enemy and not enemy:FindFirstChild("Immortal") then
-                    Event:FireServer("Combat", hashed, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
-                end
-            end
-        end
-    end)()
 end
 
 do 
