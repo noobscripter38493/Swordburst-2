@@ -85,7 +85,7 @@ do
     range.Transparency = 1
 
     game.RunService.RenderStepped:Connect(function()
-        range.CFrame = game.Players.LocalPlayer.Character:GetPivot()
+        range.CFrame = char:GetPivot()
     end)
 
     local combat = require(game_module.Services.Combat)
