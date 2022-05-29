@@ -221,8 +221,8 @@ do
         PremiumOnly = false
     })
 
-    local animations = game.ReplicatedStorage.Database.Animations
-    local profiles = game.ReplicatedStorage.Profiles
+    local animations = Rs.Database.Animations
+    local profiles = Rs.Profiles
     local animSettings = profiles[plr.Name].AnimSettings
 
     local ANIMATIONS = {}
