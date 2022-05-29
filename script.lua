@@ -77,7 +77,7 @@ do
 
         game.Players.LocalPlayer.CameraMaxZoomDistance = math.huge
 
-        local range = Instance.new("Part", game.Players.LocalPlayer.Character) -- this is the KA range part
+        local range = Instance.new("Part", game.Players.LocalPlayer.Character) -- this is the KA range part and it is destroyed when you die
         range.Size = Vector3.new(50, 50, 50)
         range.CanCollide = false
         range.Transparency = .4 -- .4 for debugging
