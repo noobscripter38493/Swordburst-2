@@ -95,7 +95,7 @@ do
     local ka
     local player
     farm_tab:AddToggle({
-        Name = "Kill Aura (Improved)",
+        Name = "Kill Aura (Improved)", -- now attacks multiple enemies at the same time
         Default = false,
         Callback = function(bool)
             settings.KA = bool
