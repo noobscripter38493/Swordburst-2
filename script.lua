@@ -71,7 +71,7 @@ local window = lib:MakeWindow({
 })
 
 do
-    --[[ re writing kill aura to use touched events 
+    --[[ re writing kill aura to use touched events // allows to hit multiple enemies at once
         
         3 hours later: nvm i cant - leaving this here for anyone who wants to fix
 
@@ -90,21 +90,23 @@ do
 
             if table.find(mobs:GetChildren(), parent) then
                 local touchingparts = range:GetTouchingParts()
+                local found = table.find(stopper, parent)
 
-
-                if not table.find(stopper, parent) then -- doesn't work well becuase this event fires constantly, even when the mob is beside you
+                if not found then -- doesn't work well becuase this event fires constantly, even when the mob is beside you
                     table.insert(stopper, parent)
                 else
                     return
                 end
-
-                while table.find(touchingparts, enemy) and not parent:FindFirstChild("Immortal") do -- doesnt work at all well on mobs without parts (floor 1)
+                
+                while found and not parent:FindFirstChild("Immortal") do -- doesnt work at all well on mobs without parts (floor 1)
                     touchingparts = range:GetTouchingParts()
 
                     Event:FireServer("Combat", hashed, {"Attack", nil, "1", parent}) -- works for a moment (lags a bit) and stops working after a while 
 
                     wait(.3)
                 end
+    
+                table.remove()
             end
         end)
 
