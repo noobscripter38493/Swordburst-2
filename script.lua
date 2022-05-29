@@ -440,8 +440,17 @@ do
         Icon = "",
         PremiumOnly = false
     })
-    
-    
+
+    credits:AddParagraph("Credits", "Made by avg#1496")
+
+    if setclipboard then
+        credits:AddButton({
+            Name = "Copy Discord To Clipboard",
+            Callback = function()
+                setclipboard("avg#1496") 
+            end
+        })
+    end
 end
 
 lib:Init()
