@@ -119,9 +119,8 @@ do
                     
                     if player or touching:FindFirstAncestor("Mobs") and touching.Name == "HumanoidRootPart" then
                         local enemy = touching.Parent
-                        local i = table.find(attacking, enemy)
                         
-                        if not i then
+                        if not table.find(attacking, enemy) then
                             table.insert(attacking, enemy)
                             
                             while true do 
