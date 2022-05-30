@@ -97,7 +97,7 @@ do
     end)
 
     local combat = require(game_module.Services.Combat)
-    local hashed = getupvalues(combat.Init)[2]
+    local hashed = getupvalue(combat.Init, 2)
     local Event = Rs.Event
 
     local ka
@@ -246,13 +246,12 @@ do
         return settings.Weapon_Animation  -- the game uses this function for both animations & skills so it breaks skills
     end)
 
-    local Normal_Animations = {}
-
     local animate_senv = getsenv(char:FindFirstChild("Animate"))
     local playTrack = animate_senv.PlayTrack
 
     local tracks = getupvalue(playTrack, 1)
 
+    local Normal_Animations = {}
     for i, _ in next, tracks do
         table.insert(Normal_Animations, i)
     end
@@ -439,7 +438,7 @@ do
             end
             
             if math.floor(days) == days then
-                if days == 1 then -- i think days will break this but i hope not
+                if days == 1 then
                     displayed = days .. "Day | " .. "%H" .. "Hours | " .. "%M " .. "Minutes | " .. "%S" .. " Seconds"
                 else
                     displayed = days .. "Days | " .. "%H" .. "Hours | " .. "%M " .. "Minutes | " .. "%S" .. " Seconds"
