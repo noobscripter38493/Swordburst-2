@@ -44,7 +44,7 @@ getgenv().settings = {
     speed = false,
     InfSprint = false,
     AttackPlayers = false,
-    Animation = nil
+    Animation = getrenv()._G.CalculateCombatStyle
 }
 
 plr.CharacterAdded:Connect(function(new)
