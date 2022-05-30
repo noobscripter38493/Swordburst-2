@@ -13,6 +13,7 @@ else
 end
 
 local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
 local Rs = game:GetService("ReplicatedStorage")
 
 local place_id = game.PlaceId
@@ -400,7 +401,7 @@ do
         end
     })
     
-    local orion = game.CoreGui.Orion
+    local orion = CoreGui.Orion
     Misc_tab:AddBind({
         Name = "GUI Keybind",
         Default = Enum.KeyCode.RightShift,
