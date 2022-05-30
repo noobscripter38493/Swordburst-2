@@ -2,6 +2,10 @@
 
 -- fix executing script twice or more breaks GUI toggle
 
+-- add keybinds to some stuff
+
+-- add more stat tracking 
+
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 if syn then -- synapse
@@ -97,7 +101,7 @@ do
     end)
 
     local combat = require(game_module.Services.Combat)
-    local hashed = getupvalue(combat.Init, 2)
+    local remote_key = getupvalue(combat.Init, 2)
     local Event = Rs.Event
 
     local ka
@@ -129,7 +133,7 @@ do
                                     break 
                                 end
                                 
-                                Event:FireServer("Combat", hashed, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
+                                Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
                                 
                                 wait(.3) 
                             end
