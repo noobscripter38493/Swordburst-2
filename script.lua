@@ -89,7 +89,7 @@ do
     end)
 
     local combat = require(game_module.Services.Combat)
-    local hashed = getupvalues(combat.Init)[2]
+    local hashed = getupvalue(combat.Init, 2)
     local Event = Rs.Event
 
     local ka
