@@ -257,8 +257,7 @@ do
     hookfunction(combat.CalculateCombatStyle, function()
         return settings.Weapon_Animation  -- the game uses this function for both animations & skills so it breaks skills
     end)
-    
-    --[[ 
+   
     local Normal_Animations = {}
 
     local animate_senv = getsenv(char:FindFirstChild("Animate"))
@@ -278,7 +277,6 @@ do
             setupvalue(playTrack, 2, animation)
         end
     })
-    ]]
     
     local invisibility
     Character_tab:AddToggle({
