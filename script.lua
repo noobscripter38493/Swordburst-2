@@ -13,7 +13,7 @@ else
 end
 
 local Players = game:GetService("Players")
-local Rs = game:GetService("ReplicatedStorage")
+local CoreGui = game:GetService("CoreGui")
 local RunS = game:GetService("RunService")
 local Rs = game:GetService("ReplicatedStorage")
 
