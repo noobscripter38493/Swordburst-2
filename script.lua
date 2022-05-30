@@ -17,6 +17,8 @@ local CoreGui = game:GetService("CoreGui")
 local RunS = game:GetService("RunService")
 local Rs = game:GetService("ReplicatedStorage")
 
+local getupvalue = debug.getupvalue -- not sure if other exploits that aren't synapse have an alias so this is for that i guess
+
 local place_id = game.PlaceId
 
 local floor_data = require(Rs.Database.Locations)
@@ -89,9 +91,9 @@ do
     RunS.RenderStepped:Connect(function()
         range.CFrame = game.Players.LocalPlayer.Character:GetPivot()
     end)
-
+    
     local combat = require(game_module.Services.Combat)
-    local hashed = getupvalues(combat.Init)[2]
+    local hashed = getupvalue(combat.Init, 2)
     local Event = Rs.Event
 
     local ka
