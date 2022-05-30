@@ -273,7 +273,7 @@ do
     Character_tab:AddDropdown({ -- this breaks all attacking and i dont know why
         Name = "Normal Animations (Scuffed.......)", -- honestly, don't know why it's so scuffed
         Default = settings.Animation,
-        Options = Normal_Animations, -- can't just do 'tracks' because the key is the name
+        Options = Normal_Animations, -- can't just do 'tracks' because the field is the name
         Callback = function(animation)
             setupvalue(playTrack, 2, animation)
         end
