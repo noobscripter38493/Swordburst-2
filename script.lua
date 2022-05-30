@@ -442,7 +442,7 @@ do
             end
             
             if math.floor(days) == days then
-                if days == 1 then -- i think days will break the counter but i hope not
+                if days == 1 then -- i think days will break the counter but i hope not (some floating point)
                     displayed = days .. "Day | " .. "%H" .. "Hours | " .. "%M " .. "Minutes | " .. "%S" .. " Seconds"
                 else
                     displayed = days .. "Days | " .. "%H" .. "Hours | " .. "%M " .. "Minutes | " .. "%S" .. " Seconds"
