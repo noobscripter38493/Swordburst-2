@@ -37,6 +37,8 @@ getgenv().char = plr.Character or plr.CharacterAdded:Wait()
 getgenv().hrp = char:WaitForChild("HumanoidRootPart")
 getgenv().humanoid = char:WaitForChild("Humanoid")
 
+repeat wait() until getrenv()._G.CalculateCombatStyle
+
 getgenv().settings = {
     KA = false,
     KA_Range = 20,
@@ -44,7 +46,7 @@ getgenv().settings = {
     speed = false,
     InfSprint = false,
     AttackPlayers = false,
-    Animation = getrenv()._G.CalculateCombatStyle
+    Animation = getrenv()._G.CalculateCombatStyle()
 }
 
 plr.CharacterAdded:Connect(function(new)
