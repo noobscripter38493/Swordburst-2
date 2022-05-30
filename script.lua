@@ -14,6 +14,7 @@ end
 
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
+local RunS = game:GetService("RunService")
 local Rs = game:GetService("ReplicatedStorage")
 
 local place_id = game.PlaceId
@@ -85,7 +86,7 @@ do
     range.CanCollide = false
     range.Transparency = 1
 
-    game.RunService.RenderStepped:Connect(function()
+    RunS.RenderStepped:Connect(function()
         range.CFrame = game.Players.LocalPlayer.Character:GetPivot()
     end)
 
