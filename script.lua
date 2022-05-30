@@ -40,7 +40,7 @@ getgenv().settings = {
     speed = false,
     InfSprint = false,
     AttackPlayers = false,
-    Animation = getrenv()._G.CalculateCombatStyle()
+    Animation = getrenv()._G.CalculateCombatStyle
 }
 
 plr.CharacterAdded:Connect(function(new)
@@ -85,11 +85,11 @@ do
     range.Transparency = 1
 
     game.RunService.RenderStepped:Connect(function()
-        range.CFrame = char:GetPivot()
+        range.CFrame = game.Players.LocalPlayer.Character:GetPivot()
     end)
 
     local combat = require(game_module.Services.Combat)
-    local hashed = getupvalue(combat.Init, 2)
+    local hashed = getupvalues(combat.Init)[2]
     local Event = Rs.Event
 
     local ka
@@ -117,7 +117,7 @@ do
                         end
                     end
                     
-                    if player_is_touching or touching:FindFirstAncestor("Mobs") and touching.Name == "HumanoidRootPart" then
+                    if touching.Name == "HumanoidRootPart" then
                         local enemy = touching.Parent
                         
                         if not table.find(attacking, enemy) then -- the touched event will spam - to prevent multiple attacking loops on the same mob
@@ -241,19 +241,41 @@ do
 
     Character_tab:AddDropdown({
         Name = "Weapon Animations (Breaks Skills For Now)", -- should probably just load my own animation tracks and stop theirs
-        Default = getrenv()._G.CalculateCombatStyle(),
+        Default = settings.Animation,
         Options = ANIMATIONS,
         Callback = function(animation)
-            settings.Animation = animation
+            settings.Weapon_Animation = animation
         end
     })
 
     local combat = require(game_module.Services.Combat)
     
     hookfunction(combat.CalculateCombatStyle, function()
-        return settings.Animation  -- the game uses this function for both animations & skills so it breaks skills
+        return settings.Weapon_Animation  -- the game uses this function for both animations & skills so it breaks skills
     end)
+    
+    --[[ 
+    local Normal_Animations = {}
 
+    local animate_senv = getsenv(char:FindFirstChild("Animate"))
+    local playTrack = animate_senv.PlayTrack
+
+    local tracks = getupvalue(playTrack, 1)
+
+    for i, _ in next, tracks do
+        table.insert(Normal_Animations, i)
+    end
+
+    Character_tab:AddDropdown({ -- this breaks all attacking and i dont know why
+        Name = "Normal Animations (Scuffed.......)", -- honestly, don't know why it's so scuffed
+        Default = settings.Animation,
+        Options = Normal_Animations, -- can't just do 'tracks' because the key is the name
+        Callback = function(animation)
+            setupvalue(playTrack, 2, animation)
+        end
+    })
+    ]]
+    
     local invisibility
     Character_tab:AddToggle({
         Name = "Invisibility (Client Sided Character)", 
