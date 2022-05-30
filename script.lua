@@ -369,7 +369,7 @@ end
 
 do
     local Crafting = window:MakeTab({
-        Name = "Upgrades",
+        Name = "Crafting",
         Icon = "",
         PremiumOnly = false
     })
