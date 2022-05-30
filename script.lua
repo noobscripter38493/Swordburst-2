@@ -5,7 +5,7 @@ if not game:IsLoaded() then game.Loaded:Wait() end
 if syn then -- synapse
     syn.queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
     
-elseif queue_on_teleport then -- krnl, scriptware, unc
+elseif queue_on_teleport then -- krnl
     queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()") 
     
 else
@@ -13,7 +13,7 @@ else
 end
 
 local Players = game:GetService("Players")
-local CoreGui = game:GetService("CoreGui")
+local Rs = game:GetService("ReplicatedStorage")
 local RunS = game:GetService("RunService")
 local Rs = game:GetService("ReplicatedStorage")
 
@@ -91,13 +91,12 @@ do
     RunS.RenderStepped:Connect(function()
         range.CFrame = game.Players.LocalPlayer.Character:GetPivot()
     end)
-    
+
     local combat = require(game_module.Services.Combat)
-    local hashed = getupvalue(combat.Init, 2)
+    local hashed = getupvalues(combat.Init)[2]
     local Event = Rs.Event
 
     local ka
-    getgenv().player_is_touching = nil
     farm_tab:AddToggle({
         Name = "Kill Aura (Improved)", -- now attacks multiple enemies at the same time
         Default = false,
@@ -106,22 +105,8 @@ do
 
             local attacking = {} -- to overwrite attacking table when toggled off
             if bool then
-                ka = range.Touched:Connect(function(touching)
-                    player_is_touching = nil
-                    
-                    if settings.AttackPlayers then
-                        for _, v in next, Players:GetChildren() do
-                            if v ~= plr and v.Character then
-                                if v.Character:FindFirstChild("HumanoidRootPart") == touching then
-                                    player_is_touching = true
-                                            
-                                    break
-                                end
-                            end
-                        end
-                    end
-                    
-                    if player_is_touching or touching:FindFirstAncestor("Mobs") and touching.Name == "HumanoidRootPart" then
+                ka = range.Touched:Connect(function(touching)  
+                    if settings.AttackPlayers and not touching:FindFirstAncestor("Mobs") or touching:FindFirstAncestor("Mobs") and touching.Name == "HumanoidRootPart" then
                         local enemy = touching.Parent
                         
                         if not table.find(attacking, enemy) then -- the touched event will spam - to prevent multiple attacking loops on the same mob
@@ -159,7 +144,6 @@ do
         Default = false,
         Callback = function(bool)
             settings.AttackPlayers = bool
-            player_is_touching = nil
         end
     })
     
@@ -257,7 +241,7 @@ do
     hookfunction(combat.CalculateCombatStyle, function()
         return settings.Weapon_Animation  -- the game uses this function for both animations & skills so it breaks skills
     end)
-   
+
     local Normal_Animations = {}
 
     local animate_senv = getsenv(char:FindFirstChild("Animate"))
@@ -269,15 +253,15 @@ do
         table.insert(Normal_Animations, i)
     end
 
-    Character_tab:AddDropdown({ 
-        Name = "Normal Animations (Scuffed...)", -- honestly, don't know why it's so scuffed
+    Character_tab:AddDropdown({
+        Name = "Normal Animations (Scuffed.......)", -- honestly, don't know why it's so scuffed
         Default = settings.Animation,
-        Options = Normal_Animations, -- can't just do 'tracks' because the field is the name
+        Options = Normal_Animations, -- can't just do 'tracks' because the key is the name
         Callback = function(animation)
             setupvalue(playTrack, 2, animation)
         end
     })
-    
+
     local invisibility
     Character_tab:AddToggle({
         Name = "Invisibility (Client Sided Character)", 
@@ -379,6 +363,32 @@ do
             if settings.speed then
                 humanoid.WalkSpeed = speed
             end
+        end
+    })
+end
+
+do
+    local Crafting = window:MakeTab({
+        Name = "Upgrades",
+        Icon = "",
+        PremiumOnly = false
+    })
+
+    local ui_module = game_module.Services.UI
+
+    local upgrade_module = require(ui_module.Upgrade)
+    Crafting:AddButton({
+        Name = "Open Upgrader",
+        Callback = function()
+            upgrade_module.Open()
+        end
+    })
+
+    local dismantler_module = require(ui_module.Dismantle)
+    Crafting:AddButton({
+        Name = "Open Dismantler",
+        Callback = function()
+            dismantler_module.Open()
         end
     })
 end
