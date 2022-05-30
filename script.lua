@@ -395,6 +395,63 @@ do
     })
 end
 
+do
+    local Stats = window:MakeTab({
+        Name = "Session Stats",
+        Icon = "",
+        PremiumOnly = false
+    }) 
+
+    local time_label = Stats:AddLabel("Elapsed Time")
+    
+    coroutine.wrap(function()
+        local old_time = os.time()
+
+        local seconds = 0
+        local minutes = 0
+        local hours = 0
+        local days = 0
+        
+        local displayed = "%S" .. " seconds"
+        
+        while true do wait(1) -- what r string patterns (for real) // catastrophic code
+            seconds = seconds + 1
+            minutes = seconds / 60
+            hours = minutes / 60
+            days = hours / 24
+            
+            if math.floor(minutes) == minutes then
+                if minutes == 1 then
+                    displayed =  "%M " .. "Minute | " .. "%S" .. " Seconds" 
+                else
+                    displayed =  "%M " .. "Minutes | " .. "%S" .. " Seconds" 
+                end
+            end
+            
+            if math.floor(hours) == hours then
+                if hours == 1 then
+                    displayed = "%H" .. "Hour | " .. "%M " .. "Minutes | " .. "%S" .. " Seconds"
+                else
+                    displayed = "%H" .. "Hours | " .. "%M " .. "Minutes | " .. "%S" .. " Seconds"
+                end
+            end
+            
+            if math.floor(days) == days then
+                if days == 1 then
+                    displayed = days .. "Day | " .. "%H" .. "Hours | " .. "%M " .. "Minutes | " .. "%S" .. " Seconds"
+                else
+                    displayed = days .. "Days | " .. "%H" .. "Hours | " .. "%M " .. "Minutes | " .. "%S" .. " Seconds"
+                end
+            end
+            
+            local elapsed_time = os.time() - old_time
+            local formatted = os.date(displayed, elapsed_time)
+            
+            time_label:Set("Time Elapsed: " .. formatted)
+        end
+    end)()
+end
+
 do 
     local Misc_tab = window:MakeTab({
         Name = "Misc",
