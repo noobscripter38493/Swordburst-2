@@ -117,7 +117,7 @@ do
                         end
                     end
                     
-                    if touching.Name == "HumanoidRootPart" then
+                    if player_is_touching or touching:FindFirstAncestor("Mobs") and touching.Name == "HumanoidRootPart" then
                         local enemy = touching.Parent
                         
                         if not table.find(attacking, enemy) then -- the touched event will spam - to prevent multiple attacking loops on the same mob
