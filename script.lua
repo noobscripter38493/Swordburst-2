@@ -1,5 +1,7 @@
 -- for me: loadfile('Scriptz/sb2 script.lua')()
 
+-- fix executing script twice or more breaks GUI toggle
+
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 if syn then -- synapse
