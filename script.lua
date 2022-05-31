@@ -116,7 +116,7 @@ do
             local attacking = {} -- to overwrite attacking table when toggled off
             if bool then
                 ka = range.Touched:Connect(function(touching)  
-                    if (settings.AttackPlayers and not touched.Parent == char and not touching:FindFirstAncestor("Mobs") and touching.Name == "HumanoidRootPart") or (touching:FindFirstAncestor("Mobs") and touching.Name == "HumanoidRootPart") then
+                    if (settings.AttackPlayers and not touching.Parent == char and not touching:FindFirstAncestor("Mobs") and touching.Name == "HumanoidRootPart") or (touching:FindFirstAncestor("Mobs") and touching.Name == "HumanoidRootPart") then
                         local enemy = touching.Parent
                         
                         if not table.find(attacking, enemy) then -- the touched event will spam - to prevent multiple attacking loops on the same mob
