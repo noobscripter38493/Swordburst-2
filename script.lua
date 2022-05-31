@@ -419,7 +419,7 @@ do
         local hours = 0
         local days = 0
         
-        local displayed = "%S" .. " seconds"
+        local displayed = "%S" .. " Seconds"
         
         while true do wait(1) -- what r string patterns (for real) // catastrophic code
             seconds = seconds + 1
