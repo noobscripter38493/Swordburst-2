@@ -302,8 +302,8 @@ do
         
         if settings.InfSprint then
             if self == Event and ncm == "FireServer" then
-                if args[1] == "Actions" then
-                    if args[2][2] == "Step" then
+                if rawget(args, 1) == "Actions" then
+                    if rawget(args[2], 2) == "Step" then
                         return -- void // no return check detection (if remote:FireServer() then print'detected' end)
                     end
                 end
