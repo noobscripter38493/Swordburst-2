@@ -1,7 +1,5 @@
 -- for me: loadfile('Scriptz/sb2 script.lua')()
 
--- fix executing script twice or more breaks GUI toggle
-
 -- add keybinds to some stuff
 
 -- add more stat tracking 
