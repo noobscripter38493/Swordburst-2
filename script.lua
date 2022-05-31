@@ -6,6 +6,8 @@
 
 -- add more stat tracking 
 
+-- insta max selected items / equipped gear
+
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 if syn then -- synapse
