@@ -377,8 +377,8 @@ do
 end
 
 do
-    local Crafting = window:MakeTab({
-        Name = "Crafting",
+    local Smithing = window:MakeTab({
+        Name = "Smithing",
         Icon = "",
         PremiumOnly = false
     })
@@ -386,7 +386,7 @@ do
     local ui_module = game_module.Services.UI
 
     local upgrade_module = require(ui_module.Upgrade)
-    Crafting:AddButton({
+    Smithing:AddButton({
         Name = "Open Upgrader",
         Callback = function()
             upgrade_module.Open()
@@ -394,7 +394,7 @@ do
     })
 
     local dismantler_module = require(ui_module.Dismantle)
-    Crafting:AddButton({
+    Smithing:AddButton({
         Name = "Open Dismantler",
         Callback = function()
             dismantler_module.Open()
