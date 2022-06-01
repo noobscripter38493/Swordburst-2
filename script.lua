@@ -477,7 +477,7 @@ do
         Default = plr.Name,
         Options = players_names,
         Callback = function(player)
-            setupvalue(inventory.GetInventoryData, 1, Rs.Profiles[player]) -- trick the game into getting the inventory data of the selected player
+            setupvalue(inventory.GetInventoryData, 1, Rs.Profiles[player]) -- trick the game into getting the inventory data of the selected player instead of your own data
         end
     })
 
