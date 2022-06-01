@@ -23,7 +23,8 @@ local CoreGui = game:GetService("CoreGui")
 local RunS = game:GetService("RunService")
 local Rs = game:GetService("ReplicatedStorage")
 
-local getupvalue = debug.getupvalue -- not sure if other exploits that aren't synapse have an alias so this is for that i guess
+getgenv().getupvalue = debug.getupvalue -- not sure if other exploits that aren't synapse have an alias so this is for that i guess
+getgenv().setupvalue = debug.setupvalue
 
 local place_id = game.PlaceId
 
