@@ -465,6 +465,43 @@ do
         PremiumOnly = false
     })
     
+    local players_names = {}
+    
+    for _, v in next, Players:GetPlayers() do
+        table.insert(players_names, v.Name) 
+    end
+    
+    local inventory = require(game_module.Services.UI.Inventory)
+    local inventory_viewer = Misc_tab:AddDropdown({
+        Name = "Inventory Viewer (Open Inventory)",
+        Default = plr.Name,
+        Options = players_names,
+        Callback = function(player)
+            setupvalue(inventory.GetInventoryData, 1, Rs.Profiles[player])
+        end
+    })
+
+    function refresh_inventoryViewer_list(dp) 
+        local players_instances = Players:GetPlayers()
+        local players_names = {}
+        
+        for _, v in next, players_instances do
+            table.insert(players_names, v.Name)
+        end
+        
+        dp:Refresh(players_names, true)
+    end
+    
+    Players.PlayerAdded:Connect(function(player)
+        repeat wait() until Rs.Profiles:FindFirstChild(player.Name) ~= nil
+        
+        refresh_inventoryViewer_list(inventory_viewer)
+    end)
+    
+    Players.PlayerRemoving:Connect(function()
+        refresh_inventoryViewer_list(inventory_viewer)
+    end)
+    
     Misc_tab:AddToggle({
         Name = "Infinite Zoom Distance",
         Default = false,
