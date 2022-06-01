@@ -304,7 +304,7 @@ do
             if self == Event and ncm == "FireServer" then
                 if rawget(args, 1) == "Actions" then
                     if rawget(args[2], 2) == "Step" then
-                        return -- void // no return check detection (if remote:FireServer() then print'detected' end)
+                        return -- void
                     end
                 end
             end
