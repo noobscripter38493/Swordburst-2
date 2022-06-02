@@ -60,7 +60,7 @@ getgenv().settings = {
 local setThreadIdentity = syn.set_thread_identity
 local getThreadIdentity = syn.get_thread_identity
 
-local old_indentity = getThreadIdentity()
+local oldIndentity = getThreadIdentity()
 
 setThreadIdentity(2)
 
@@ -84,7 +84,7 @@ for _, v in next, getconnections(game.UserInputService.InputBegan) do
     end
 end 
 
-setThreadIdentity(old_indentity)
+setThreadIdentity(oldIndentity)
 --
 
 plr.CharacterAdded:Connect(function(new)
