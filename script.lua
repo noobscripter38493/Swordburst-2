@@ -545,7 +545,7 @@ do
 
     if setclipboard then
         credits:AddButton({
-            Name = "Copy Discord To Clipboard", -- why did i even add this
+            Name = "Copy Discord To Clipboard",
             Callback = function()
                 setclipboard("avg#1496") 
             end
