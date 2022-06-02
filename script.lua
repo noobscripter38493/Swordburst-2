@@ -120,7 +120,7 @@ do
                         
                         if not table.find(attacking, enemy) then 
                             table.insert(attacking, enemy)
-
+                            -- was gonna make a killaura function but i am lazy
                             coroutine.wrap(function()
                                 while true do 
                                     local i = table.find(attacking, enemy) -- update the position of the element enemy constantly
