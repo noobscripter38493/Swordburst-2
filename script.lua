@@ -56,6 +56,37 @@ getgenv().settings = {
     Animation = getrenv()._G.CalculateCombatStyle()
 }
 
+-- disable M1s when killaura is enabled
+local setThreadIdentity = syn.set_thread_identity
+local getThreadIdentity = syn.get_thread_identity
+
+local old_indentity = getThreadIdentity()
+
+setThreadIdentity(2)
+
+for _, v in next, getconnections(game.UserInputService.InputBegan) do
+    local func = v.Function
+    
+    if func then
+        local info = getinfo(func)
+        
+        if info.source:find("Services.Input") then
+            local noMouseClick; noMouseClick = hookfunction(func, function(user_input, game_processed)
+                if user_input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if settings.KA then
+                        return 
+                    end
+                end
+                
+                return noMouseClick(user_input, game_processed)
+            end)
+        end
+    end
+end 
+
+setThreadIdentity(old_indentity)
+--
+
 plr.CharacterAdded:Connect(function(new)
     char = new
     hrp = char:WaitForChild("HumanoidRootPart")
