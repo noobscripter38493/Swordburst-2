@@ -541,7 +541,7 @@ do
         PremiumOnly = false
     })
 
-    credits:AddParagraph("Credits", "Made by avg#1496")
+    credits:AddParagraph("Credits", "Made by avg#1496 | DM Bugs")
 
     if setclipboard then
         credits:AddButton({
@@ -550,6 +550,8 @@ do
                 setclipboard("avg#1496") 
             end
         })
+    else
+        credits:AddParagraph("error", "no setclipboard function")
     end
 end
 
