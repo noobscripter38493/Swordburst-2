@@ -428,25 +428,25 @@ do
             
             if math.floor(minutes) == minutes then
                 if minutes == 1 then
-                    displayed =  "%M " .. "Minute | " .. "%S" .. " Seconds" 
+                    displayed =  "%M" .. " Minute | " .. "%S" .. " Seconds" 
                 else
-                    displayed =  "%M " .. "Minutes | " .. "%S" .. " Seconds" 
+                    displayed =  "%M" .. " Minutes | " .. "%S" .. " Seconds" 
                 end
             end
             
             if math.floor(hours) == hours then
                 if hours == 1 then
-                    displayed = "%H" .. "Hour | " .. "%M " .. "Minutes | " .. "%S" .. " Seconds"
+                    displayed = "%H" .. " Hour | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
                 else
-                    displayed = "%H" .. "Hours | " .. "%M " .. "Minutes | " .. "%S" .. " Seconds"
+                    displayed = "%H" .. " Hours | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
                 end
             end
             
             if math.floor(days) == days then
                 if days == 1 then -- i think days will break the counter but i hope not (some floating point)
-                    displayed = days .. "Day | " .. "%H" .. "Hours | " .. "%M " .. "Minutes | " .. "%S" .. " Seconds"
+                    displayed = days .. " Day | " .. "%H" .. " Hours | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
                 else
-                    displayed = days .. "Days | " .. "%H" .. "Hours | " .. "%M " .. "Minutes | " .. "%S" .. " Seconds"
+                    displayed = days .. " Days | " .. "%H" .. " Hours | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
                 end
             end
             
