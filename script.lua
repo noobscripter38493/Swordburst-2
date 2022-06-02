@@ -449,8 +449,6 @@ do
         local hours = 0
         local days = 0
         
-        local displayed = "%S" .. " seconds"
-        
         while true do wait(1) -- what r string patterns (for real) // catastrophic code
             seconds = round(time())
             minutes = round(seconds / 60)
@@ -458,7 +456,7 @@ do
             days = round(hours / 24)
             
             -- hope no one plays longer than 24 hours or else this will break ...
-            displayed = days .. " Days | " .. hours .. " Hours | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
+            local displayed = days .. " Days | " .. hours .. " Hours | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
             
             local formatted = os.date(displayed, seconds)
     
