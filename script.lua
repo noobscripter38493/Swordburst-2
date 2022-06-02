@@ -62,7 +62,7 @@ local getThreadIdentity = syn.get_thread_identity
 
 local oldIndentity = getThreadIdentity()
 
-setThreadIdentity(2)
+setThreadIdentity(2) -- can't get inputbegan or inputended without setting the thread identity to 2 (roblox's identity) -> printidentity()
 
 for _, v in next, getconnections(game.UserInputService.InputBegan) do
     local func = v.Function
