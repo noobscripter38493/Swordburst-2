@@ -56,7 +56,7 @@ getgenv().settings = {
     Animation = getrenv()._G.CalculateCombatStyle()
 }
 
--- disable M1s when killaura is enabled
+-- disable M1s when killaura is enabled // read wally's funky friday source and innovated
 local setThreadIdentity = syn.set_thread_identity
 local getThreadIdentity = syn.get_thread_identity
 
