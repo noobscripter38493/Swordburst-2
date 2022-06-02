@@ -564,6 +564,16 @@ do
 end
 
 do
+    local updates = window:MakeTab({
+        Name = "Updates",
+        Icon = "",
+        PremiumOnly = false
+    }) 
+
+    updates:AddParagraph("6/2/22", "M1s are stopped when KillAura is enabled")
+end
+
+do
     local credits = window:MakeTab({
         Name = "Credits",
         Icon = "",
