@@ -217,11 +217,11 @@ do
         Icon = "",
         PremiumOnly = false
     })
-
-    local animations = Rs.Database.Animations
+    
     local profiles = Rs.Profiles
     local animSettings = profiles[plr.Name].AnimSettings
 
+    local animations = Rs.Database.Animations
     local ANIMATIONS = {}
     for _, v in next, animations:GetChildren() do
         if v.Name ~= "Misc" and v.Name ~= "Spear" and v.Name ~= "Daggers" and v.Name ~= "Dagger" and v.Name ~= "SwordShield" then
