@@ -407,52 +407,32 @@ do
         Icon = "",
         PremiumOnly = false
     }) 
-
+    
     local time_label = Stats:AddLabel("Elapsed Time")
     
+    function round(num) -- dev forum
+        return math.floor(num + 0.5)
+    end
+    
     coroutine.wrap(function()
-        local old_time = os.time()
-
         local seconds = 0
         local minutes = 0
         local hours = 0
         local days = 0
         
-        local displayed = "%S" .. " Seconds"
+        local displayed = "%S" .. " seconds"
         
         while true do wait(1) -- what r string patterns (for real) // catastrophic code
-            seconds = seconds + 1
-            minutes = seconds / 60
-            hours = minutes / 60
-            days = hours / 24
+            seconds = round(time())
+            minutes = round(seconds / 60)
+            hours = round(minutes / 60)
+            days = round(hours / 24)
             
-            if math.floor(minutes) == minutes then
-                if minutes == 1 then
-                    displayed =  "%M" .. " Minute | " .. "%S" .. " Seconds" 
-                else
-                    displayed =  "%M" .. " Minutes | " .. "%S" .. " Seconds" 
-                end
-            end
+            -- hope no one plays longer than 24 hours or else this will break ...
+            displayed = days .. " Days | " .. hours .. " Hours | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
             
-            if math.floor(hours) == hours then
-                if hours == 1 then
-                    displayed = "%H" .. " Hour | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
-                else
-                    displayed = "%H" .. " Hours | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
-                end
-            end
-            
-            if math.floor(days) == days then
-                if days == 1 then -- i think days will break the counter but i hope not (some floating point)
-                    displayed = days .. " Day | " .. "%H" .. " Hours | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
-                else
-                    displayed = days .. " Days | " .. "%H" .. " Hours | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
-                end
-            end
-            
-            local elapsed_time = os.time() - old_time
-            local formatted = os.date(displayed, elapsed_time)
-            
+            local formatted = os.date(displayed, seconds)
+    
             time_label:Set("Time Elapsed: " .. formatted)
         end
     end)()
