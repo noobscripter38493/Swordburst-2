@@ -9,7 +9,7 @@
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 if syn then -- synapse
-    syn.queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
+    syn.queue_on_teleport("https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
     
 elseif queue_on_teleport then -- krnl
     queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()") 
@@ -18,11 +18,182 @@ else
     warn"failed to find execute on teleport function"
 end
 
+local mobs_on_floor = {
+    [542351431] = { -- floor 1
+        "Frenzy Boar",
+        "Wolf",
+        "Hermit Crab",
+        "Bear",
+        "Ruin Knight",
+        "Draconite",
+        "Ruin Kobold Knight"
+    },
+
+    [548231754] = { -- floor 2
+        "Leaf Beetle",
+        "Leaf Ogre",
+        "Leafray",
+        "Pearl Keeper",
+        "Bushback Tortoise",
+        "Wasp"
+    },
+
+    [555980327] = { -- floor 3
+        "Snowgre",
+        "Angry Snowman",
+        "Icewhal",
+        "Ice Elemental",
+        "Snowhorse",
+        "Ice Walker"
+    },
+
+    [572487908] = { -- floor 4
+        "Wattlechin Crocodile",
+        "Birchman",
+        "Treehorse",
+        "Treeray",
+        "Boneling",
+        "Bamboo Spiderling",
+        "Bamboo Spider",
+        "Dungeon Dweller",
+        "Lion Protector",
+    },
+
+    [580239979] = { -- floor 5
+        "Girdled Lizard",
+        "Angry Cactus",
+        "Desert Vulture",
+        "Sand Scorpion",
+        "Giant Centipede",
+        "Green Patrolman",
+        "Centaurian Defender",
+        "Patrolman Elite",
+    },
+
+    [582198062] = { -- floor 7
+        "Jelly Wisp",
+        "Firefly",
+        "Shroom Back Clam",
+        "Gloom Shroom",
+        "Horned Sailfin Iguana",
+        "Blightmouth",
+        "Snapper"
+    },
+    
+    [548878321] = { -- floor 8
+        "Giant Praying Mantis",
+        "Petal Knight",
+        "Leaf Rhino",
+        "Sky Raven",
+        "Wingless Hippogriff",
+        "Forest Wanderer",
+        "Dungeon Crusador"
+    },
+
+    [573267292] = { -- floor 9
+        "Batting Eye",
+        "Lingerer",
+        "Fishrock Spider",
+        "Reptasaurus",
+        "Ent",
+        "Undead Warrior",
+        "Enraged Lingerer",
+        "Undead Berserker"
+    },
+
+    [2659143505] = { -- floor 10
+        "Winged Minion",
+        "Clay Giant",
+        "Wendigo",
+        "Grunt",
+        "Guard Hound",
+        "Minion",
+        "Shady Villager",
+        "Undead Servant",
+    },
+
+    [5287433115] = { -- floor 11
+        "Reaper",
+        "Elite Reaper (not in game)",
+        "DJ Reaper (not in game)",
+        "Soul Eater",
+        "Shadow Figure",
+        "Meta Figure (not in game)",
+        "???????",
+        "Rogue Android (not in game)",
+        "Command Falcon",
+        "Armageddon Eagle (not in game)",
+        "Sentry (not in game)",
+        "Watcher (not in game)",
+        "Cybold (not in game)"
+    }
+}
+
+local bosses_on_floor = {
+    [542351431] = { -- floor 1
+        "Dire Wolf",
+        "Rahjin the Thief King"
+    },
+
+    [548231754] = { -- floor 2
+        "Pearl Guardian",
+        "Gorrock the Grove Protector",
+        "Borik the BeeKeeper"
+    },
+
+    [555980327] = { -- floor 3
+        "Qerach The Forgotten Golem",
+        "Alpha Icewhal",
+        "Ra'thae the Ice King"
+    },
+
+    [572487908] = { -- floor 4
+        "Rotling",
+        "Irath the Lion",
+    },
+
+    [580239979] = { -- floor 5
+        "Fire Scorpion",
+        "Sa'jun the Centurian Chieftain"
+    },
+    
+    [582198062] = { -- floor 7
+        "Frogazoid",
+        "Smashroom"
+    },
+
+    [548878321] = { -- floor 8
+        "Hippogriff",
+        "Formaug the Jungle Giant"
+    },
+
+    [573267292] = { -- floor 9
+        "Gargoyle Reaper",
+        "Polyserpant",
+        "Mortis the Flaming Sear"
+    },
+
+    [2659143505] = { -- floor 10
+        "Baal, The Tormentor",
+        "Grim the Overseer"
+    },
+
+    [5287433115] = { -- floor 11
+        "Da",
+        "Ra",
+        "Ka",
+        "Za (not in game)",
+        "Duality Reaper (not in game)",
+        "Saurus, the All-Seeing (not in game)"
+    }
+}
+
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
+local UserInputS = game:GetService("UserInputService")
+local TweenS = game:GetService("TweenService")
 local RunS = game:GetService("RunService")
 local Rs = game:GetService("ReplicatedStorage")
-local UserInputS = game:GetService("UserInputService")
 
 getgenv().getupvalue = debug.getupvalue -- not sure if other exploits that aren't synapse have an alias so this is for that i guess
 getgenv().setupvalue = debug.setupvalue
@@ -48,6 +219,13 @@ getgenv().humanoid = char:WaitForChild("Humanoid")
 repeat wait() until getrenv()._G.CalculateCombatStyle
 
 getgenv().settings = {
+    Autofarm = false,
+    Autofarm_Y_Offset = 10,
+    Tween_Speed = 70,
+    Boss_Priority = false,
+    Prioritized_Boss = nil,
+    Mob_Priority = false,
+    Prioritized_Mob = nil,
     KA = false,
     KA_Range = 20,
     WalkSpeed = humanoid.WalkSpeed,
@@ -111,7 +289,7 @@ getgenv().game_module = recursive_find_module()
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
 
 local window = lib:MakeWindow({
-    Name = "SB2 Script By avg#1496",
+    Name = "SB2 Script",
     HidePremium = false,
     SaveConfig = false,
     ConfigFolder = false
@@ -122,6 +300,198 @@ do
         Name = "Farm",
         Icon = "",
         PremiumOnly = false
+    })
+
+    local mobs_table = {}
+
+    function find(t, element)
+        for _, v in next, t do
+            if v.Name == element then
+                return v
+            end
+        end
+        
+        return nil
+    end
+    
+    local tween_create
+    function tween(to)
+        local t = (hrp.Position - to.Position).Magnitude / settings.Tween_Speed -- time = distance / speed
+        
+        local tween_info = TweenInfo.new(t, Enum.EasingStyle.Linear)
+        local cframe = to.CFrame * CFrame.new(0, settings.Autofarm_Y_Offset, 0)
+        tween_create = TweenS:Create(hrp, tween_info, {CFrame = cframe})
+        
+        tween_create:Play()
+        tween_create.Completed:Wait()
+        
+        if not settings.Autofarm then return end
+        
+        -- do a second tween in case the mob moves a bit from it's original position
+        -- prioritize bosses -> teleport to boss room
+        -- re autofarm when died
+
+        local enemy = to.Parent
+        local autofarm; autofarm = RunS.RenderStepped:Connect(function()
+            local _, err = pcall(function()
+                if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
+            end)
+
+            if err or not settings.Autofarm then 
+                autofarm:Disconnect() 
+                autofarm = nil
+                return
+            end
+            
+            hrp.CFrame = to.CFrame * CFrame.new(0, settings.Autofarm_Y_Offset, 0)
+        end)
+        
+        repeat wait() until not autofarm
+        
+        local i = table.find(mobs_table, to.Parent)
+        
+        if i then
+            table.remove(mobs_table, i) -- :thumbs:
+        end
+    end
+
+    local mobs = workspace.Mobs
+
+    mobs.ChildAdded:Connect(function(mob)
+        mob:WaitForChild("HumanoidRootPart")
+        
+        table.insert(mobs_table, mob)
+    end)
+    
+    mobs.ChildRemoved:Connect(function(mob)
+        local i = table.find(mobs_table, mob)
+        
+        if i then
+            print("removed", mob, "at index", i)
+            table.remove(mobs_table, i)
+        end
+    end)
+    
+    for _, v in next, mobs:GetChildren() do
+        local tween_to = v:FindFirstChild("HumanoidRootPart")
+        
+        if tween_to and v:FindFirstChild("Healthbar") then
+            table.insert(mobs_table, v)
+        end
+    end
+
+    farm_tab:AddToggle({
+        Name = "Autofarm",
+        Default = false,
+        Callback = function(bool)
+            settings.Autofarm = bool
+
+            if bool then
+                while true do wait()
+                    if not settings.Autofarm then break end
+
+                    if settings.Boss_Priority and settings.Prioritized_Boss ~= nil then
+                        local boss = find(mobs_table, settings.Prioritized_Boss)
+
+                        if boss then
+                            local _, err = pcall(function()
+                                if boss.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
+                            end)
+                            
+                            if err then continue end
+                            
+                            local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
+                            
+                            if boss_hrp then
+                                local tween_to = boss_hrp
+                                
+                                tween(tween_to)
+                                
+                                continue
+                            end
+                        end
+                    end
+
+                    if settings.Mob_Priority and settings.Prioritized_Mob ~= nil then
+                        local mob = find(mobs_table, settings.Prioritized_Mob)
+                
+                        if mob then
+                            local _, err = pcall(function()
+                                if mob.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
+                            end)
+                            
+                            if err then continue end
+                            
+                            local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
+                            
+                            if mob_hrp then
+                                local tween_to = mob_hrp
+                                
+                                tween(tween_to)
+                                
+                                continue
+                            end
+                        end
+                    end
+                    
+                    local tween_to = mobs_table[1]:FindFirstChild("HumanoidRootPart")
+                    
+                    if tween_to then
+                        tween(tween_to)
+                    end
+                end
+            
+            elseif tween_create then
+                tween_create:Cancel()
+            end
+        end
+    })
+
+    farm_tab:AddToggle({
+        Name = "Boss Priority", 
+        Default = false,
+        Callback = function(bool)
+            settings.Boss_Priority = bool
+        end
+    })
+
+    farm_tab:AddDropdown({
+        Name = "Prioritized Boss",
+        Default = nil,
+        Options = bosses_on_floor[place_id],
+        Callback = function(boss)
+            settings.Prioritized_Boss = boss
+        end
+    })
+
+    farm_tab:AddToggle({
+        Name = "Mob Priority", 
+        Default = false,
+        Callback = function(bool)
+            settings.Mob_Priority = bool
+        end
+    })
+
+    farm_tab:AddDropdown({
+        Name = "Prioritized Mob",
+        Default = nil,  
+        Options = mobs_on_floor[place_id],
+        Callback = function(mob)
+            settings.Prioritized_Mob = mob
+        end
+    })
+
+    farm_tab:AddSlider({
+        Name = "Autofarm Y Offset",
+        Min = -20,
+        Max = 20,
+        Default = 10,
+        Color = Color3.new(255, 255, 255),
+        Increment = 1,
+        ValueName = "Y Offset",
+        Callback = function(v)
+            settings.Autofarm_Y_Offset = v
+        end
     })
 
     local range = Instance.new("Part", workspace)
@@ -487,7 +857,7 @@ do
             hours = round(minutes / 60)
             days = round(hours / 24)
             
-            -- hope no one plays longer than 24 hours or else this won't format ...
+            -- hope no one plays longer than 24 hours or else this will break ...
             local displayed = days .. " Days | " .. hours .. " Hours | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
             
             local formatted = os.date(displayed, seconds)
@@ -570,8 +940,9 @@ do
         Icon = "",
         PremiumOnly = false
     }) 
-
-    updates:AddParagraph("6/2/22", "M1s are stopped when KillAura is enabled")
+    
+    updates:AddParagraph("6/3/22". "Autofarm Added")
+    updates:AddParagraph("6/2/22", "M1s are stopped when Kill Aura is enabled")
 end
 
 do
