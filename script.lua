@@ -483,8 +483,8 @@ do
 
     farm_tab:AddSlider({
         Name = "Autofarm Y Offset",
-        Min = -20,
-        Max = 20,
+        Min = 0,
+        Max = 13,
         Default = 10,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
