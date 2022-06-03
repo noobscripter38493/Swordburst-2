@@ -57,8 +57,8 @@ getgenv().settings = {
 }
 
 -- disable M1s when killaura is enabled // read wally's funky friday source and innovated
-local setThreadIdentity = syn.set_thread_identity
-local getThreadIdentity = syn.get_thread_identity
+local setThreadIdentity = syn.set_thread_identity or setthreadcontext 
+local getThreadIdentity = syn.get_thread_identity or getthreadidentity
 
 local oldIndentity = getThreadIdentity()
 
