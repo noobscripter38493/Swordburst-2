@@ -22,6 +22,7 @@ local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local RunS = game:GetService("RunService")
 local Rs = game:GetService("ReplicatedStorage")
+local UserInputS = game:GetService("UserInputService")
 
 getgenv().getupvalue = debug.getupvalue -- not sure if other exploits that aren't synapse have an alias so this is for that i guess
 getgenv().setupvalue = debug.setupvalue
@@ -64,7 +65,7 @@ local oldIndentity = getThreadIdentity()
 
 setThreadIdentity(2) -- can't get inputbegan or inputended without setting the thread identity to 2 (roblox's identity) -> printidentity()
 
-for _, v in next, getconnections(game.UserInputService.InputBegan) do
+for _, v in next, getconnections(UserInputS.InputBegan) do
     local func = v.Function
     
     if func then
