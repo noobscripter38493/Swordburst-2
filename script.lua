@@ -486,7 +486,7 @@ do
             hours = round(minutes / 60)
             days = round(hours / 24)
             
-            -- hope no one plays longer than 24 hours or else this will break ...
+            -- hope no one plays longer than 24 hours or else this won't format ...
             local displayed = days .. " Days | " .. hours .. " Hours | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
             
             local formatted = os.date(displayed, seconds)
