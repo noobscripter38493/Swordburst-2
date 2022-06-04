@@ -941,7 +941,7 @@ do
         PremiumOnly = false
     }) 
     
-    updates:AddParagraph("6/3/22". "Autofarm Added")
+    updates:AddParagraph("6/3/22", "Autofarm Added")
     updates:AddParagraph("6/2/22", "M1s are stopped when Kill Aura is enabled")
 end
 
