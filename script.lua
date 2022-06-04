@@ -220,7 +220,7 @@ repeat wait() until getrenv()._G.CalculateCombatStyle
 
 getgenv().settings = {
     Autofarm = false,
-    Autofarm_Y_Offset = 10,
+    Autofarm_Y_Offset = 15,
     Tween_Speed = 70,
     Boss_Priority = false,
     Prioritized_Boss = nil,
@@ -482,8 +482,8 @@ do
     farm_tab:AddSlider({
         Name = "Autofarm Y Offset",
         Min = 0,
-        Max = 15,
-        Default = 10,
+        Max = 20,
+        Default = 15,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
         ValueName = "Y Offset",
