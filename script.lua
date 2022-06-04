@@ -564,7 +564,7 @@ do
                                     
                                     Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
                                     
-                                    wait(.3.2) 
+                                    wait(.32) 
                                 end
                             end)()
                         end
