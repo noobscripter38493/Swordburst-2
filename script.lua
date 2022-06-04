@@ -289,7 +289,7 @@ getgenv().game_module = recursive_find_module()
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
 
 local window = lib:MakeWindow({
-    Name = "SB2 Script",
+    Name = "SB2 Script | Made By avg#1496",
     HidePremium = false,
     SaveConfig = false,
     ConfigFolder = false
