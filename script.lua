@@ -212,6 +212,11 @@ for i, v in next, floor_data.floors do -- probably remove this
 end
 
 local plr = Players.LocalPlayer
+
+for _, v in next, getconnections(plr.Idled) do
+    v:Disable() 
+end
+
 getgenv().char = plr.Character or plr.CharacterAdded:Wait()
 getgenv().hrp = char:WaitForChild("HumanoidRootPart")
 getgenv().humanoid = char:WaitForChild("Humanoid")
