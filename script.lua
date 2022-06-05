@@ -775,9 +775,7 @@ do
                     end
                 end
                 
-                -- broken below
-                
-                        if placeid == 548878321 then -- floor 8
+                if placeid == 548878321 then -- floor 8
                     for _2, v2 in next, v:GetChildren() do
                         local touching_parts = v2:GetTouchingParts()
                         
