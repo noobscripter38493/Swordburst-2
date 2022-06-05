@@ -114,18 +114,18 @@ local mobs_on_floor = {
 
     [5287433115] = { -- floor 11
         "Reaper",
-        "Elite Reaper (not in game)",
-        "DJ Reaper (not in game)",
+        --"Elite Reaper (not in game)",
+        --"DJ Reaper (not in game)",
         "Soul Eater",
         "Shadow Figure",
-        "Meta Figure (not in game)",
+        --"Meta Figure (not in game)",
         "???????",
-        "Rogue Android (not in game)",
+        --"Rogue Android (not in game)",
         "Command Falcon",
-        "Armageddon Eagle (not in game)",
-        "Sentry (not in game)",
-        "Watcher (not in game)",
-        "Cybold (not in game)"
+        --"Armageddon Eagle (not in game)",
+        --"Sentry (not in game)",
+        --"Watcher (not in game)",
+        --"Cybold (not in game)"
     }
 }
 
@@ -182,9 +182,9 @@ local bosses_on_floor = {
         "Da",
         "Ra",
         "Ka",
-        "Za (not in game)",
-        "Duality Reaper (not in game)",
-        "Saurus, the All-Seeing (not in game)"
+        --"Za (not in game)",
+        --"Duality Reaper (not in game)",
+        --"Saurus, the All-Seeing (not in game)"
     }
 }
 
@@ -288,19 +288,18 @@ plr.CharacterAdded:Connect(function(new)
     humanoid = char:WaitForChild("Humanoid")
 end)
 
-function recursive_find_module()
+getgenv().game_module = nil
+while true do
     for _, v in next, getnilinstances() do
         if v.Name == "MainModule" then
-            return v
+            game_module = v
         end
     end 
 
     wait(.5)
     
-    return recursive_find_module()
+    if game_module then break end
 end
-
-getgenv().game_module = recursive_find_module()
 
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
 
