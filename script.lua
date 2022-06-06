@@ -494,7 +494,7 @@ do
     farm_tab:AddDropdown({
         Name = "Prioritized Boss",
         Default = nil,
-        Options = bosses_on_floor[place_id],
+        Options = bosses_on_floor[placeid],
         Callback = function(boss)
             settings.Prioritized_Boss = boss
         end
@@ -511,7 +511,7 @@ do
     farm_tab:AddDropdown({
         Name = "Prioritized Mob",
         Default = nil,  
-        Options = mobs_on_floor[place_id],
+        Options = mobs_on_floor[placeid],
         Callback = function(mob)
             settings.Prioritized_Mob = mob
         end
