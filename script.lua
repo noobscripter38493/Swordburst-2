@@ -366,7 +366,6 @@ do
         local i = table.find(mobs_table, mob)
         
         if i then
-            print("removed", mob, "at index", i)
             table.remove(mobs_table, i)
         end
     end)
