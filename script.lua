@@ -529,7 +529,6 @@ do
     })
 
     local range = Instance.new("Part")
-    range.Name = "AEUGAUEGUA"
     range.Size = Vector3.new(25, 25, 25)
     range.CanCollide = false
     range.Transparency = 1
