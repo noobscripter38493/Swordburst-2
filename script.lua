@@ -239,6 +239,7 @@ getgenv().settings = {
     Tween_Speed = 70,
     Farm_Only_Bosses = false,
     Boss_Priority = false,
+    __IndexBypass = nil,
     Prioritized_Boss = nil,
     Mob_Priority = false,
     Prioritized_Mob = nil,
@@ -1046,8 +1047,8 @@ do
         local ncm = getnamecallmethod()
         local args = {...}
         
-        if settings.InfSprint then
-            if self == Event and ncm == "FireServer" then
+        if settings.InfSprint and ncm == "FireServer"  then
+            if self == Event then
                 if rawget(args, 1) == "Actions" then
                     if rawget(args[2], 2) == "Step" then
                         return -- void
@@ -1066,12 +1067,25 @@ do
             settings.InfSprint = bool
         end
     })
+    
+    -- wave goodbye to humanoid.Walkspeed = x. if humanoid.WalkSpeed ~= x __index detection. (sb2 doesnt have it tho)
+    local newindex; newindex = hookmetamethod(game, "__newindex", function(self, i, v)
+        if self == humanoid and i == "WalkSpeed" and not checkcaller() then
+            settings.IndexBypass = v
+        end
 
+        return newindex(self, i, v)
+    end)
+    
     local oldWS = humanoid.WalkSpeed
     local index_WS; index_WS = hookmetamethod(game, "__index", function(self, i)
         if settings.speed then
             if self == humanoid and i == "WalkSpeed" then
-                return oldWS
+                if settings.__IndexBypass then
+                    return settings.__IndexBypass
+                else
+                    return oldWS
+                end
             end
         end
         
@@ -1254,7 +1268,8 @@ do
         Icon = "",
         PremiumOnly = false
     }) 
-
+    
+    updates:AddParagraph("6/12/22", "Made WalkSpeed less detectable (wasn't detected tho)")
     updates:AddParagraph("6/12/22", "Fixed an Autofarm Bug (Teleport after death)")
     updates:AddParagraph("6/5/22", "Made All Floors show actual TP locations")
     updates:AddParagraph("6/4/22", "Made Some Floors show actual TP locations (wip)")
