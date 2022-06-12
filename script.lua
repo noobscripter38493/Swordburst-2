@@ -550,25 +550,23 @@ do
                         if not table.find(attacking, enemy) then 
                             table.insert(attacking, enemy)
                             -- should make a killaura function but i am lazy
-                            coroutine.wrap(function()
-                                while true do 
-                                    local i = table.find(attacking, enemy) -- update the position of the element enemy constantly
+                            while true do 
+                                local i = table.find(attacking, enemy) -- update the position of the element enemy constantly
+                                
+                                local _, err = pcall(function()
+                                    if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
+                                end)
+                    
+                                if err or enemy:FindFirstChild("Immortal") or (hrp.Position - touching.Position).Magnitude > settings.KA_Range then
+                                    table.remove(attacking, i) -- if an enemy walks away but is still alive or it's dead or immortal
                                     
-                                    local _, err = pcall(function()
-                                        if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
-                                    end)
-                        
-                                    if err or enemy:FindFirstChild("Immortal") or (hrp.Position - touching.Position).Magnitude > settings.KA_Range then
-                                        table.remove(attacking, i) -- if an enemy walks away but is still alive or it's dead or immortal
-                                        
-                                        break 
-                                    end
-                                    
-                                    Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
-                                    
-                                    wait(.3) 
+                                    break 
                                 end
-                            end)()
+                                
+                                Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
+                                
+                                wait(.3) 
+                            end
                         end
         
                     elseif settings.AttackPlayers and touching.Parent ~= char and touching.Name == "HumanoidRootPart" then
@@ -577,25 +575,23 @@ do
                         if not table.find(attacking, enemy) then 
                             table.insert(attacking, enemy)
 
-                            coroutine.wrap(function()
-                                while true do 
-                                    local i = table.find(attacking, enemy) -- update the position of the element enemy constantly
+                            while true do 
+                                local i = table.find(attacking, enemy) -- update the position of the element enemy constantly
+                                
+                                local _, err = pcall(function()
+                                    if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
+                                end)
+                    
+                                if not settings.AttackPlayers or err or enemy:FindFirstChild("Immortal") or (hrp.Position - touching.Position).Magnitude > settings.KA_Range then
+                                    table.remove(attacking, i) -- if an enemy walks away but is still alive or it's dead or immortal
                                     
-                                    local _, err = pcall(function()
-                                        if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
-                                    end)
-                        
-                                    if not settings.AttackPlayers or err or enemy:FindFirstChild("Immortal") or (hrp.Position - touching.Position).Magnitude > settings.KA_Range then
-                                        table.remove(attacking, i) -- if an enemy walks away but is still alive or it's dead or immortal
-                                        
-                                        break 
-                                    end
-                                    
-                                    Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
-                                    
-                                    wait(.3) 
+                                    break 
                                 end
-                            end)()
+                                
+                                Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
+                                
+                                wait(.3) 
+                            end
                         end
                     end
                 end) 
