@@ -528,7 +528,7 @@ do
         end
     })
 
-    local range = Instance.new("Part", workspace)
+    local range = Instance.new("Part")
     range.Size = Vector3.new(25, 25, 25)
     range.CanCollide = false
     range.Transparency = 1
@@ -536,14 +536,31 @@ do
     RunS.RenderStepped:Connect(function()
         range.CFrame = game.Players.LocalPlayer.Character:GetPivot()
     end)
-    
-    local range__index; range__index = hookmetamethod(game, "__index", function(self, i)
-        if self == range and not checkcaller() then
+  
+    local props_please = Instance.new"Part" -- get props crashing if the instance isnt parented
+    props_please.Parent = game.CoreGui
+
+    local index; index = hookmetamethod(game, "__index", function(self, i) -- this is still detectable but ye :skull:
+        if self == range and not checkcaller() and typeof(i) == "string" then
+            local success, err = pcall(function()
+                local props = getproperties(props_please)
+
+                if not table.find(props, i) then 
+                    error("dang")
+                end 
+            end)
+
+            if err then
+                return index(self, i)
+            end
+
             return nil
         end
-        
-        return range__index(self, i)
+
+        return index(self, i)
     end)
+
+    range.Parent = workspace
 
     local combat = require(game_module.Services.Combat)
     local remote_key = getupvalue(combat.Init, 2)
