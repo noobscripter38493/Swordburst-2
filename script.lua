@@ -1218,7 +1218,7 @@ do
         end
     })
 
-    function refresh_inventoryViewer_list(dp) 
+    local function refresh_inventoryViewer_list(dp) 
         local players_instances = Players:GetPlayers()
         local players_names = {}
         
