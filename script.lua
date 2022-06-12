@@ -364,6 +364,7 @@ do
         local i = table.find(mobs_table, mob)
         
         if i then
+            print("removed", mob, "at index", i)
             table.remove(mobs_table, i)
         end
     end)
@@ -375,6 +376,12 @@ do
             table.insert(mobs_table, v)
         end
     end
+
+    RunS.RenderStepped:Connect(function()
+        if settings.Autofarm then
+            hrp.Velocity = Vector3.new(0, 0, 0)
+        end
+    end)
 
     farm_tab:AddToggle({
         Name = "Autofarm (Manual Ban Risk)",
@@ -1262,6 +1269,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("6/12/22", "Made Autofarm Tweening Smooth (asf)")
     updates:AddParagraph("6/12/22", "Made WalkSpeed less detectable (wasn't detected tho)")
     updates:AddParagraph("6/12/22", "Fixed an Autofarm Bug (Teleport after death)")
     updates:AddParagraph("6/5/22", "Made All Floors show actual TP locations")
