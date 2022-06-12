@@ -331,25 +331,18 @@ do
         tween_create.Completed:Wait()
         
         if not settings.Autofarm then return end
-        
-        -- do a second tween in case the mob moves a bit from it's original position
+       
         -- prioritize bosses -> teleport to boss room
 
         local enemy = to.Parent
-        local autofarm; autofarm = game.RunService.RenderStepped:Connect(function()
-            local _, err = pcall(function()
-                if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
-            end)
-
-            if err then 
-                autofarm:Disconnect() 
-                autofarm = nil
-            end
-            
-            hrp.CFrame = to.CFrame * CFrame.new(0, settings.Autofarm_Y_Offset, 0)
+        local _, err = pcall(function()
+            if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
         end)
-        
-        repeat wait() until not autofarm
+
+        if not err then
+            tween(to)
+            return
+        end
         
         local i = table.find(mobs_table, to.Parent)
         
@@ -1262,6 +1255,7 @@ do
         PremiumOnly = false
     }) 
 
+    updates:AddParagraph("6/12/22", "Fixed an Autofarm Bug (Teleport after death)")
     updates:AddParagraph("6/5/22", "Made All Floors show actual TP locations")
     updates:AddParagraph("6/4/22", "Made Some Floors show actual TP locations (wip)")
     updates:AddParagraph("6/3/22", "Autofarm Added (improving)")
