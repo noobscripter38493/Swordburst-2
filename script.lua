@@ -380,7 +380,7 @@ do
 
     RunS.RenderStepped:Connect(function()
         if settings.Autofarm then
-            hrp.Velocity = Vector3.new(0, 0, 0)
+            hrp.Velocity = Vector3.new(0, 0, 0) -- smooth tween
         end
     end)
 
