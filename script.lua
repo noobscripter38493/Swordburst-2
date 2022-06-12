@@ -318,7 +318,7 @@ do
         PremiumOnly = false
     })
     
-    farm_tab:AddParagraph("Warning", "Toggle Invisibility in Character")
+    farm_tab:AddParagraph("Warning", "Toggle Invisibility in Character Tab")
     
     local mobs_table = {}
     
