@@ -239,7 +239,7 @@ getgenv().settings = {
     Tween_Speed = 70,
     Farm_Only_Bosses = false,
     Boss_Priority = false,
-    __IndexBypass = nil,
+    __IndexBypass = humanoid.WalkSpeed,
     Prioritized_Boss = nil,
     Mob_Priority = false,
     Prioritized_Mob = nil,
@@ -1078,15 +1078,10 @@ do
         return newindex(self, i, v)
     end)
     
-    local oldWS = humanoid.WalkSpeed
     local index_WS; index_WS = hookmetamethod(game, "__index", function(self, i)
         if settings.speed then
             if self == humanoid and i == "WalkSpeed" then
-                if settings.__IndexBypass then
-                    return settings.__IndexBypass
-                else
-                    return oldWS
-                end
+                return settings.__IndexBypass
             end
         end
         
