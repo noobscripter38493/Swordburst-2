@@ -536,6 +536,14 @@ do
     RunS.RenderStepped:Connect(function()
         range.CFrame = game.Players.LocalPlayer.Character:GetPivot()
     end)
+    
+    local range__index; range__index = hookmetamethod(game, "__index", function(self, i)
+        if self == range and not checkcaller() then
+            return nil
+        end
+        
+        return range__index(self, i)
+    end)
 
     local combat = require(game_module.Services.Combat)
     local remote_key = getupvalue(combat.Init, 2)
