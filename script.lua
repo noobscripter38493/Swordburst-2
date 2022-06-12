@@ -383,87 +383,84 @@ do
         Callback = function(bool)
             settings.Autofarm = bool
 
-            if bool then
-                while true do wait()
-                    if not settings.Autofarm then break end
+            while settings.Autofarm do wait()
+                if settings.Boss_Priority and settings.Prioritized_Boss ~= nil then
+                    local boss = find(mobs_table, settings.Prioritized_Boss)
 
-                    if settings.Boss_Priority and settings.Prioritized_Boss ~= nil then
-                        local boss = find(mobs_table, settings.Prioritized_Boss)
-
-                        if boss then
-                            local _, err = pcall(function()
-                                if boss.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
-                            end)
+                    if boss then
+                        local _, err = pcall(function()
+                            if boss.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
+                        end)
+                        
+                        if err then continue end
+                        
+                        local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
+                        
+                        if boss_hrp then
+                            local tween_to = boss_hrp
                             
-                            if err then continue end
+                            tween(tween_to)
                             
-                            local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
-                            
-                            if boss_hrp then
-                                local tween_to = boss_hrp
-                                
-                                tween(tween_to)
-                                
-                                continue
-                            end
+                            continue
                         end
-                    end
-
-                    if settings.Farm_Only_Bosses then
-                        for _, v in next, mobs_table do
-                            if find(mobs_table, settings.Prioritized_Boss) or not settings.Autofarm then
-                                break
-
-                            else
-                                local mob_hrp = v:FindFirstChild("HumanoidRootPart")
-
-                                if mob_hrp then
-                                    local _, err = pcall(function()
-                                        if v.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
-                                    end)
-
-                                    if err then continue end
-
-                                    local tween_to = mob_hrp
-
-                                    tween(tween_to)
-                                end
-                            end
-                        end
-
-                        continue
-                    end
-
-                    if settings.Mob_Priority and settings.Prioritized_Mob ~= nil then
-                        local mob = find(mobs_table, settings.Prioritized_Mob)
-                
-                        if mob then
-                            local _, err = pcall(function()
-                                if mob.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
-                            end)
-                            
-                            if err then continue end
-                            
-                            local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
-                            
-                            if mob_hrp then
-                                local tween_to = mob_hrp
-                                
-                                tween(tween_to)
-                                
-                                continue
-                            end
-                        end
-                    end
-                    
-                    local tween_to = mobs_table[1]:FindFirstChild("HumanoidRootPart")
-                    
-                    if tween_to then
-                        tween(tween_to)
                     end
                 end
+
+                if settings.Farm_Only_Bosses then
+                    for _, v in next, mobs_table do
+                        if find(mobs_table, settings.Prioritized_Boss) or not settings.Autofarm then
+                            break
+
+                        else
+                            local mob_hrp = v:FindFirstChild("HumanoidRootPart")
+
+                            if mob_hrp then
+                                local _, err = pcall(function()
+                                    if v.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
+                                end)
+
+                                if err then continue end
+
+                                local tween_to = mob_hrp
+
+                                tween(tween_to)
+                            end
+                        end
+                    end
+
+                    continue
+                end
+
+                if settings.Mob_Priority and settings.Prioritized_Mob ~= nil then
+                    local mob = find(mobs_table, settings.Prioritized_Mob)
             
-            elseif tween_create then
+                    if mob then
+                        local _, err = pcall(function()
+                            if mob.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
+                        end)
+                        
+                        if err then continue end
+                        
+                        local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
+                        
+                        if mob_hrp then
+                            local tween_to = mob_hrp
+                            
+                            tween(tween_to)
+                            
+                            continue
+                        end
+                    end
+                end
+                
+                local tween_to = mobs_table[1]:FindFirstChild("HumanoidRootPart")
+                
+                if tween_to then
+                    tween(tween_to)
+                end
+            end
+            
+            if tween_create then
                 tween_create:Cancel()
             end
         end
