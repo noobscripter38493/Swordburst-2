@@ -529,6 +529,7 @@ do
     })
 
     local range = Instance.new("Part")
+    range.Name = "AEUGAUEGUA"
     range.Size = Vector3.new(25, 25, 25)
     range.CanCollide = false
     range.Transparency = 1
@@ -536,11 +537,24 @@ do
     RunS.RenderStepped:Connect(function()
         range.CFrame = game.Players.LocalPlayer.Character:GetPivot()
     end)
-  
+    
+    
+    --[[bypass for or likewise:
+        game.DescendantAdded:Connect(function(d)
+            local success, err = pcall(function()
+                local a = d.asd
+            end)
+
+            if success then
+                print("caught you")
+            end
+        end)
+    ]]
+    
     local props_please = Instance.new"Part" -- get props crashing if the instance isnt parented
     props_please.Parent = game.CoreGui
-
-    local index; index = hookmetamethod(game, "__index", function(self, i) -- this is still detectable but ye :skull:
+    
+    local index; index = hookmetamethod(game, "__index", function(self, i) -- this is still detectable but ye :skull: (part is supposed nil but props arem't)
         if self == range and not checkcaller() and typeof(i) == "string" then
             local success, err = pcall(function()
                 local props = getproperties(props_please)
@@ -551,7 +565,7 @@ do
             end)
 
             if err then
-                return index(self, i)
+                return index(self, i) -- return error("x is not a member of workspace") doesnt match a real error
             end
 
             return nil
