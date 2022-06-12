@@ -385,7 +385,7 @@ do
     end)
 
     farm_tab:AddToggle({
-        Name = "Autofarm (Manual Ban Risk)",
+        Name = "Autofarm (Ban Risk)",
         Default = false,
         Callback = function(bool)
             settings.Autofarm = bool
