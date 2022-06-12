@@ -1154,7 +1154,7 @@ do
         Name = "WalkSpeed",
         Min = 0,
         Max = 50,
-        Default = oldWS,
+        Default = settings.__IndexBypass,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
         ValueName = "Speed",
