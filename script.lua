@@ -538,7 +538,40 @@ do
     end)
     
     
+    --[[bypass for or likewise:
+        game.DescendantAdded:Connect(function(d)
+            local success, err = pcall(function()
+                local a = d.asd
+            end)
 
+            if success then
+                print("caught you")
+            end
+        end)
+    ]]
+
+    local props_please = Instance.new"Part" -- get props crashing if the instance isnt parented
+    props_please.Parent = game.CoreGui
+
+    local index; index = hookmetamethod(game, "__index", function(self, i) -- this is still detectable but ye :skull: (part is supposed nil but props arem't)
+        if self == range and not checkcaller() and typeof(i) == "string" then
+            local success = pcall(function()
+                local props = getproperties(props_please)
+
+                if not table.find(props, i) then 
+                    error("dang")
+                end 
+            end)
+
+            if not success then
+                return index(self, i) -- return error("x is not a member of workspace") doesnt match a real error
+            end
+
+            return nil
+        end
+
+        return index(self, i)
+    end)
 
     range.Parent = workspace
 
@@ -1072,7 +1105,7 @@ do
             settings.InfSprint = bool
         end
     })
-    
+
     -- doesnt work if walkspeed is checked on the server
     -- wave goodbye to humanoid.Walkspeed = x. if humanoid.WalkSpeed ~= x __index detection. (sb2 doesnt have it tho)
     local newindex; newindex = hookmetamethod(game, "__newindex", function(self, i, v)
@@ -1082,7 +1115,7 @@ do
 
         return newindex(self, i, v)
     end)
-    
+
     local index_WS; index_WS = hookmetamethod(game, "__index", function(self, i)
         if settings.speed then
             if self == humanoid and i == "WalkSpeed" then
@@ -1112,7 +1145,7 @@ do
             if bool then
                 humanoid.WalkSpeed = settings.WalkSpeed 
             else
-                humanoid.WalkSpeed = oldWS
+                humanoid.WalkSpeed = settings.__IndexBypass
             end
         end
     })
