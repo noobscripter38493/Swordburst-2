@@ -1073,7 +1073,7 @@ do
     -- doesnt work if walkspeed is checked on the server
     -- wave goodbye to humanoid.Walkspeed = x. if humanoid.WalkSpeed ~= x __index detection. (sb2 doesnt have it tho)
     local newindex; newindex = hookmetamethod(game, "__newindex", function(self, i, v)
-        if self == humanoid and i == "WalkSpeed" and not checkcaller() then
+        if self == humanoid and i == "WalkSpeed" and not checkcaller() and typeof(v) == "number" then
             settings.__IndexBypass = v
         end
 
