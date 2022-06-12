@@ -317,7 +317,9 @@ do
         Icon = "",
         PremiumOnly = false
     })
-
+    
+    farm_tab:AddParagraph("Warning", "Toggle Invisibility in Character")
+    
     local mobs_table = {}
     
     local tween_create
