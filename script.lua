@@ -6,8 +6,6 @@
 
 -- insta max selected items / equipped gear
 
--- weird bug when you change the slider of autofarm Y offset the autofarm starts ???
-
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 if syn then -- synapse
@@ -392,7 +390,8 @@ do
         Callback = function(bool)
             settings.Autofarm = bool
 
-            while settings.Autofarm do wait()
+            while true do wait()
+                if not settings.Autofarm then break end
                 if settings.Boss_Priority and settings.Prioritized_Boss ~= nil then
                     local boss = find(mobs_table, settings.Prioritized_Boss)
 
@@ -1255,6 +1254,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("6/13/22", "Fixed A bug where changing Y offset would activate autofarm")
     updates:AddParagraph("6/13/22", "Skills Now Work with Animations")
     updates:AddParagraph("6/13/22", "Fixed Attack Players not toggling off")
     updates:AddParagraph("6/13/22", "Removed a Useless Animation Feature")
