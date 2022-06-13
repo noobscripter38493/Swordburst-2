@@ -211,10 +211,18 @@ for i, v in next, floor_data.floors do -- probably remove this
     end
 end
 
-function find(t, element)
-    for _, v in next, t do
-        if v.Name == element then
-            return v
+function find(t, element, boss)
+    if not boss then
+        for _, v in next, t do
+            if v.Name == element then
+                return v
+            end
+        end
+    else
+        for i, v in next, t do
+            if v.Name == boss[i] then
+                return v
+            end
         end
     end
     
@@ -323,6 +331,7 @@ do
     local mobs_table = {}
     
     local tween_create
+    local smooth_tween
     function tween(to)
         local t = (hrp.Position - to.Position).Magnitude / settings.Tween_Speed -- time = distance / speed
         
@@ -330,8 +339,14 @@ do
         local cframe = to.CFrame * CFrame.new(0, settings.Autofarm_Y_Offset, 0)
         tween_create = TweenS:Create(hrp, tween_info, {CFrame = cframe})
         
+        smooth_tween = RunS.RenderStepped:Connect(function()
+            hrp.Velocity = Vector3.new(0, 0, 0) -- smooth tween
+        end)
+
         tween_create:Play()
         tween_create.Completed:Wait()
+
+        smooth_tween:Disconnect()
         
         if not settings.Autofarm then return end
        
@@ -378,12 +393,6 @@ do
         end
     end
 
-    RunS.RenderStepped:Connect(function()
-        if settings.Autofarm then
-            hrp.Velocity = Vector3.new(0, 0, 0) -- smooth tween
-        end
-    end)
-
     farm_tab:AddToggle({
         Name = "Autofarm (Ban Risk)",
         Default = false,
@@ -392,6 +401,26 @@ do
 
             while true do wait()
                 if not settings.Autofarm then break end
+                
+                if settings.Farm_Only_Bosses then
+                    local boss = find(mobs_table, nil, bosses_on_floor[placeid])
+                    local boss_hrp = boss and boss:FindFirstChild("HumanoidRootPart")
+
+                    if boss_hrp then
+                        local _, err = pcall(function()
+                            if boss.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
+                        end)
+
+                        if err then continue end
+
+                        local tween_to = boss_hrp
+
+                        tween(tween_to) 
+                    end
+
+                    continue
+                end
+
                 if settings.Boss_Priority and settings.Prioritized_Boss ~= nil then
                     local boss = find(mobs_table, settings.Prioritized_Boss)
 
@@ -412,31 +441,6 @@ do
                             continue
                         end
                     end
-                end
-
-                if settings.Farm_Only_Bosses then
-                    for _, v in next, mobs_table do
-                        if find(mobs_table, settings.Prioritized_Boss) or not settings.Autofarm then
-                            break
-
-                        else
-                            local mob_hrp = v:FindFirstChild("HumanoidRootPart")
-
-                            if mob_hrp then
-                                local _, err = pcall(function()
-                                    if v.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
-                                end)
-
-                                if err then continue end
-
-                                local tween_to = mob_hrp
-
-                                tween(tween_to)
-                            end
-                        end
-                    end
-
-                    continue
                 end
 
                 if settings.Mob_Priority and settings.Prioritized_Mob ~= nil then
@@ -1254,6 +1258,8 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("6/13/22", "Fixed a bug where Farm only bosses would make your velocity 0")
+    updates:AddParagraph("6/13/22", "Fixed Farm Only Bosses option in Autofarm")
     updates:AddParagraph("6/13/22", "Fixed A bug where changing Y offset would activate autofarm")
     updates:AddParagraph("6/13/22", "Skills Now Work with Animations")
     updates:AddParagraph("6/13/22", "Fixed Attack Players not toggling off")
