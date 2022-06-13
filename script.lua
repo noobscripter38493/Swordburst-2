@@ -566,7 +566,7 @@ do
                                     if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
                                 end)
                     
-                                if err or enemy:FindFirstChild("Immortal") or (hrp.Position - touching.Position).Magnitude > settings.KA_Range then
+                                if err or not settings.KA or enemy:FindFirstChild("Immortal") or (hrp.Position - touching.Position).Magnitude > settings.KA_Range then
                                     table.remove(attacking, i) -- if an enemy walks away but is still alive or it's dead or immortal
                                     
                                     break 
@@ -591,7 +591,7 @@ do
                                     if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
                                 end)
                     
-                                if not settings.AttackPlayers or err or enemy:FindFirstChild("Immortal") or (hrp.Position - touching.Position).Magnitude > settings.KA_Range then
+                                if not settings.KA or not settings.AttackPlayers or err or enemy:FindFirstChild("Immortal") or (hrp.Position - touching.Position).Magnitude > settings.KA_Range then
                                     table.remove(attacking, i) -- if an enemy walks away but is still alive or it's dead or immortal
                                     
                                     break 
@@ -1249,6 +1249,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("6/13/22", "Fixed Attack Players not toggling off")
     updates:AddParagraph("6/13/22", "Removed a Useless Animation Feature")
     updates:AddParagraph("6/12/22", "Made Autofarm Tweening Smooth (asf)")
     updates:AddParagraph("6/12/22", "Made WalkSpeed less detectable (wasn't detected tho)")
