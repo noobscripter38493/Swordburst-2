@@ -1082,7 +1082,7 @@ do
     
     local newindex_WS; newindex_WS = hookmetamethod(game, "__newindex", function(self, i, v)
         if settings.speed then 
-            if self == humanoid and i == "WalkSpeed" then
+            if self == humanoid and i == "WalkSpeed" and not checkcaller() and typeof(v) == "number" then
                 v = settings.WalkSpeed
             end
         end
