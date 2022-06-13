@@ -1082,9 +1082,9 @@ do
         return index_WS(self, i) 
     end)
     
-    local newindex_WS; newindex_WS = hookmetamethod(game, "__newindex", function(self, i, v)
+    local newindex_WS; newindex_WS = hookmetamethod(game, "__newindex", function(self, i, v) -- if the game tries to set your walkspeed
         if settings.speed then 
-            if self == humanoid and i == "WalkSpeed" then
+            if self == humanoid and i == "WalkSpeed" and not checkcaller() and typeof(v) == "number" then
                 v = settings.WalkSpeed
             end
         end
