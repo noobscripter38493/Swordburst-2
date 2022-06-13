@@ -1249,6 +1249,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("6/13/22", "Removed a Useless Animation Feature")
     updates:AddParagraph("6/12/22", "Made Autofarm Tweening Smooth (asf)")
     updates:AddParagraph("6/12/22", "Made WalkSpeed less detectable (wasn't detected tho)")
     updates:AddParagraph("6/12/22", "Fixed an Autofarm Bug (Teleport after death)")
