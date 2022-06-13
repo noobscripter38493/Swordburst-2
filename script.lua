@@ -211,17 +211,20 @@ for i, v in next, floor_data.floors do -- probably remove this
     end
 end
 
-function find(t, element, boss)
+function find(mobs, element, boss)
     if not boss then
-        for _, v in next, t do
+        for _, v in next, mobs do
             if v.Name == element then
+                print("a")
                 return v
             end
         end
     else
-        for i, v in next, t do
-            if v.Name == boss[i] then
-                return v
+        for _, v in next, mobs do
+            for _2, v2 in next, boss do
+                if v.Name == v2 then
+                    return v
+                end
             end
         end
     end
@@ -404,16 +407,19 @@ do
                 
                 if settings.Farm_Only_Bosses then
                     local boss = find(mobs_table, nil, bosses_on_floor[placeid])
+                    print("boss", boss)
                     local boss_hrp = boss and boss:FindFirstChild("HumanoidRootPart")
+                    print(boss_hrp)
 
                     if boss_hrp then
                         local _, err = pcall(function()
                             if boss.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
                         end)
 
-                        if err then continue end
+                        if err then print("error", err) continue end
 
                         local tween_to = boss_hrp
+                        print("tweening!")
 
                         tween(tween_to) 
                     end
@@ -1258,8 +1264,6 @@ do
         PremiumOnly = false
     }) 
     
-    updates:AddParagraph("6/13/22", "Fixed a bug where Farm only bosses would make your velocity 0")
-    updates:AddParagraph("6/13/22", "Fixed Farm Only Bosses option in Autofarm")
     updates:AddParagraph("6/13/22", "Fixed A bug where changing Y offset would activate autofarm")
     updates:AddParagraph("6/13/22", "Skills Now Work with Animations")
     updates:AddParagraph("6/13/22", "Fixed Attack Players not toggling off")
