@@ -1005,7 +1005,7 @@ do
     local combat = require(game_module.Services.Combat)
     
     local hook; hook = hookfunction(combat.CalculateCombatStyle, function(bool)
-        if bool ~= nil and bool == false then
+        if bool ~= nil and not bool then
             return hook(bool)    
         end
         
@@ -1082,9 +1082,9 @@ do
         return index_WS(self, i) 
     end)
     
-    local newindex_WS; newindex_WS = hookmetamethod(game, "__newindex", function(self, i, v) -- if the game tries to set your walkspeed
+    local newindex_WS; newindex_WS = hookmetamethod(game, "__newindex", function(self, i, v)
         if settings.speed then 
-            if self == humanoid and i == "WalkSpeed" and not checkcaller() and typeof(v) == "number" then
+            if self == humanoid and i == "WalkSpeed" then
                 v = settings.WalkSpeed
             end
         end
@@ -1132,6 +1132,15 @@ do
     })
 
     local ui_module = game_module.Services.UI
+
+    local crystalForge_module = require(ui_module.CrystalForge)
+
+    Smithing:AddButton({
+        Name = "Open Crystal Forge",
+        Callback = function()
+            crystalForge_module.Open()
+        end
+    })
 
     local upgrade_module = require(ui_module.Upgrade)
     Smithing:AddButton({
@@ -1259,6 +1268,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("6/13/22", "Included Crystal Forge to the smithing tab")
     updates:AddParagraph("6/13/22", "Fixed farm only bosses making your velocity 0")
     updates:AddParagraph("6/13/22", "Fixed farm only bosses not working")
     updates:AddParagraph("6/13/22", "Fixed A bug where changing Y offset would activate autofarm")
