@@ -971,7 +971,7 @@ do
 
     local animations = Rs.Database.Animations
     local ANIMATIONS = {}
-    local blacklisted_animations = {"Spear", "Misc", "Daggers", "SwordShield"}
+    local blacklisted_animations = {"Spear", "Misc", "Daggers", "SwordShield", "Dagger"}
     for _, v in next, animations:GetChildren() do
         if not table.find(blacklisted_animations, v.Name) then
             table.insert(ANIMATIONS, v.Name)
