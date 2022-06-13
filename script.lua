@@ -986,7 +986,7 @@ do
     end 
 
     Character_tab:AddDropdown({
-        Name = "Weapon Animations (Breaks Skills For Now)", -- should probably just load my own animation tracks and stop theirs
+        Name = "Weapon Animations (Fixed)",
         Default = settings.Animation,
         Options = ANIMATIONS,
         Callback = function(animation)
@@ -996,8 +996,12 @@ do
 
     local combat = require(game_module.Services.Combat)
     
-    hookfunction(combat.CalculateCombatStyle, function()
-        return settings.Weapon_Animation  -- the game uses this function for both animations & skills so it breaks skills
+    local hook; hook = hookfunction(combat.CalculateCombatStyle, function(bool)
+        if bool ~= nil and bool == false then
+            return hook(bool)    
+        end
+        
+        return settings.Weapon_Animation
     end)
 
     local invisibility
@@ -1249,6 +1253,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("6/13/22", "Skills Now Work with Animations")
     updates:AddParagraph("6/13/22", "Fixed Attack Players not toggling off")
     updates:AddParagraph("6/13/22", "Removed a Useless Animation Feature")
     updates:AddParagraph("6/12/22", "Made Autofarm Tweening Smooth (asf)")
