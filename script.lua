@@ -329,8 +329,6 @@ do
         PremiumOnly = false
     })
     
-    farm_tab:AddParagraph("Warning", "Toggle Invisibility in Character Tab")
-    
     local mobs_table = {}
     
     local tween_create
@@ -397,7 +395,7 @@ do
     end
 
     farm_tab:AddToggle({
-        Name = "Autofarm (Ban Risk)",
+        Name = "Autofarm (Ban Risk - Use Invisibility)",
         Default = false,
         Callback = function(bool)
             settings.Autofarm = bool
