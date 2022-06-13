@@ -6,6 +6,8 @@
 
 -- insta max selected items / equipped gear
 
+-- weird bug when you change the slider of autofarm Y offset the autofarm starts ???
+
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 if syn then -- synapse
