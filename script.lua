@@ -1075,10 +1075,8 @@ do
     end)
 
     local index_WS; index_WS = hookmetamethod(game, "__index", function(self, i)
-        if settings.speed then
-            if self == humanoid and i == "WalkSpeed" then
-                return settings.__IndexBypass
-            end
+        if self == humanoid and i == "WalkSpeed" and not checkcaller() then
+            return settings.__IndexBypass
         end
         
         return index_WS(self, i) 
