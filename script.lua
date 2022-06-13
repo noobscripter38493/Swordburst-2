@@ -1261,6 +1261,8 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("6/13/22", "Fixed farm only bosses making your velocity 0")
+    updates:AddParagraph("6/13/22", "Fixed farm only bosses not working")
     updates:AddParagraph("6/13/22", "Fixed A bug where changing Y offset would activate autofarm")
     updates:AddParagraph("6/13/22", "Skills Now Work with Animations")
     updates:AddParagraph("6/13/22", "Fixed Attack Players not toggling off")
