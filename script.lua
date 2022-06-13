@@ -407,19 +407,16 @@ do
                 
                 if settings.Farm_Only_Bosses then
                     local boss = find(mobs_table, nil, bosses_on_floor[placeid])
-                    print("boss", boss)
                     local boss_hrp = boss and boss:FindFirstChild("HumanoidRootPart")
-                    print(boss_hrp)
 
                     if boss_hrp then
                         local _, err = pcall(function()
                             if boss.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
                         end)
 
-                        if err then print("error", err) continue end
+                        if err then continue end
 
                         local tween_to = boss_hrp
-                        print("tweening!")
 
                         tween(tween_to) 
                     end
