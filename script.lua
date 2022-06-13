@@ -971,8 +971,9 @@ do
 
     local animations = Rs.Database.Animations
     local ANIMATIONS = {}
+    local blacklisted_animations = {"Spear", "Misc", "Daggers", "SwordShield"}
     for _, v in next, animations:GetChildren() do
-        if v.Name ~= "Misc" and v.Name ~= "Spear" and v.Name ~= "Daggers" and v.Name ~= "Dagger" and v.Name ~= "SwordShield" then
+        if not table.find(blacklisted_animations, v.Name) then
             table.insert(ANIMATIONS, v.Name)
             
             if not animSettings:FindFirstChild(v.Name) then
@@ -998,25 +999,6 @@ do
     hookfunction(combat.CalculateCombatStyle, function()
         return settings.Weapon_Animation  -- the game uses this function for both animations & skills so it breaks skills
     end)
-
-    local animate_senv = getsenv(char:FindFirstChild("Animate"))
-    local playTrack = animate_senv.PlayTrack
-
-    local tracks = getupvalue(playTrack, 1)
-
-    local Normal_Animations = {}
-    for i, _ in next, tracks do
-        table.insert(Normal_Animations, i)
-    end
-
-    Character_tab:AddDropdown({
-        Name = "Normal Animations (Scuffed.......)", -- honestly, don't know why it's so scuffed
-        Default = settings.Animation,
-        Options = Normal_Animations,
-        Callback = function(animation)
-            setupvalue(playTrack, 2, animation)
-        end
-    })
 
     local invisibility
     Character_tab:AddToggle({
