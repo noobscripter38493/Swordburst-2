@@ -298,6 +298,12 @@ plr.CharacterAdded:Connect(function(new)
     char = new
     hrp = char:WaitForChild("HumanoidRootPart")
     humanoid = char:WaitForChild("Humanoid")
+    
+    while true do wait() 
+        for i, v in next, getconnections(humanoid:GetPropertyChangedSignal("WalkSpeed")) do
+            v:Disable()
+        end
+    end
 end)
 
 getgenv().game_module = nil
