@@ -215,7 +215,6 @@ function find(mobs, element, boss)
     if not boss then
         for _, v in next, mobs do
             if v.Name == element then
-                print("a")
                 return v
             end
         end
