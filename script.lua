@@ -1405,6 +1405,19 @@ do
         refresh_inventoryViewer_list(inventory_viewer)
     end)
     
+    Misc_tab:AddSlider({
+        Name = "Set FPS Cap (Requires executor FPS unlocker on)",
+        Min = 0,
+        Max = 50,
+        Default = 60,
+        Color = Color3.new(255, 255, 255),
+        Increment = 1,
+        ValueName = "FPS",
+        Callback = function(v)
+            setfpscap(v)
+        end
+    })
+    
     Misc_tab:AddToggle({
         Name = "Infinite Zoom Distance",
         Default = false,
@@ -1435,6 +1448,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("6/15/22", "Added FPS Cap Setter")
     updates:AddParagraph("6/15/22", "Added Upgrade Equipped Weapons (armors later)")
     updates:AddParagraph("6/15/22", "Added a confirm to dismantle all (there is a bug when u dismantle an equipped item)")
     updates:AddParagraph("6/15/22", "Added dismantle all of a certain rarity")
