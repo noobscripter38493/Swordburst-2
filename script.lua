@@ -1135,7 +1135,7 @@ do
 
     local dismantler_module = require(ui_module.Dismantle)
 
-    local functios = getupvalue(dismantler_module.Init, 4)
+    local functios = getupvalue(dismantler_module.Init, 4) -- i completely forget which module script these functions are in and i have no idea what to name this variable
 
     local remote = game.ReplicatedStorage.Event
     local inventory = game.ReplicatedStorage.Profiles[game.Players.LocalPlayer.Name].Inventory
@@ -1178,20 +1178,20 @@ do
         button_no.ZIndex = 9999
         button_no.Parent = screengui
         
-        local confirm
+        local choice
         button_yes.MouseButton1Click:Connect(function()
-            confirm = true
+            choice = true
         end)
 
         button_no.MouseButton1Click:Connect(function()
-            confirm = false
+            choice = false
         end)
 
-        repeat wait() until confirm ~= nil
+        repeat wait() until choice ~= nil
 
         screengui:Destroy()
 
-        return confirm
+        return choice
     end
 
     local crystalForge_module = require(ui_module.CrystalForge)
