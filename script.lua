@@ -1204,6 +1204,7 @@ do
                     remote:FireServer("Equipment", {"Upgrade", weapon_inventory, nil})
                 end
             end
+        end
 
         if armor then
 
