@@ -1396,7 +1396,7 @@ do
     Misc_tab:AddSlider({
         Name = "Set FPS Cap (Requires executor FPS unlocker on)",
         Min = 0,
-        Max = 50,
+        Max = 500,
         Default = 60,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
