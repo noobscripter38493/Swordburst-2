@@ -1135,10 +1135,10 @@ do
 
     local dismantler_module = require(ui_module.Dismantle)
 
-    local functios = getupvalue(dismantler_module.Init, 4) -- i totally forget what module script these functions are in and have no idea what to name this variable
+    local functios = getupvalue(dismantler_module.Init, 4)
 
     local remote = game.ReplicatedStorage.Event
-    local inventory = Rs.Profiles[plr.Name].Inventory
+    local inventory = game.ReplicatedStorage.Profiles[game.Players.LocalPlayer.Name].Inventory
     local function Dismantle_Rarity(rarity)
         for _, item in next, inventory:GetChildren() do
             local data = functios.GetItemData(item)
@@ -1152,6 +1152,46 @@ do
                 end
             end
         end
+    end
+
+    local function create_confirm()
+        local screengui = Instance.new("ScreenGui", game.CoreGui)
+
+        local want_to_confirm = Instance.new("TextLabel")
+        want_to_confirm.Size = UDim2.new(0, 200, 0, 50)
+        want_to_confirm.Position = UDim2.new(.5, 0, .42, 0)
+        want_to_confirm.Text = "Confirm Deletion"
+        want_to_confirm.ZIndex = 9999
+        want_to_confirm.Parent = screengui
+        
+        local button_yes = Instance.new("TextButton")
+        button_yes.Size = UDim2.new(0, 200, 0, 50)
+        button_yes.Position = UDim2.new(.45, 0, .5, 0)
+        button_yes.Text = "Yes"
+        button_yes.ZIndex = 9999
+        button_yes.Parent = screengui
+        
+        local button_no = Instance.new("TextButton")
+        button_no.Size = UDim2.new(0, 200, 0, 50)
+        button_no.Position = UDim2.new(.55, 0, .5, 0)
+        button_no.Text = "No"
+        button_no.ZIndex = 9999
+        button_no.Parent = screengui
+        
+        local confirm
+        button_yes.MouseButton1Click:Connect(function()
+            confirm = true
+        end)
+
+        button_no.MouseButton1Click:Connect(function()
+            confirm = false
+        end)
+
+        repeat wait() until confirm ~= nil
+
+        screengui:Destroy()
+
+        return confirm
     end
 
     local crystalForge_module = require(ui_module.CrystalForge)
@@ -1181,21 +1221,44 @@ do
     Smithing:AddButton({
         Name = "Dismantle All Commons",
         Callback = function()
-            Dismantle_Rarity("Common")
+            local confirm = create_confirm()
+
+            if confirm then
+                Dismantle_Rarity("Common")
+            end
         end
     })
 
     Smithing:AddButton({
         Name = "Dismantle All Uncommons",
         Callback = function()
-            Dismantle_Rarity("Uncommon")
+            local confirm = create_confirm()
+
+            if confirm then
+                Dismantle_Rarity("Uncommon")
+            end
         end
     })
 
     Smithing:AddButton({
         Name = "Dismantle All Rares",
         Callback = function()
-            Dismantle_Rarity("Rare")
+            local confirm = create_confirm()
+
+            if confirm then
+                Dismantle_Rarity("Rare")
+            end
+        end
+    })
+
+    Smithing:AddButton({
+        Name = "Dismantle All Legendaries",
+        Callback = function()
+            local confirm = create_confirm()
+
+            if confirm then
+                Dismantle_Rarity("Legendary")
+            end
         end
     })
 end
@@ -1309,6 +1372,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("6/15/22", "Added a confirm to dismantle all (there is a bug when u dismantle an equipped item)")
     updates:AddParagraph("6/15/22", "Added dismantle all of a certain rarity")
     updates:AddParagraph("6/13/22", "Included Crystal Forge to the smithing tab")
     updates:AddParagraph("6/13/22", "Fixed farm only bosses making your velocity 0")
