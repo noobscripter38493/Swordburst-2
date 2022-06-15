@@ -1251,7 +1251,7 @@ do
         Default = 1,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
-        ValueName = "Y Offset",
+        ValueName = "Times",
         Callback = function(v)
             settings.times = v
         end
