@@ -6,6 +6,8 @@
 
 -- insta max selected items / equipped gear
 
+-- make farm only bosses do some idle stuff while not farming
+
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 if syn then -- synapse
