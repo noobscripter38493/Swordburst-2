@@ -1147,6 +1147,7 @@ do
                 if v2 == "Weapon" or v2 == "Armor" then
                     if data.rarity == rarity then
                         remote:FireServer("Equipment", {"Dismantle", item})
+                        break
                     end
                 end
             end
