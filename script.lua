@@ -1135,10 +1135,10 @@ do
 
     local dismantler_module = require(ui_module.Dismantle)
 
-    local functios = getupvalue(dismantler_module.Init, 4)
+    local functios = getupvalue(dismantler_module.Init, 4) -- i totally forget what module script these functions are in and have no idea what to name this variable
 
     local remote = game.ReplicatedStorage.Event
-    local inventory = game.ReplicatedStorage.Profiles[game.Players.LocalPlayer.Name].Inventory
+    local inventory = Rs.Profiles[plr.Name].Inventory
     local function Dismantle_Rarity(rarity)
         for _, item in next, inventory:GetChildren() do
             local data = functios.GetItemData(v)
@@ -1152,7 +1152,7 @@ do
             end
         end
     end
-    local inventory = game.ReplicatedStorage.Profiles[game.Players.LocalPlayer.Name].Inventory
+    local inventory = Rs.Profiles[plr.Name].Inventory
 
     local crystalForge_module = require(ui_module.CrystalForge)
 
