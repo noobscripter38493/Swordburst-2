@@ -1141,7 +1141,7 @@ do
     local inventory = Rs.Profiles[plr.Name].Inventory
     local function Dismantle_Rarity(rarity)
         for _, item in next, inventory:GetChildren() do
-            local data = functios.GetItemData(v)
+            local data = functios.GetItemData(item)
     
             for _, v2 in next, data do
                 if v2 == "Weapon" or v2 == "Armor" then
