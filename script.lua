@@ -1152,7 +1152,6 @@ do
             end
         end
     end
-    local inventory = Rs.Profiles[plr.Name].Inventory
 
     local crystalForge_module = require(ui_module.CrystalForge)
 
