@@ -1192,31 +1192,18 @@ do
     end
 
     local function upgrade_gear(side, armor)
-        if side == "Right" then
-            local right_weapon = workspace[plr.Name]:FindFirstChild("RightWeapon")
+        if side then
+            local weapon_held = workspace[plr.Name]:FindFirstChild(side .. "Weapon")
 
-            if right_weapon then
-                local inventory_id = right_weapon:FindFirstChild("InventoryID")
-                local weapon = inventory_id and functios.GetItemById(inventory_id.Value)
+            if weapon_held then
+                local inventory_id = weapon_held:FindFirstChild("InventoryID")
+                local weapon_inventory = inventory_id and functios.GetItemById(inventory_id.Value)
                 --local upgrade = weapon and weapon:FindFirstChild("Upgrade")
                 
                 for i = 1, settings.times do
-                    remote:FireServer("Equipment", {"Upgrade", weapon, nil})
+                    remote:FireServer("Equipment", {"Upgrade", weapon_inventory, nil})
                 end
             end
-
-        elseif side == "Left" then
-            local left_weapon = workspace[plr.Name]:FindFirstChild("LeftWeapon")
-
-            if left_weapon then
-                local inventory_id = left_weapon:FindFirstChild("InventoryID")
-                local weapon = inventory_id and functios.GetItemById(inventory_id.Value)
-                
-                for _ = 1, settings.times do
-                    remote:FireServer("Equipment", {"Upgrade", weapon, nil})
-                end
-            end
-        end
 
         if armor then
 
