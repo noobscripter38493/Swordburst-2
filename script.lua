@@ -300,12 +300,6 @@ plr.CharacterAdded:Connect(function(new)
     char = new
     hrp = char:WaitForChild("HumanoidRootPart")
     humanoid = char:WaitForChild("Humanoid")
-    
-    while true do wait() 
-        for i, v in next, getconnections(humanoid:GetPropertyChangedSignal("WalkSpeed")) do
-            v:Disable()
-        end
-    end
 end)
 
 getgenv().game_module = nil
@@ -1139,6 +1133,27 @@ do
 
     local ui_module = game_module.Services.UI
 
+    local dismantler_module = require(ui_module.Dismantle)
+
+    local functios = getupvalue(dismantler_module.Init, 4)
+
+    local remote = game.ReplicatedStorage.Event
+    local inventory = game.ReplicatedStorage.Profiles[game.Players.LocalPlayer.Name].Inventory
+    local function Dismantle_Rarity(rarity)
+        for _, item in next, inventory:GetChildren() do
+            local data = functios.GetItemData(v)
+    
+            for _, v2 in next, data do
+                if v2 == "Weapon" or v2 == "Armor" then
+                    if data.rarity == rarity then
+                        remote:FireServer("Equipment", {"Dismantle", item})
+                    end
+                end
+            end
+        end
+    end
+    local inventory = game.ReplicatedStorage.Profiles[game.Players.LocalPlayer.Name].Inventory
+
     local crystalForge_module = require(ui_module.CrystalForge)
 
     Smithing:AddButton({
@@ -1156,11 +1171,31 @@ do
         end
     })
 
-    local dismantler_module = require(ui_module.Dismantle)
     Smithing:AddButton({
         Name = "Open Dismantler",
         Callback = function()
             dismantler_module.Open()
+        end
+    })
+
+    Smithing:AddButton({
+        Name = "Dismantle All Commons",
+        Callback = function()
+            Dismantle_Rarity("Common")
+        end
+    })
+
+    Smithing:AddButton({
+        Name = "Dismantle All Uncommons",
+        Callback = function()
+            Dismantle_Rarity("Uncommon")
+        end
+    })
+
+    Smithing:AddButton({
+        Name = "Dismantle All Rares",
+        Callback = function()
+            Dismantle_Rarity("Rare")
         end
     })
 end
@@ -1274,6 +1309,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("6/15/22", "Added dismantle all of a certain rarity")
     updates:AddParagraph("6/13/22", "Included Crystal Forge to the smithing tab")
     updates:AddParagraph("6/13/22", "Fixed farm only bosses making your velocity 0")
     updates:AddParagraph("6/13/22", "Fixed farm only bosses not working")
