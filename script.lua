@@ -262,7 +262,8 @@ getgenv().settings = {
     speed = false,
     InfSprint = false,
     AttackPlayers = false,
-    Animation = getrenv()._G.CalculateCombatStyle()
+    Animation = getrenv()._G.CalculateCombatStyle(),
+    times = 1
 }
 
 -- disable M1s when killaura is enabled // read wally's funky friday source and innovated
@@ -1194,6 +1195,72 @@ do
         return choice
     end
 
+    local function upgrade_gear(side, armor)
+        if side == "Right" then
+            local right_weapon = workspace[plr.Name]:FindFirstChild("RightWeapon")
+
+            if right_weapon then
+                local inventory_id = right_weapon:FindFirstChild("InventoryID")
+                local weapon = inventory_id and functios.GetItemById(inventory_id.Value)
+                --local upgrade = weapon and weapon:FindFirstChild("Upgrade")
+                
+                for i = 1, settings.times do
+                    remote:FireServer("Equipment", {"Upgrade", weapon, nil})
+                end
+            end
+
+        elseif side == "Left" then
+            local left_weapon = workspace[plr.Name]:FindFirstChild("LeftWeapon")
+
+            if left_weapon then
+                local inventory_id = left_weapon:FindFirstChild("InventoryID")
+                local weapon = inventory_id and functios.GetItemById(inventory_id.Value)
+                
+                for _ = 1, settings.times do
+                    remote:FireServer("Equipment", {"Upgrade", weapon, nil})
+                end
+            end
+        end
+
+        if armor then
+
+        end
+    end
+
+    Smithing:AddButton({
+        Name = "Upgrade Left Equipped Weapon",
+        Callback = function()
+            upgrade_gear("Left")
+        end
+    })
+
+    Smithing:AddButton({
+        Name = "Upgrade Right Equipped Weapon",
+        Callback = function()
+            upgrade_gear("Right")
+        end
+    })
+    --[[
+    Smithing:AddButton({
+        Name = "Upgrade Equipped Armor",
+        Callback = function()
+            upgrade_gear(nil, true)
+        end
+    })
+    ]]
+    Smithing:AddSlider({
+        Name = "Amount of Upgrades",
+        Min = 0,
+        Max = 50,
+        Default = 1,
+        Color = Color3.new(255, 255, 255),
+        Increment = 1,
+        ValueName = "Y Offset",
+        Callback = function(v)
+            settings.times = v
+        end
+    })
+
     local crystalForge_module = require(ui_module.CrystalForge)
 
     Smithing:AddButton({
@@ -1372,6 +1439,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("6/15/22", "Added Upgrade Equipped Weapons (armors later)")
     updates:AddParagraph("6/15/22", "Added a confirm to dismantle all (there is a bug when u dismantle an equipped item)")
     updates:AddParagraph("6/15/22", "Added dismantle all of a certain rarity")
     updates:AddParagraph("6/13/22", "Included Crystal Forge to the smithing tab")
