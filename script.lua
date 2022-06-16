@@ -1321,9 +1321,7 @@ do
     
     local time_label = Stats:AddLabel("Elapsed Time")
     
-    function round(num) -- dev forum
-        return math.floor(num + 0.5)
-    end
+    local round = math.round
     
     coroutine.wrap(function()
         local seconds = 0
