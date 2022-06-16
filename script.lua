@@ -1155,7 +1155,7 @@ do
         local want_to_confirm = Instance.new("TextLabel")
         want_to_confirm.Size = UDim2.new(0, 200, 0, 50)
         want_to_confirm.Position = UDim2.new(.5, 0, .42, 0)
-        want_to_confirm.Text = "Confirm Deletion"
+        want_to_confirm.Text = "Confirm Dismantle"
         want_to_confirm.ZIndex = 9999
         want_to_confirm.Parent = screengui
         
