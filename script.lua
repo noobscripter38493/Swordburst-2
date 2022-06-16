@@ -350,8 +350,6 @@ do
         smooth_tween:Disconnect()
         
         if not settings.Autofarm then return end
-       
-        -- prioritize bosses -> teleport to boss room
 
         local enemy = to.Parent
         local _, err = pcall(function()
