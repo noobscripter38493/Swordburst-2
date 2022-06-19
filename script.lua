@@ -566,7 +566,7 @@ do
                             table.insert(attacking, enemy)
                             -- should make a killaura function but i am lazy
                             while true do 
-                                local i = table.find(attacking, enemy) -- update the position of the element enemy constantly
+                                local i = table.find(attacking, enemy)
                                 
                                 local _, err = pcall(function()
                                     if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
@@ -591,7 +591,7 @@ do
                             table.insert(attacking, enemy)
 
                             while true do 
-                                local i = table.find(attacking, enemy) -- update the position of the element enemy constantly
+                                local i = table.find(attacking, enemy)
                                 
                                 local _, err = pcall(function()
                                     if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
