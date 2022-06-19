@@ -6,6 +6,8 @@
 
 -- make farm only bosses do some idle stuff while not farming
 
+-- anti exploit makes mobs go invincibile if they are attcked and haven't attacked back after a long time and i should fix it eventually
+
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 if syn then -- synapse
