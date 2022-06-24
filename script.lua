@@ -280,14 +280,14 @@ for _, v in next, getconnections(UserInputS.InputBegan) do
         local info = getinfo(func)
         
         if info.source:find("Services.Input") then
-            local noMouseClick; noMouseClick = hookfunction(func, function(user_input, game_processed)
+            local noMouseClick; noMouseClick = hookfunction(func, function(user_input, game_processed, ...) -- ... to avoid lame detections that i came up with (lol)
                 if user_input.UserInputType == Enum.UserInputType.MouseButton1 then
                     if settings.KA then
                         return 
                     end
                 end
                 
-                return noMouseClick(user_input, game_processed)
+                return noMouseClick(user_input, game_processed, ...)
             end)
         end
     end
@@ -1002,9 +1002,9 @@ do
 
     local combat = require(game_module.Services.Combat)
     
-    local hook; hook = hookfunction(combat.CalculateCombatStyle, function(bool)
+    local hook; hook = hookfunction(combat.CalculateCombatStyle, function(bool, ...)
         if bool ~= nil and not bool then
-            return hook(bool)    
+            return hook(bool, ...)    
         end
         
         return settings.Weapon_Animation
