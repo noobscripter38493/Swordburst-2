@@ -551,7 +551,6 @@ do
 
     local function killaura_function(attacking_table, enemy, player)
         while true do 
-            print("attacking some shiii")
             local i = table.find(attacking_table, enemy)
             
             local success = pcall(function()
