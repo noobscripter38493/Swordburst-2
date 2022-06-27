@@ -176,8 +176,8 @@ local bosses_on_floor = {
     },
 
     [2659143505] = { -- floor 10
-        "Baal, The Tormentor",
-        "Grim the Overseer"
+        "Baal  The  Tormentor",
+        "Grim  the  Overseer"
     },
 
     [5287433115] = { -- floor 11
@@ -1363,11 +1363,12 @@ do
         refresh_inventoryViewer_list(inventory_viewer)
     end)
     
+    local fps = getfpscap and getfpscap() or 60
     Misc_tab:AddSlider({
         Name = "Set FPS Cap (Requires executor FPS unlocker on)",
         Min = 0,
         Max = 500,
-        Default = getfpscap and getfpscap() or 60, -- synapse does not have "getfpscap" (bad0)
+        Default = fps, -- synapse does not have "getfpscap" (bad0)
         Color = Color3.new(255, 255, 255),
         Increment = 1,
         ValueName = "FPS",
@@ -1406,6 +1407,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("6/28/22", "Killaura now works for baal & grim")
     updates:AddParagraph("6/27/22", "Moved dismantle confirm to an external popup box")
     updates:AddParagraph("6/27/22", "Cleaned Code")
     updates:AddParagraph("6/15/22", "Added FPS Cap Setter")
