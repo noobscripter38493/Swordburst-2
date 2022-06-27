@@ -1166,7 +1166,7 @@ do
     end
 
     local function create_confirm()
-        return messagebox("Hi", "This is a box", 4) == 6
+        return messagebox("CONFIRM DISMANTLE", "THIS DECISION CANNOT BE UNDONE", 4) == 6
     end
 
     Smithing:AddButton({
