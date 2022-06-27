@@ -11,7 +11,7 @@
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 if syn then -- synapse
-    syn.queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
+    syn.queue_on_teleport("loadfile('Scriptz/sb2 script.lua')()")
     
 elseif queue_on_teleport then -- krnl
     queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()") 
@@ -265,13 +265,13 @@ getgenv().settings = {
     times = 1
 }
 
--- disable M1s when killaura is enabled // read wally's funky friday source and innovated
+-- disable M1s when killaura is enabled
 local setThreadIdentity = (syn and syn.set_thread_identity) or setthreadcontext 
 local getThreadIdentity = (syn and syn.get_thread_identity) or getthreadidentity
 
 local oldIndentity = getThreadIdentity()
 
-setThreadIdentity(2) -- can't get inputbegan or inputended without setting the thread identity to 2 (roblox's identity) -> printidentity()
+setThreadIdentity(2)
 
 for _, v in next, getconnections(UserInputS.InputBegan) do
     local func = v.Function
@@ -343,7 +343,7 @@ do
         tween_create = TweenS:Create(hrp, tween_info, {CFrame = cframe})
         
         smooth_tween = RunS.RenderStepped:Connect(function()
-            hrp.Velocity = Vector3.new(0, 0, 0) -- smooth tween
+            hrp.Velocity = Vector3.new(0, 0, 0)
         end)
 
         tween_create:Play()
@@ -354,11 +354,11 @@ do
         if not settings.Autofarm then return end
 
         local enemy = to.Parent
-        local _, err = pcall(function()
-            if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
+        local success = pcall(function()
+            if enemy.Entity.Health.Value <= 0 then error't' end
         end)
 
-        if not err then
+        if success then
             tween(to)
             return
         end
@@ -366,7 +366,7 @@ do
         local i = table.find(mobs_table, to.Parent)
         
         if i then
-            table.remove(mobs_table, i) -- :thumbs:
+            table.remove(mobs_table, i)
         end
     end
 
@@ -408,11 +408,11 @@ do
                     local boss_hrp = boss and boss:FindFirstChild("HumanoidRootPart")
 
                     if boss_hrp then
-                        local _, err = pcall(function()
-                            if boss.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
+                        local success = pcall(function()
+                            if boss.Entity.Health.Value <= 0 then error'' end
                         end)
 
-                        if err then continue end
+                        if not success then continue end
 
                         local tween_to = boss_hrp
 
@@ -426,11 +426,11 @@ do
                     local boss = find(mobs_table, settings.Prioritized_Boss)
 
                     if boss then
-                        local _, err = pcall(function()
-                            if boss.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
+                        local success = pcall(function()
+                            if boss.Entity.Health.Value <= 0 then error'' end
                         end)
                         
-                        if err then continue end
+                        if not success then continue end
                         
                         local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
                         
@@ -448,11 +448,11 @@ do
                     local mob = find(mobs_table, settings.Prioritized_Mob)
             
                     if mob then
-                        local _, err = pcall(function()
-                            if mob.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
+                        local success = pcall(function()
+                            if mob.Entity.Health.Value <= 0 then error't' end
                         end)
                         
-                        if err then continue end
+                        if not success then continue end
                         
                         local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
                         
@@ -549,70 +549,64 @@ do
     local remote_key = getupvalue(combat.Init, 2)
     local Event = Rs.Event
 
-    local ka
+    local function killaura_function(attacking_table, enemy, player)
+        while true do 
+            print("attacking some shiii")
+            local i = table.find(attacking_table, enemy)
+            
+            local success = pcall(function()
+                if enemy.Entity.Health.Value <= 0 then error't' end
+            end)
+
+            local enemy_hrp = enemy:FindFirstChild("HumanoidRootPart")
+            if not success or not settings.KA or enemy:FindFirstChild("Immortal") or (hrp.Position - enemy_hrp.Position).Magnitude > settings.KA_Range then
+                table.remove(attacking_table, i)
+
+                break 
+            end
+
+            if player and not settings.AttackPlayers then
+                table.remove(attacking_table, i)
+
+                break
+            end
+            
+            Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
+            
+            wait(.3) 
+        end
+    end
+
+    local ka_connection
     farm_tab:AddToggle({
-        Name = "Kill Aura (Improved)", -- now attacks multiple enemies at the same time
+        Name = "Kill Aura",
         Default = false,
         Callback = function(bool)
             settings.KA = bool
 
             local attacking = {} -- to overwrite attacking table when toggled off
             if bool then
-                ka = range.Touched:Connect(function(touching)  
-                    if touching:FindFirstAncestor("Mobs") and touching.Name == "HumanoidRootPart" then
-                        local enemy = touching.Parent   
-                        
-                        if not table.find(attacking, enemy) then 
-                            table.insert(attacking, enemy)
-                            -- should make a killaura function but i am lazy
-                            while true do 
-                                local i = table.find(attacking, enemy)
-                                
-                                local _, err = pcall(function()
-                                    if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
-                                end)
-                    
-                                if err or not settings.KA or enemy:FindFirstChild("Immortal") or (hrp.Position - touching.Position).Magnitude > settings.KA_Range then
-                                    table.remove(attacking, i) -- if an enemy walks away but is still alive or it's dead or immortal
-                                    
-                                    break 
-                                end
-                                
-                                Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
-                                
-                                wait(.3) 
-                            end
-                        end
-        
-                    elseif settings.AttackPlayers and touching.Parent ~= char and touching.Name == "HumanoidRootPart" then
+                ka_connection = range.Touched:Connect(function(touching)  
+                    if touching.Parent ~= char and touching.Name == "HumanoidRootPart" then
                         local enemy = touching.Parent   
                         
                         if not table.find(attacking, enemy) then 
                             table.insert(attacking, enemy)
 
-                            while true do 
-                                local i = table.find(attacking, enemy)
-                                
-                                local _, err = pcall(function()
-                                    if enemy.Entity.Health.Value <= 0 then error't' end -- dont attack dead mobs // errors if enemy is nil and also errors if the check passes
-                                end)
-                    
-                                if not settings.KA or not settings.AttackPlayers or err or enemy:FindFirstChild("Immortal") or (hrp.Position - touching.Position).Magnitude > settings.KA_Range then
-                                    table.remove(attacking, i) -- if an enemy walks away but is still alive or it's dead or immortal
-                                    
-                                    break 
-                                end
-                                
-                                Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
-                                
-                                wait(.3) 
+                            local mob = table.find(mobs_on_floor[placeid], enemy.Name)
+                            local boss = table.find(bosses_on_floor[placeid], enemy.Name)
+                            if mob or boss then
+                                killaura_function(attacking, enemy)
+
+                            elseif settings.AttackPlayers then
+                                killaura_function(attacking, enemy, true)
                             end
                         end
                     end
                 end) 
 
-            elseif ka then
-                ka:Disconnect()
+            elseif ka_connection then
+                ka_connection:Disconnect()
             end
         end
     })
@@ -1151,46 +1145,6 @@ do
         end
     end
 
-    local function create_confirm()
-        local screengui = Instance.new("ScreenGui", game.CoreGui)
-
-        local want_to_confirm = Instance.new("TextLabel")
-        want_to_confirm.Size = UDim2.new(0, 200, 0, 50)
-        want_to_confirm.Position = UDim2.new(.5, 0, .42, 0)
-        want_to_confirm.Text = "Confirm Dismantle"
-        want_to_confirm.ZIndex = 9999
-        want_to_confirm.Parent = screengui
-        
-        local button_yes = Instance.new("TextButton")
-        button_yes.Size = UDim2.new(0, 200, 0, 50)
-        button_yes.Position = UDim2.new(.45, 0, .5, 0)
-        button_yes.Text = "Yes"
-        button_yes.ZIndex = 9999
-        button_yes.Parent = screengui
-        
-        local button_no = Instance.new("TextButton")
-        button_no.Size = UDim2.new(0, 200, 0, 50)
-        button_no.Position = UDim2.new(.55, 0, .5, 0)
-        button_no.Text = "No"
-        button_no.ZIndex = 9999
-        button_no.Parent = screengui
-        
-        local choice
-        button_yes.MouseButton1Click:Connect(function()
-            choice = true
-        end)
-
-        button_no.MouseButton1Click:Connect(function()
-            choice = false
-        end)
-
-        repeat wait() until choice ~= nil
-
-        screengui:Destroy()
-
-        return choice
-    end
-
     local function upgrade_gear(side, armor)
         if side then
             local weapon_held = workspace[plr.Name]:FindFirstChild(side .. "Weapon")
@@ -1209,6 +1163,10 @@ do
         if armor then
 
         end
+    end
+
+    local function create_confirm()
+        return messagebox("Hi", "This is a box", 4) == 6
     end
 
     Smithing:AddButton({
@@ -1326,18 +1284,33 @@ do
     local round = math.round
     
     coroutine.wrap(function()
-        local seconds = 0
-        local minutes = 0
-        local hours = 0
-        local days = 0
-        
-        while true do wait(1) -- what r string patterns (for real) // catastrophic code
-            seconds = round(time())
-            minutes = round(seconds / 60)
-            hours = round(minutes / 60)
-            days = round(hours / 24)
+        while true do wait(1) -- what r string patterns (for real)
+            local round = math.round
+
+            local seconds = round(time())
+            local minutes = round(seconds / 60)
+            local hours = round(minutes / 60)
+            local days = round(hours / 24)
             
-            -- hope no one plays longer than 24 hours or else this will break ...
+            local temp
+            if hours >= 24 then
+                temp = hours - 24
+            end
+            
+            if hours >= 48 then
+                temp = hours - 48
+            end
+            
+            if hours >= 72 then
+                temp = hours - 72
+            end
+            
+            if hours >= 96 then -- roblox servers don't last longer than this
+               temp = hours - 96
+            end
+            
+            hours = temp or hours
+            
             local displayed = days .. " Days | " .. hours .. " Hours | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
             
             local formatted = os.date(displayed, seconds)
@@ -1395,7 +1368,7 @@ do
         Name = "Set FPS Cap (Requires executor FPS unlocker on)",
         Min = 0,
         Max = 500,
-        Default = 60,
+        Default = getfpscap and getfpscap() or 60, -- synapse does not have "getfpscap" (bad0)
         Color = Color3.new(255, 255, 255),
         Increment = 1,
         ValueName = "FPS",
@@ -1434,6 +1407,8 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("6/27/22", "Moved dismantle confirm to an external popup box")
+    updates:AddParagraph("6/27/22", "Cleaned Code")
     updates:AddParagraph("6/15/22", "Added FPS Cap Setter")
     updates:AddParagraph("6/15/22", "Added Upgrade Equipped Weapons (armors later)")
     updates:AddParagraph("6/15/22", "Added a confirm to dismantle all (there is a bug when u dismantle an equipped item)")
