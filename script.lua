@@ -11,7 +11,7 @@
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 if syn then -- synapse
-    syn.queue_on_teleport("loadfile('Scriptz/sb2 script.lua')()")
+    queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
     
 elseif queue_on_teleport then -- krnl
     queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()") 
