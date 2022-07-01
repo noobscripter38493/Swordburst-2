@@ -659,7 +659,7 @@ do
         return rarity and rarity.Value
     end
 
-    for i, v in next, getgc() do
+    for _, v in next, getgc() do
         if typeof(v) == "function" then
             local info = getinfo(v)
             
@@ -689,27 +689,44 @@ do
         end
     })
 
+    local ui_module = game_module.Services.UI
+
+    local dismantler_module = require(ui_module.Dismantle)
+
+    local functios = getupvalue(dismantler_module.Init, 4) -- i completely forget which module script these functions are in and i have no idea what to name this variable
+
     local profiles = Rs.Profiles
     local highest_damage = 0
+    local highest_defense = 0
     local inventory = profiles[plr.Name].Inventory
     local rf = Rs.Function
-    local function calculateDamage()
-        local item
+    local function calculateStuff()
+        local highest_weapon
+        local highest_armor
 
-        for _, v in next, inventory:GetChildren() do
+        for _, item in next, inventory:GetChildren() do
+            local itemdata = functios.GetItemData(item)
             for _, v2 in next, data:GetChildren() do
-                if v2.Name == v.Name then
+                if v2.Name == item.Name then
                     for _, v3 in next, getStats(v2) do
                         local base = tonumber(v3[2])
                         
                         if base then
-                            local upgrades = getUpgrade(v)
+                            local upgrades = getUpgrade(item)
                             local rarity = getRarity(v2)
-                            local dmg = math.floor(base + (base * rates[rarity] * upgrades))
+                            local stat = math.floor(base + (base * rates[rarity] * upgrades))
                             
-                            if dmg > highest_damage then
-                                highest_damage = dmg
-                                item = v
+                            if itemdata.type == "Weapon" then
+                                if stat > highest_damage then
+                                    highest_damage = stat
+                                    highest_weapon = item
+                                end
+
+                            elseif itemdata.type == "Clothing" then
+                                if stat > highest_defense then
+                                    highest_defense = stat
+                                    highest_armor = item
+                                end
                             end
                         end
                     end
@@ -718,9 +735,15 @@ do
         end
         
         highest_damage = 0
+        highest_defense = 0
         
-        if not item then return end
-        rf:InvokeServer("Equipment", {"EquipWeapon", item, "Right"})
+        if highest_weapon then
+            rf:InvokeServer("Equipment", {"EquipWeapon", highest_weapon, "Right"})
+        end
+
+        if highest_armor then
+            rf:InvokeServer("Equipment", {"Wear", highest_armor})
+        end
     end
 
     local autoequip
@@ -729,10 +752,10 @@ do
         Default = false,
         Callback = function(bool)
             if bool then
-                calculateDamage()
+                calculateStuff()
                 autoequip = inventory.ChildAdded:Connect(function()
                     wait(1)
-                    calculateDamage()
+                    calculateStuff()
                 end)
             
             elseif autoequip then
@@ -1146,8 +1169,8 @@ do
         
         if settings.InfSprint and ncm == "FireServer"  then
             if self == Event then
-                if rawget(args, 1) == "Actions" then
-                    if rawget(args[2], 2) == "Step" then
+                if args[1] == "Actions" then
+                    if args[2][2] == "Step" then
                         return -- void
                     end
                 end
@@ -1237,8 +1260,8 @@ do
 
     local functios = getupvalue(dismantler_module.Init, 4) -- i completely forget which module script these functions are in and i have no idea what to name this variable
 
-    local remote = game.ReplicatedStorage.Event
-    local inventory = game.ReplicatedStorage.Profiles[game.Players.LocalPlayer.Name].Inventory
+    local event = Rs.Event
+    local inventory = Rs.Profiles[plr.Name].Inventory
     local function Dismantle_Rarity(rarity)
         for _, item in next, inventory:GetChildren() do
             local data = functios.GetItemData(item)
@@ -1246,7 +1269,7 @@ do
             for _, v2 in next, data do
                 if v2 == "Weapon" or v2 == "Armor" then
                     if data.rarity == rarity then
-                        remote:FireServer("Equipment", {"Dismantle", item})
+                        event:FireServer("Equipment", {"Dismantle", item})
                         break
                     end
                 end
