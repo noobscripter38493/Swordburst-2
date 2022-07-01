@@ -251,6 +251,7 @@ getgenv().settings = {
     Tween_Speed = 70,
     Farm_Only_Bosses = false,
     Boss_Priority = false,
+    MuteSwingSounds = false,
     __IndexBypass = humanoid.WalkSpeed,
     Prioritized_Boss = nil,
     Mob_Priority = false,
@@ -336,7 +337,7 @@ do
     local tween_create
     local smooth_tween
     function tween(to)
-        local t = (hrp.Position - to.Position).Magnitude / settings.Tween_Speed -- time = distance / speed
+        local t = (hrp.Position - to.Position).Magnitude / settings.Tween_Speed
         
         local tween_info = TweenInfo.new(t, Enum.EasingStyle.Linear)
         local cframe = to.CFrame * CFrame.new(0, settings.Autofarm_Y_Offset, 0)
@@ -534,6 +535,19 @@ do
         end
     })
 
+    farm_tab:AddSlider({
+        Name = "Tween Speed",
+        Min = 0, 
+        Max = 100,
+        Default = 70,
+        Color = Color3.new(255, 255, 255),
+        Increment = 1,
+        ValueName = "Y Offset",
+        Callback = function(v)
+            settings.Tween_Speed = v
+        end
+    })
+
     local range = Instance.new("Part")
     range.Size = Vector3.new(25, 25, 25)
     range.CanCollide = false
@@ -654,7 +668,7 @@ do
         })
 
         local useless = 0
-        -- (garbage code)
+        -- (garbage code) // REMOVE ALL OF THIS GARBAGE CODE ONE DAY AND REPLACE IT WITH .. CHECKING THE PART'S CFRAME
         for _, v in next, workspace:GetChildren() do
             if v.Name == "TeleportSystem" then
                 if placeid == 548231754 then -- floor 2 
@@ -1204,9 +1218,15 @@ do
 
     local crystalForge_module = require(ui_module.CrystalForge)
 
+    local secure_call = syn and syn.secure_call
     Smithing:AddButton({
         Name = "Open Crystal Forge",
         Callback = function()
+            if secure_call then
+                local func = crystalForge_module.Open
+                return secure_call(func, ui_module.CrystalForge)
+            end
+
             crystalForge_module.Open()
         end
     })
@@ -1215,13 +1235,23 @@ do
     Smithing:AddButton({
         Name = "Open Upgrader",
         Callback = function()
+            if secure_call then
+                local func = upgrade_module.Open
+                return secure_call(func, ui_module.Upgrade)
+            end
+
             upgrade_module.Open()
         end
     })
-
+    
     Smithing:AddButton({
         Name = "Open Dismantler",
         Callback = function()
+            if secure_call then
+                local func = dismantler_module.Open
+                return secure_call(func, ui_module.Dismantle)
+            end
+
             dismantler_module.Open()
         end
     })
@@ -1284,8 +1314,6 @@ do
     
     coroutine.wrap(function()
         while true do wait(1) -- what r string patterns (for real)
-            local round = math.round
-
             local seconds = round(time())
             local minutes = round(seconds / 60)
             local hours = round(minutes / 60)
@@ -1317,6 +1345,53 @@ do
             time_label:Set("Time Elapsed: " .. formatted)
         end
     end)()
+end
+
+do
+    local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
+        local ncm = getnamecallmethod()
+        
+        if self.IsA(self, "Sound") and ncm == "Play" then
+            if self.Name == "SwordHit" or self.Name == "SwordSlash" then
+                if settings.MuteSwingSounds then
+                    return 
+                end
+            end
+        end
+        
+        return nc(self, ...)
+    end)
+
+    local Performance_tab = window:MakeTab({
+        Name = "Perf Boosters",
+        Icon = "",
+        PremiumOnly = false
+    })
+
+    Performance_tab:AddButton({
+        Name = "Remove Hit Effects",
+        Callback = function()
+            workspace.HitEffects:Destroy()
+        end
+    })
+
+    Performance_tab:AddButton({
+        Name = "Remove Damage Numbers",
+        Callback = function()
+            for _, v in next, getgc(true) do
+                if typeof(v) == "table" and rawget(v, "Damage Text") then
+                    v["Damage Text"] = function() end
+                end
+            end
+        end
+    })
+    
+    Performance_tab:AddToggle({
+        Name = "Mute Swing Sounds",
+        Callback = function(bool)
+            settings.MuteSwingSounds = bool
+        end
+    })
 end
 
 do 
@@ -1407,6 +1482,8 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("7/1/22", "Added Tween Speed")
+    updates:AddParagraph("7/1/22", "Added Performance Boosters")
     updates:AddParagraph("6/28/22", "Killaura now works for baal & grim")
     updates:AddParagraph("6/27/22", "Moved dismantle confirm to an external popup box")
     updates:AddParagraph("6/27/22", "Cleaned Code")
