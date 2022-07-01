@@ -343,7 +343,7 @@ do
         local cframe = to.CFrame * CFrame.new(0, settings.Autofarm_Y_Offset, 0)
         tween_create = TweenS:Create(hrp, tween_info, {CFrame = cframe})
         
-        smooth_tween = RunS.RenderStepped:Connect(function()
+        smooth_tween = RunS.RenderStepped:Connect(function() -- note to me: attempt to move this to avoid slight jittering
             hrp.Velocity = Vector3.new(0, 0, 0)
         end)
 
