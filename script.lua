@@ -278,7 +278,7 @@ for _, v in next, getconnections(UserInputS.InputBegan) do
     local func = v.Function
     
     if func then
-        local info = getinfo(func)
+        local info = getinfo(func, "s")
         
         if info.source:find("Services.Input") then
             local noMouseClick; noMouseClick = hookfunction(func, function(user_input, game_processed, ...) -- ... to avoid lame detections that i came up with (lol)
