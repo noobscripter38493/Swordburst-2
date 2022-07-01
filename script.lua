@@ -1347,12 +1347,13 @@ do
     end)()
 end
 
-do
+do  
+    local sound_names = {"SwordHit", "Unsheath", "SwordHit"}
     local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
         local ncm = getnamecallmethod()
         
         if self.IsA(self, "Sound") and ncm == "Play" then
-            if self.Name == "SwordHit" or self.Name == "SwordSlash" then
+            if table.find(sound_names, self.Name) then
                 if settings.MuteSwingSounds then
                     return 
                 end
