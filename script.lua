@@ -8,14 +8,11 @@
 
 -- anti exploit makes mobs go invincibile if they are attcked and haven't attacked back after a long time and i should fix it eventually
 
-if not game:IsLoaded() then game.Loaded:Wait() end
+repeat wait() until game:IsLoaded() 
 
-if syn then -- synapse
-    syn.queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
-    
-elseif queue_on_teleport then -- krnl
-    queue_on_teleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()") 
-    
+local teleport_execute = (syn and syn.queue_on_teleport) or queue_on_teleport
+if teleport_execute then
+    teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
 else
     warn"failed to find execute on teleport function"
 end
@@ -116,18 +113,18 @@ local mobs_on_floor = {
 
     [5287433115] = { -- floor 11
         "Reaper",
-        --"Elite Reaper (not in game)",
-        --"DJ Reaper (not in game)",
+        --"Elite Reaper",
+        --"DJ Reaper",
         "Soul Eater",
         "Shadow Figure",
-        --"Meta Figure (not in game)",
+        --"Meta Figure",
         "???????",
-        --"Rogue Android (not in game)",
+        --"Rogue Android",
         "Command Falcon",
-        --"Armageddon Eagle (not in game)",
-        --"Sentry (not in game)",
-        --"Watcher (not in game)",
-        --"Cybold (not in game)"
+        --"Armageddon Eagle",
+        --"Sentry",
+        --"Watcher",
+        --"Cybold"
     }
 }
 
@@ -184,9 +181,9 @@ local bosses_on_floor = {
         "Da",
         "Ra",
         "Ka",
-        --"Za (not in game)",
-        --"Duality Reaper (not in game)",
-        --"Saurus, the All-Seeing (not in game)"
+        --"Za",
+        --"Duality Reaper",
+        --"Saurus, the All-Seeing"
     }
 }
 
@@ -222,7 +219,7 @@ function find(mobs, element, boss)
         end
     else
         for _, v in next, mobs do
-            for _2, v2 in next, boss do
+            for _, v2 in next, boss do
                 if v.Name == v2 then
                     return v
                 end
@@ -261,6 +258,8 @@ getgenv().settings = {
     WalkSpeed = humanoid.WalkSpeed,
     speed = false,
     InfSprint = false,
+    RemoveDeathEffects = false,
+    RemoveDamageNumbers = false,
     AttackPlayers = false,
     Animation = getrenv()._G.CalculateCombatStyle(),
     times = 1
@@ -311,9 +310,9 @@ while true do
         end
     end 
 
-    wait(.5)
-    
     if game_module then break end
+
+    wait(.5)
 end
 
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
@@ -343,7 +342,7 @@ do
         local cframe = to.CFrame * CFrame.new(0, settings.Autofarm_Y_Offset, 0)
         tween_create = TweenS:Create(hrp, tween_info, {CFrame = cframe})
         
-        smooth_tween = RunS.RenderStepped:Connect(function() -- note to me: attempt to move this to avoid slight jittering
+        smooth_tween = RunS.RenderStepped:Connect(function()
             hrp.Velocity = Vector3.new(0, 0, 0)
         end)
 
@@ -1348,6 +1347,14 @@ do
 end
 
 do  
+    local function gethitEffectsfromnil()
+        for i, v in next, getnilinstances() do
+            if v.Name == "HitEffects" then
+                return v
+            end
+        end
+    end
+
     local sound_names = {"SwordHit", "Unsheath", "SwordHit"}
     local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
         local ncm = getnamecallmethod()
@@ -1363,32 +1370,72 @@ do
         return nc(self, ...)
     end)
 
+    local function removeEffects(func_name)
+        for _, v in next, getgc(true) do
+            local old = typeof(v) == "table" and rawget(v, func_name)
+    
+            if old then -- me when too many upvalues
+                v[func_name] = function(...)
+                    if func_name == "Damage Text" then
+                       if settings.RemoveDamageNumbers then return end
+
+                    elseif func_name == "DeathExplosion" then
+                        if settings.RemoveDeathEffects then return end
+                    end
+
+                    return old(...) 
+                end
+            end
+        end
+    end
+    
     local Performance_tab = window:MakeTab({
         Name = "Perf Boosters",
         Icon = "",
         PremiumOnly = false
     })
 
-    Performance_tab:AddButton({
+    Performance_tab:AddToggle({
         Name = "Remove Hit Effects",
-        Callback = function()
-            workspace.HitEffects:Destroy()
-        end
-    })
+        Default = false,
+        Callback = function(bool)
+            local nilHitEffects = gethitEffectsfromnil()
 
-    Performance_tab:AddButton({
-        Name = "Remove Damage Numbers",
-        Callback = function()
-            for _, v in next, getgc(true) do
-                if typeof(v) == "table" and rawget(v, "Damage Text") then
-                    v["Damage Text"] = function() end
-                end
+            if bool and workspace:FindFirstChild("HitEffects") then
+                workspace.HitEffects.Parent = nil
+            elseif nilHitEffects then
+                nilHitEffects.Parent = workspace
             end
         end
     })
-    
+
+    Performance_tab:AddToggle({
+        Name = "Remove Damage Numbers",
+        Default = false,
+        Callback = function(bool)
+            settings.RemoveDamageNumbers = bool
+
+            if bool then
+                removeEffects("Damage Text")
+            end
+        end
+    })
+
+    Performance_tab:AddToggle({
+        Name = "Remove Death Effects",
+        Default = false,
+        Callback = function(bool)
+            settings.RemoveDeathEffects = bool
+
+            if bool then
+                removeEffects("DeathExplosion")
+            end
+        end
+    })
+
     Performance_tab:AddToggle({
         Name = "Mute Swing Sounds",
+        Default = false,
         Callback = function(bool)
             settings.MuteSwingSounds = bool
         end
