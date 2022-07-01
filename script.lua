@@ -1146,9 +1146,9 @@ do
         for _, item in next, inventory:GetChildren() do
             local data = functios.GetItemData(item)
     
-            for _, v2 in next, data do
-                if v2 == "Weapon" or v2 == "Armor" then
-                    if data.rarity == rarity then
+            if data.rarity == rarity then
+                for _, v2 in next, data do
+                    if v2 == "Weapon" or v2 == "Armor" then
                         remote:FireServer("Equipment", {"Dismantle", item})
                         break
                     end
