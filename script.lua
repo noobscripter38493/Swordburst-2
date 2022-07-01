@@ -682,17 +682,15 @@ do
 
     ]]
 
-    local rates = {Legendary = 0.05}
+    local rates = {Legendary = .05}
     setmetatable(rates, {
         __index = function()
-            return 0.04 
+            return .04 
         end
     })
 
     local ui_module = game_module.Services.UI
-
     local dismantler_module = require(ui_module.Dismantle)
-
     local functios = getupvalue(dismantler_module.Init, 4) -- i completely forget which module script these functions are in and i have no idea what to name this variable
 
     local profiles = Rs.Profiles
@@ -748,7 +746,7 @@ do
 
     local autoequip
     farm_tab2:AddToggle({
-        Name = "Auto Equip Best Weapon",
+        Name = "Auto Equip Best Weapon/Armor",
         Default = false,
         Callback = function(bool)
             if bool then
@@ -1169,13 +1167,9 @@ do
         
         if settings.InfSprint and ncm == "FireServer"  then
             if self == Event then
-                print("ok")
                 if args[1] == "Actions" then
-                    print("yes")
-                    print(args[2][2])
                     if args[2][2] == "Step" then
-                        print("are you serious")
-                        return -- void
+                        return
                     end
                 end
             end
@@ -1291,7 +1285,7 @@ do
                 --local upgrade = weapon and weapon:FindFirstChild("Upgrade")
                 
                 for i = 1, settings.times do
-                    remote:FireServer("Equipment", {"Upgrade", weapon_inventory, nil})
+                    event:FireServer("Equipment", {"Upgrade", weapon_inventory, nil})
                 end
             end
         end
