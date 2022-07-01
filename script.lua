@@ -645,6 +645,103 @@ do
     })
 end
 
+do
+    local farm_tab2 = window:MakeTab({
+        Name = "Farm Tab (util)",
+        Icon = "",
+        PremiumOnly = false
+    })
+
+    local getStats
+    local getUpgrade
+    local function getRarity(item)
+        local rarity = item:FindFirstChild("Rarity")
+        return rarity and rarity.Value
+    end
+
+    for i, v in next, getgc() do
+        if typeof(v) == "function" then
+            local info = getinfo(v)
+            
+            if info.name == "getStats" then
+                getStats = v
+            end
+            
+            if info.name == "getUpgrade" then
+                getUpgrade = v 
+            end
+        end     
+    end
+
+    local data = Rs.Database.Items
+    --[[
+    formulas
+
+    non legends: math.floor(base + (base * 0.04 * upgrade_count))
+    legends: math.floor(base + (base * 0.05 * upgrade_count))
+
+    ]]
+
+    local rates = {Legendary = 0.05}
+    setmetatable(rates, {
+        __index = function()
+            return 0.04 
+        end
+    })
+
+    local profiles = Rs.Profiles
+    local highest_damage = 0
+    local inventory = profiles[plr.Name].Inventory
+    local rf = Rs.Function
+    local function calculateDamage()
+        local item
+
+        for _, v in next, inventory:GetChildren() do
+            for _, v2 in next, data:GetChildren() do
+                if v2.Name == v.Name then
+                    for _, v3 in next, getStats(v2) do
+                        local base = tonumber(v3[2])
+                        
+                        if base then
+                            local upgrades = getUpgrade(v)
+                            local rarity = getRarity(v2)
+                            local dmg = math.floor(base + (base * rates[rarity] * upgrades))
+                            
+                            if dmg > highest_damage then
+                                highest_damage = dmg
+                                item = v
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        
+        highest_damage = 0
+        
+        if not item then return end
+        rf:InvokeServer("Equipment", {"EquipWeapon", item, "Right"})
+    end
+
+    local autoequip
+    farm_tab2:AddToggle({
+        Name = "Auto Equip Best Weapon",
+        Default = false,
+        Callback = function(bool)
+            if bool then
+                calculateDamage()
+                autoequip = inventory.ChildAdded:Connect(function()
+                    wait(1)
+                    calculateDamage()
+                end)
+            
+            elseif autoequip then
+                autoequip:Disconnect()
+            end
+        end
+    })
+end
+
 do 
     local no_tp = {542351431, 582198062}
 
@@ -1525,6 +1622,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("7/1/22", "Added Auto Equip Best Weapon")
     updates:AddParagraph("7/1/22", "Added Tween Speed")
     updates:AddParagraph("7/1/22", "Added Performance Boosters")
     updates:AddParagraph("6/28/22", "Killaura now works for baal & grim")
