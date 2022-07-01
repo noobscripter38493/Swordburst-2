@@ -278,7 +278,7 @@ for _, v in next, getconnections(UserInputS.InputBegan) do
     local func = v.Function
     
     if func then
-        local info = getinfo(func, "s")
+        local info = getinfo(func)
         
         if info.source:find("Services.Input") then
             local noMouseClick; noMouseClick = hookfunction(func, function(user_input, game_processed, ...) -- ... to avoid lame detections that i came up with (lol)
@@ -1224,7 +1224,7 @@ do
         Callback = function()
             if secure_call then
                 local func = crystalForge_module.Open
-                return secure_call(func, ui_module.CrystalForge)
+                return secure_call(func, game_module)
             end
 
             crystalForge_module.Open()
@@ -1237,7 +1237,7 @@ do
         Callback = function()
             if secure_call then
                 local func = upgrade_module.Open
-                return secure_call(func, ui_module.Upgrade)
+                return secure_call(func, game_module)
             end
 
             upgrade_module.Open()
@@ -1249,7 +1249,7 @@ do
         Callback = function()
             if secure_call then
                 local func = dismantler_module.Open
-                return secure_call(func, ui_module.Dismantle)
+                return secure_call(func, game_module)
             end
 
             dismantler_module.Open()
