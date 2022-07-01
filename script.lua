@@ -705,7 +705,6 @@ do
         local highest_armor
 
         for _, item in next, inventory:GetChildren() do
-            local itemdata = functios.GetItemData(item)
             for _, v2 in next, data:GetChildren() do
                 if v2.Name == item.Name then
                     for _, v3 in next, getStats(v2) do
@@ -716,6 +715,7 @@ do
                             local rarity = getRarity(v2)
                             local stat = math.floor(base + (base * rates[rarity] * upgrades))
                             
+                            local itemdata = functios.GetItemData(item)
                             if itemdata.type == "Weapon" then
                                 if stat > highest_damage then
                                     highest_damage = stat
@@ -1169,8 +1169,12 @@ do
         
         if settings.InfSprint and ncm == "FireServer"  then
             if self == Event then
+                print("ok")
                 if args[1] == "Actions" then
+                    print("yes")
+                    print(args[2][2])
                     if args[2][2] == "Step" then
+                        print("are you serious")
                         return -- void
                     end
                 end
