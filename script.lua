@@ -1146,9 +1146,9 @@ do
         for _, item in next, inventory:GetChildren() do
             local data = functios.GetItemData(item)
     
-            if data.rarity == rarity then
-                for _, v2 in next, data do
-                    if v2 == "Weapon" or v2 == "Armor" then
+            for _, v2 in next, data do
+                if v2 == "Weapon" or v2 == "Armor" then
+                    if data.rarity == rarity then
                         remote:FireServer("Equipment", {"Dismantle", item})
                         break
                     end
@@ -1388,6 +1388,9 @@ do
             end
         end
     end
+
+    removeEffects("Damage Text") -- remove X variables are still false, does nothing until toggled
+    removeEffects("DeathExplosion")
     
     local Performance_tab = window:MakeTab({
         Name = "Perf Boosters",
@@ -1414,10 +1417,6 @@ do
         Default = false,
         Callback = function(bool)
             settings.RemoveDamageNumbers = bool
-
-            if bool then
-                removeEffects("Damage Text")
-            end
         end
     })
 
@@ -1426,10 +1425,6 @@ do
         Default = false,
         Callback = function(bool)
             settings.RemoveDeathEffects = bool
-
-            if bool then
-                removeEffects("DeathExplosion")
-            end
         end
     })
 
