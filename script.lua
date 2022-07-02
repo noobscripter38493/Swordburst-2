@@ -449,7 +449,7 @@ do
             
                     if mob then
                         local success = pcall(function()
-                            if mob.Entity.Health.Value <= 0 then error't' end
+                            if mob.Entity.Health.Value <= 0 then error'' end
                         end)
                         
                         if not success then continue end
@@ -691,41 +691,51 @@ do
 
     local ui_module = game_module.Services.UI
     local dismantler_module = require(ui_module.Dismantle)
-    local functios = getupvalue(dismantler_module.Init, 4) -- i completely forget which module script these functions are in and i have no idea what to name this variable
+    local inv_utility = getupvalue(dismantler_module.Init, 4) -- i completely forget which module script these functions are in and i have no idea what to name this variable
 
     local profiles = Rs.Profiles
     local highest_damage = 0
     local highest_defense = 0
     local inventory = profiles[plr.Name].Inventory
     local rf = Rs.Function
-    local function calculateStuff()
+    
+    local function AutoEquip()
+        task.wait(1)
+
         local highest_weapon
         local highest_armor
 
         for _, item in next, inventory:GetChildren() do
             for _, v2 in next, data:GetChildren() do
                 if v2.Name == item.Name then
-                    for _, v3 in next, getStats(v2) do
-                        local base = tonumber(v3[2])
-                        
-                        if base then
-                            local upgrades = getUpgrade(item)
-                            local rarity = getRarity(v2)
-                            local stat = math.floor(base + (base * rates[rarity] * upgrades))
-                            
-                            local itemdata = functios.GetItemData(item)
-                            if itemdata.type == "Weapon" then
-                                if stat > highest_damage then
-                                    highest_damage = stat
-                                    highest_weapon = item
-                                end
+                    local itemdata = inv_utility.GetItemData(item)
+                    local class = itemdata.type
 
-                            elseif itemdata.type == "Clothing" then
-                                if stat > highest_defense then
-                                    highest_defense = stat
-                                    highest_armor = item
-                                end
-                            end
+                    if class ~= "Weapon" and class ~= "Clothing" then break end
+                    
+                    local stats = getStats(v2)
+                    local base
+                    for _, v3 in next, stats do
+                        if v3[1] == "Damage" or v3[1] == "Defense" then
+                            base = tonumber(v3[2])
+                            break
+                        end
+                    end
+                    
+                    local upgrades = getUpgrade(item)
+                    local rarity = getRarity(v2)
+                    local stat = math.floor(base + (base * rates[rarity] * upgrades))
+                    
+                    if class == "Weapon" then
+                        if stat > highest_damage then
+                            highest_damage = stat
+                            highest_weapon = item
+                        end
+
+                    elseif class == "Clothing" then
+                        if stat > highest_defense then
+                            highest_defense = stat
+                            highest_armor = item
                         end
                     end
                 end
@@ -750,11 +760,8 @@ do
         Default = false,
         Callback = function(bool)
             if bool then
-                calculateStuff()
-                autoequip = inventory.ChildAdded:Connect(function()
-                    wait(1)
-                    calculateStuff()
-                end)
+                AutoEquip()
+                autoequip = inventory.ChildAdded:Connect(AutoEquip)
             
             elseif autoequip then
                 autoequip:Disconnect()
@@ -1263,10 +1270,10 @@ do
     local function Dismantle_Rarity(rarity)
         for _, item in next, inventory:GetChildren() do
             local data = functios.GetItemData(item)
-    
-            for _, v2 in next, data do
-                if v2 == "Weapon" or v2 == "Armor" then
-                    if data.rarity == rarity then
+            
+            if data.rarity == rarity then
+                for _, v2 in next, data do
+                    if v2 == "Weapon" or v2 == "Armor" then
                         event:FireServer("Equipment", {"Dismantle", item})
                         break
                     end
@@ -1282,9 +1289,8 @@ do
             if weapon_held then
                 local inventory_id = weapon_held:FindFirstChild("InventoryID")
                 local weapon_inventory = inventory_id and functios.GetItemById(inventory_id.Value)
-                --local upgrade = weapon and weapon:FindFirstChild("Upgrade")
-                
-                for i = 1, settings.times do
+
+                for _ = 1, settings.times do
                     event:FireServer("Equipment", {"Upgrade", weapon_inventory, nil})
                 end
             end
