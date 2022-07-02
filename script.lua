@@ -709,7 +709,7 @@ do
             local itemdata = inv_utility.GetItemData(item)
             local class = itemdata.type
 
-            if class ~= "Weapon" and class ~= "Clothing" then break end
+            if class ~= "Weapon" and class ~= "Clothing" then continue end
                     
             for _, v2 in next, data:GetChildren() do
                 if v2.Name == item.Name then
@@ -1450,7 +1450,7 @@ do
         PremiumOnly = false
     }) 
     
-    updates:AddParagraph("7/2/22", "Changed how to retrieve teleport parts again")
+    updates:AddParagraph("7/2/22", "Changed how to retrieve teleports again")
     updates:AddParagraph("7/1/22", "Added Auto Equip Best Weapon")
     updates:AddParagraph("7/1/22", "Added Tween Speed")
     updates:AddParagraph("7/1/22", "Added Performance Boosters")
