@@ -449,7 +449,7 @@ do
             
                     if mob then
                         local success = pcall(function()
-                            if mob.Entity.Health.Value <= 0 then error'' end
+                            if mob.Entity.Health.Value <= 0 then error't' end
                         end)
                         
                         if not success then continue end
@@ -706,13 +706,13 @@ do
         local highest_armor
 
         for _, item in next, inventory:GetChildren() do
+            local itemdata = inv_utility.GetItemData(item)
+            local class = itemdata.type
+
+            if class ~= "Weapon" and class ~= "Clothing" then break end
+                    
             for _, v2 in next, data:GetChildren() do
                 if v2.Name == item.Name then
-                    local itemdata = inv_utility.GetItemData(item)
-                    local class = itemdata.type
-
-                    if class ~= "Weapon" and class ~= "Clothing" then break end
-                    
                     local stats = getStats(v2)
                     local base
                     for _, v3 in next, stats do
@@ -791,310 +791,111 @@ do
             PremiumOnly = false
         })
 
-        local useless = 0
-        -- (garbage code) // REMOVE ALL OF THIS GARBAGE CODE ONE DAY AND REPLACE IT WITH .. CHECKING THE PART'S CFRAME
-        for _, v in next, workspace:GetChildren() do
-            if v.Name == "TeleportSystem" then
-                if placeid == 548231754 then -- floor 2 
-                    for _2, v2 in next, v:GetChildren() do
-                        local touching_parts = v2:GetTouchingParts()
-                        
-                        if #touching_parts == 6 then
-                            teleports_tab:AddButton({
-                                Name = "Boss Room",
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
+        local function makeTPbutton(name, part)
+            teleports_tab:AddButton({
+                Name = name,
+                Callback = function()
+                    firetouchinterest(hrp, part, 0)
                     
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })
-                        
-                        elseif touching_parts[1]:IsA("Terrain") then
-                            teleports_tab:AddButton({
-                                Name = "Dungeon Entrance",
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
+                    wait(.5)
                     
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })
+                    firetouchinterest(hrp, part, 1)
+                end
+            })
+        end
+        
+        local floor = math.floor
+        local function loop_workspace(entrance, boss, miniboss, shop)
+            for _, v in next, workspace:GetChildren() do
+                if v.Name == "TeleportSystem" then
+                    for _, v2 in next, v:GetChildren() do
+                        local posX = floor(v2.Position.X)
+                        local posY = floor(v2.Position.Y)
+                        local posZ = floor(v2.Position.Z)
+                        local pos = Vector3.new(posX, posY, posZ)
+
+                        if pos == entrance then
+                            makeTPbutton("Dungeon Entrance", v2)
                         end
-                    end
-                end
-                
-                if placeid == 555980327 then -- floor 3
-                    for _2, v2 in next, v:GetChildren() do
-                        teleports_tab:AddButton({
-                            Name = "Dungeon Entrance",
-                            Callback = function()
-                                firetouchinterest(hrp, v2, 0)
-                
-                                wait(.5)
-                                
-                                firetouchinterest(hrp, v2, 1)
-                            end
-                        })
-                    end
-                end
-                
-                if placeid == 572487908 then -- floor 4
-                    for _2, v2 in next, v:GetChildren() do
-                        local touching_parts = v2:GetTouchingParts()
-                        
-                        table.foreach(touching_parts, function(i, v)
-                            if v:IsA("Terrain") then
-                                teleports_tab:AddButton({
-                                    Name = "Dungeon Entrance",
-                                    Callback = function()
-                                        firetouchinterest(hrp, v2, 0)
-                        
-                                        wait(.5)
-                                        
-                                        firetouchinterest(hrp, v2, 1)
-                                    end
-                                })
-                                
-                            elseif i == 4 and v.Name == "Part" and #touching_parts == 4 then
-                                teleports_tab:AddButton({
-                                    Name = "Boss Room",
-                                    Callback = function()
-                                        firetouchinterest(hrp, v2, 0)
-                        
-                                        wait(.5)
-                                        
-                                        firetouchinterest(hrp, v2, 1)
-                                    end
-                                })
-                            end
-                        end)
-                    end
-                end
-                
-                if placeid == 580239979 then -- floor 5
-                    for _2, v2 in next, v:GetChildren() do
-                        local touching_parts = v2:GetTouchingParts()
-                        
-                        table.foreach(touching_parts, function(i, v)
-                            if v:IsA("Terrain") then
-                                teleports_tab:AddButton({
-                                    Name = "Dungeon Entrance",
-                                    Callback = function()
-                                        firetouchinterest(hrp, v2, 0)
-                        
-                                        wait(.5)
-                                        
-                                        firetouchinterest(hrp, v2, 1)
-                                    end
-                                })
-                            
-                            elseif v.Parent ~= workspace and v.Parent.Parent.Parent == workspace then -- lol
-                                teleports_tab:AddButton({
-                                    Name = "Boss Room",
-                                    Callback = function()
-                                        firetouchinterest(hrp, v2, 0)
-                        
-                                        wait(.5)
-                                        
-                                        firetouchinterest(hrp, v2, 1)
-                                    end
-                                })
-                            end
-                        end)
-                    end
-                end
-                
-                if placeid == 548878321 then -- floor 8
-                    for _2, v2 in next, v:GetChildren() do
-                        local touching_parts = v2:GetTouchingParts()
-                        
-                        if #touching_parts == 3 and touching_parts[1]:IsA("Part") then
-                            teleports_tab:AddButton({
-                                Name = "Boss Room",
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
-                    
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })
-                        
-                        elseif #touching_parts == 2 then
-                            teleports_tab:AddButton({
-                                Name = "Mini Boss",
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
-                    
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })
-                        
-                        elseif #touching_parts == 3 and touching_parts[1]:IsA("Terrain") then
-                            teleports_tab:AddButton({
-                                Name = "Dungeon Entrance",
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
-                    
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })
+    
+                        if pos == boss then
+                            makeTPbutton("Boss Room", v2)
                         end
-                    end
-                end
-                
-                if placeid == 573267292 then -- floor 9
-                    for _2, v2 in next, v:GetChildren() do
-                        local touching_parts = v2:GetTouchingParts()
-                        
-                        if #touching_parts == 7 and find(touching_parts, "Path") then
-                            teleports_tab:AddButton({
-                                Name = "Dungeon Entrance",
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
-                    
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })
-                        
-                        elseif #touching_parts == 6 then
-                            teleports_tab:AddButton({
-                                Name = "Polyserpant Mini Boss",
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
-                    
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })
-                        
-                        elseif #touching_parts == 8 and find(touching_parts, "ash") then
-                            teleports_tab:AddButton({
-                                Name = "Gargoyle Reaper Mini Boss",
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
-                    
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })
-                        
-                        elseif #touching_parts == 5 then
-                            teleports_tab:AddButton({
-                                Name = "Main Boss",
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
-                    
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })
+    
+                        if pos == miniboss then
+                            makeTPbutton("Mini Boss", v2)
                         end
-                    end
-                end
-                
-                if placeid == 2659143505 then -- floor 10
-                    for _2, v2 in next, v:GetChildren() do
-                        local touching_parts = v2:GetTouchingParts()
-                        if #touching_parts == 2 then
-                            teleports_tab:AddButton({
-                                Name = "Main Boss",
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
-                    
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })
-                        
-                        elseif #touching_parts == 14 then
-                            teleports_tab:AddButton({
-                                Name = "Dungeon Entrance",
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
-                    
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })
-                            
-                        elseif #touching_parts == 17 then
-                            teleports_tab:AddButton({
-                                Name = "Shop",
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
-                    
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })    
-                        
-                        elseif #touching_parts == 8 and find(touching_parts, "Wedge") then
-                            teleports_tab:AddButton({
-                                Name = "Mini Boss",
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
-                    
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })    
-                            
-                        end
-                    end
-                end
-                
-                if placeid == 5287433115 then -- floor 11
-                    for _2, v2 in next, v:GetChildren() do
-                        local touching_parts = v2:GetTouchingParts()
-                        
-                        if #touching_parts == 13 and not find(touching_parts, "MeshPart") then
-                            teleports_tab:AddButton({
-                                Name = "Mini Boss",
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
-                    
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })   
-                        
-                        else
-                            useless = useless + 1
-                            teleports_tab:AddButton({
-                                Name = "Useless Teleport #" .. useless,
-                                Callback = function()
-                                    firetouchinterest(hrp, v2, 0)
-                    
-                                    wait(.5)
-                                    
-                                    firetouchinterest(hrp, v2, 1)
-                                end
-                            })  
+    
+                        if pos == shop then -- floor 10
+                            makeTPbutton("Shop", v2)
                         end
                     end
                 end
             end
         end
-    end 
-end
+
+        if placeid == 548231754 then -- floor 2
+            local dungeon_entrance = Vector3.new(-2185, 161, -2321)
+            local boss = Vector3.new(-2943, 201, -9805)
+            
+            loop_workspace(dungeon_entrance, boss)
+        end
+        
+        if placeid == 555980327 then -- floor 3
+            local dungeon_entrance = Vector3.new(1179, 6737, 1675)
+            
+            loop_workspace(dungeon_entrance)
+        end
+        
+        if placeid == 572487908 then -- floor 4
+            local dungeon_entrance = Vector3.new(-1946, 5169, -1415)
+            local boss = Vector3.new(-2319, 2280, -515)
+            
+            loop_workspace(dungeon_entrance, boss)
+        end
+        
+        if placeid == 580239979 then -- floor 5
+            local dungeon_entrance = Vector3.new(-1562, 4040, -868)
+            local boss = Vector3.new(2189, 1308, -122)
+            
+            loop_workspace(dungeon_entrance, boss)
+        end
+        
+        if placeid == 548878321 then -- floor 8
+            local dungeon_entrance = Vector3.new(-6679, 7801, 10006)
+            local boss = Vector3.new(1848, 4110, 7723)
+            local miniboss = Vector3.new(-808, 3174, -941)
+            
+            loop_workspace(dungeon_entrance, boss, miniboss)
+        end
+        
+        if placeid == 573267292 then -- floor 9
+            local dungeon_entrance = Vector3.new(878, 3452, -11139)
+            local boss = Vector3.new(12241, 461, -3656)
+            local miniboss_gargoyle = Vector3.new(-256, 3077, -4605)
+            local miniboss_poly = Vector3.new(1973, 2986, -4487)
+            
+            loop_workspace(dungeon_entrance, boss, miniboss_gargoyle)
+            loop_workspace(nil, nil, miniboss_poly)
+        end
+        
+        if placeid == 2659143505 then -- floor 10
+            local miniboss = Vector3.new(-895, 467, 6505)
+            local boss = Vector3.new(45, 1003, 25432)
+            local dungeon_entrance = Vector3.new(-606, 697, 9989)
+            local shop = Vector3.new(-252, 504, 6163)
+            
+            loop_workspace(dungeon_entrance, boss, miniboss, shop)
+        end
+        
+        if placeid == 5287433115 then -- floor 11
+            local miniboss = Vector3.new(4812, 1646, 2082)
+            
+            loop_workspace(miniboss)
+        end
+    end
+end 
+
 
 do
     local Character_tab = window:MakeTab({
