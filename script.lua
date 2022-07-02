@@ -607,7 +607,8 @@ do
 
                             local mob = table.find(mobs_on_floor[placeid], enemy.Name)
                             local boss = table.find(bosses_on_floor[placeid], enemy.Name)
-                            if mob or boss then
+                            local chest = enemy.Name:match("Chest")
+                            if mob or boss or chest then
                                 killaura_function(attacking, enemy)
 
                             elseif settings.AttackPlayers then
@@ -1450,6 +1451,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("7/2/22", "Killaura now supports chests")
     updates:AddParagraph("7/2/22", "Changed how to retrieve teleports again")
     updates:AddParagraph("7/1/22", "Added Auto Equip Best Weapon")
     updates:AddParagraph("7/1/22", "Added Tween Speed")
