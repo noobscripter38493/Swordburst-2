@@ -1359,7 +1359,7 @@ do
         end
     end
 
-    local sound_names = {"SwordHit", "Unsheath", "SwordHit"}
+    local sound_names = {"SwordHit", "Unsheath", "SwordSlash"}
     local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
         local ncm = getnamecallmethod()
         
