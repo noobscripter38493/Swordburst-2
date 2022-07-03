@@ -262,7 +262,8 @@ getgenv().settings = {
     RemoveDamageNumbers = false,
     AttackPlayers = false,
     Animation = getrenv()._G.CalculateCombatStyle(),
-    times = 1
+    times = 1,
+    excludedMobs = {}
 }
 
 -- disable M1s when killaura is enabled
@@ -401,6 +402,8 @@ do
             settings.Autofarm = bool
 
             while true do wait()
+                local excludedMobs = settings.excludedMobs
+
                 if not settings.Autofarm then break end
                 
                 if settings.Farm_Only_Bosses then
@@ -414,9 +417,7 @@ do
 
                         if not success then continue end
 
-                        local tween_to = boss_hrp
-
-                        tween(tween_to) 
+                        tween(boss_hrp) 
                     end
 
                     continue
@@ -435,9 +436,7 @@ do
                         local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
                         
                         if boss_hrp then
-                            local tween_to = boss_hrp
-                            
-                            tween(tween_to)
+                            tween(boss_hrp)
                             
                             continue
                         end
@@ -447,9 +446,9 @@ do
                 if settings.Mob_Priority and settings.Prioritized_Mob ~= nil then
                     local mob = find(mobs_table, settings.Prioritized_Mob)
             
-                    if mob then
+                    if mob and not table.find(excludedMobs, mob.Name) then
                         local success = pcall(function()
-                            if mob.Entity.Health.Value <= 0 then error't' end
+                            if mob.Entity.Health.Value <= 0 then error'' end
                         end)
                         
                         if not success then continue end
@@ -457,19 +456,24 @@ do
                         local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
                         
                         if mob_hrp then
-                            local tween_to = mob_hrp
-                            
-                            tween(tween_to)
+                            tween(mob_hrp)
                             
                             continue
                         end
                     end
                 end
                 
-                local tween_to = mobs_table[1]:FindFirstChild("HumanoidRootPart")
+                local mob_hrp
+                for _, mob in next, mobs_table do
+                    if not table.find(excludedMobs, mob.Name) then
+                        mob_hrp = mob:FindFirstChild("HumanoidRootPart")
+
+                        if mob_hrp then break end
+                    end
+                end
                 
-                if tween_to then
-                    tween(tween_to)
+                if mob_hrp then
+                    tween(mob_hrp)
                 end
             end
             
@@ -769,6 +773,32 @@ do
             end
         end
     })
+end
+
+do
+    local farm_tab3 = window:MakeTab({
+        Name = "Mob Exclusion",
+        Icon = "",
+        PremiumOnly = false
+    })
+
+    for _, v in next, mobs_on_floor[placeid] do
+        farm_tab3:AddToggle({
+            Name = v,
+            Default = false,
+            Callback = function(bool)
+                local excludedMobs = settings.excludedMobs
+                local i = table.find(excludedMobs, v)
+
+                if bool then
+                    table.insert(excludedMobs, v)
+
+                elseif i then
+                    table.remove(excludedMobs, i)
+                end
+            end
+        })
+    end
 end
 
 do 
@@ -1451,7 +1481,6 @@ do
         PremiumOnly = false
     }) 
     
-    updates:AddParagraph("7/2/22", "Killaura now supports chests")
     updates:AddParagraph("7/2/22", "Changed how to retrieve teleports again")
     updates:AddParagraph("7/1/22", "Added Auto Equip Best Weapon")
     updates:AddParagraph("7/1/22", "Added Tween Speed")
