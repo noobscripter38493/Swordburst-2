@@ -1481,6 +1481,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("7/2/22", "Added Mob Exclusion to Autofarm")
     updates:AddParagraph("7/2/22", "Changed how to retrieve teleports again")
     updates:AddParagraph("7/1/22", "Added Auto Equip Best Weapon")
     updates:AddParagraph("7/1/22", "Added Tween Speed")
