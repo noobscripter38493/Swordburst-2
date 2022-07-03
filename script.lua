@@ -1359,21 +1359,6 @@ do
         end
     end
 
-    local sound_names = {"SwordHit", "Unsheath", "SwordSlash"}
-    local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
-        local ncm = getnamecallmethod()
-        
-        if self.IsA(self, "Sound") and ncm == "Play" then
-            if table.find(sound_names, self.Name) then
-                if settings.MuteSwingSounds then
-                    return 
-                end
-            end
-        end
-        
-        return nc(self, ...)
-    end)
-
     local function removeEffects(func_name)
         for _, v in next, getgc(true) do
             local old = typeof(v) == "table" and rawget(v, func_name)
@@ -1432,11 +1417,32 @@ do
         end
     })
 
+    local DescendantAdded
+    local sound_names = {"SwordHit", "Unsheath", "SwordSlash"}
     Performance_tab:AddToggle({
         Name = "Mute Swing Sounds",
         Default = false,
         Callback = function(bool)
-            settings.MuteSwingSounds = bool
+            if not bool then 
+                for i, v in next, workspace:GetDescendants() do
+                    if table.find(sound_names, v.Name) then v.Volume = .3 end
+                end
+                if DescendantAdded then DescendantAdded:Disconnect() end
+                return 
+            end
+
+            for _, v in next, workspace:GetDescendants() do
+                if table.find(sound_names, v.Name) then
+                    v.Volume = 0
+                end
+            end
+
+            DescendantAdded = workspace.DescendantAdded:Connect(function(d)
+                task.wait(1)
+                if table.find(sound_names, d.Name) then
+                    d.Volume = 0
+                end
+            end)
         end
     })
 end
@@ -1529,6 +1535,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("7/3/22", "Mute Swings now mutes others swings")
     updates:AddParagraph("7/3/22", "Added Auto Dismantle")
     updates:AddParagraph("7/2/22", "Added Mob Exclusion to Autofarm")
     updates:AddParagraph("7/2/22", "Killaura now supports chests (mostly useless lo(l))")
