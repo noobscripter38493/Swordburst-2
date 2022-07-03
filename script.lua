@@ -263,7 +263,8 @@ getgenv().settings = {
     AttackPlayers = false,
     Animation = getrenv()._G.CalculateCombatStyle(),
     times = 1,
-    excludedMobs = {}
+    excludedMobs = {},
+    dismantle = {}
 }
 
 -- disable M1s when killaura is enabled
@@ -687,13 +688,6 @@ do
 
     ]]
 
-    local rates = {Legendary = .05}
-    setmetatable(rates, {
-        __index = function()
-            return .04 
-        end
-    })
-
     local ui_module = game_module.Services.UI
     local dismantler_module = require(ui_module.Dismantle)
     local inv_utility = getupvalue(dismantler_module.Init, 4) -- i completely forget which module script these functions are in and i have no idea what to name this variable
@@ -703,7 +697,39 @@ do
     local highest_defense = 0
     local inventory = profiles[plr.Name].Inventory
     local rf = Rs.Function
+    local event = Rs.Event
     
+    local function AutoDismantle()
+        local dismantle = settings.dismantle
+        if #dismantle == 0 then print("nothing here") return end
+
+        task.wait(1)
+
+        for _, item in next, inventory:GetChildren() do
+            local itemdata = inv_utility.GetItemData(item)
+            local class = itemdata.type
+
+            if class ~= "Weapon" and class ~= "Clothing" then continue end
+
+            for _, v2 in next, data:GetChildren() do
+                if v2.Name == item.Name then
+                    local rarity = getRarity(v2)
+                    
+                    if table.find(dismantle, rarity) then
+                        event:FireServer("Equipment", {"Dismantle", item})
+                    end
+                end
+            end
+        end
+    end
+
+    local rates = {Legendary = .05}
+    setmetatable(rates, {
+        __index = function()
+            return .04 
+        end
+    })
+
     local function AutoEquip()
         task.wait(1)
 
@@ -773,6 +799,28 @@ do
             end
         end
     })
+
+    local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
+    local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
+
+    for i, v in next, names do
+        farm_tab2:AddToggle({
+            Name = "Auto Dismantle " .. v,
+            Default = false,
+            Callback = function(bool)
+                local dismantle = settings.dismantle
+                local i2 = table.find(dismantle, rarities[i])
+                if bool then
+                    table.insert(dismantle, rarities[i])
+
+                elseif i2 then
+                    table.remove(dismantle, i2)
+                end
+            end
+        })
+    end
+
+    inventory.ChildAdded:Connect(AutoDismantle)
 end
 
 do
@@ -1481,6 +1529,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("7/3/22", "Added Auto Dismantle")
     updates:AddParagraph("7/2/22", "Added Mob Exclusion to Autofarm")
     updates:AddParagraph("7/2/22", "Killaura now supports chests (mostly useless lo(l))")
     updates:AddParagraph("7/2/22", "Changed how to retrieve teleports again")
