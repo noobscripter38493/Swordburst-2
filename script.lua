@@ -245,7 +245,7 @@ repeat wait() until getrenv()._G.CalculateCombatStyle
 getgenv().settings = {
     Autofarm = false,
     Autofarm_Y_Offset = 10,
-    Tween_Speed = 70,
+    Tween_Speed = 50,
     Farm_Only_Bosses = false,
     Boss_Priority = false,
     MuteSwingSounds = false,
@@ -337,8 +337,9 @@ do
     
     local tween_create
     local smooth_tween
-    function tween(to)
-        local t = (hrp.Position - to.Position).Magnitude / settings.Tween_Speed
+    local function tween(to)
+        local distance = (hrp.Position - to.Position).Magnitude
+        local t = distance / settings.Tween_Speed
         
         local tween_info = TweenInfo.new(t, Enum.EasingStyle.Linear)
         local cframe = to.CFrame * CFrame.new(0, settings.Autofarm_Y_Offset, 0)
@@ -357,12 +358,11 @@ do
 
         local enemy = to.Parent
         local success = pcall(function()
-            if enemy.Entity.Health.Value <= 0 then error'' end
+            if enemy.Entity.Health.Value <= 0 then error() end
         end)
 
         if success then
-            tween(to)
-            return
+            return tween(to)
         end
         
         local i = table.find(mobs_table, to.Parent)
@@ -389,9 +389,9 @@ do
     end)
     
     for _, v in next, mobs:GetChildren() do
-        local tween_to = v:FindFirstChild("HumanoidRootPart")
+        local mob_hrp = v:FindFirstChild("HumanoidRootPart")
         
-        if tween_to and v:FindFirstChild("Healthbar") then
+        if mob_hrp and v:FindFirstChild("Healthbar") then
             table.insert(mobs_table, v)
         end
     end
@@ -402,7 +402,15 @@ do
         Callback = function(bool)
             settings.Autofarm = bool
 
-            while true do wait()
+            if not bool then        
+                if tween_create then
+                    tween_create:Cancel()
+                end
+
+                return 
+            end
+
+            while true do
                 local excludedMobs = settings.excludedMobs
 
                 if not settings.Autofarm then break end
@@ -413,7 +421,7 @@ do
 
                     if boss_hrp then
                         local success = pcall(function()
-                            if boss.Entity.Health.Value <= 0 then error'' end
+                            if boss.Entity.Health.Value <= 0 then error() end
                         end)
 
                         if not success then continue end
@@ -429,7 +437,7 @@ do
 
                     if boss then
                         local success = pcall(function()
-                            if boss.Entity.Health.Value <= 0 then error'' end
+                            if boss.Entity.Health.Value <= 0 then error() end
                         end)
                         
                         if not success then continue end
@@ -449,7 +457,7 @@ do
             
                     if mob and not table.find(excludedMobs, mob.Name) then
                         local success = pcall(function()
-                            if mob.Entity.Health.Value <= 0 then error'' end
+                            if mob.Entity.Health.Value <= 0 then error() end
                         end)
                         
                         if not success then continue end
@@ -476,10 +484,6 @@ do
                 if mob_hrp then
                     tween(mob_hrp)
                 end
-            end
-            
-            if tween_create then
-                tween_create:Cancel()
             end
         end
     })
@@ -543,10 +547,10 @@ do
         Name = "Tween Speed",
         Min = 0, 
         Max = 100,
-        Default = 70,
+        Default = 50,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
-        ValueName = "Y Offset",
+        ValueName = "Speed",
         Callback = function(v)
             settings.Tween_Speed = v
         end
@@ -573,7 +577,7 @@ do
             local i = table.find(attacking, enemy)
             
             local success = pcall(function()
-                if enemy.Entity.Health.Value <= 0 then error'' end
+                if enemy.Entity.Health.Value <= 0 then error() end
             end)
 
             local enemy_hrp = enemy:FindFirstChild("HumanoidRootPart")
@@ -691,6 +695,7 @@ do
         end
     })
 end
+
 
 do
     local farm_tab2 = window:MakeTab({
@@ -907,7 +912,7 @@ do
     else
         local teleports_tab = window:MakeTab({
             Name = 'Teleports',
-            Icon = '',
+            Icon = "",
             PremiumOnly = false
         })
 
