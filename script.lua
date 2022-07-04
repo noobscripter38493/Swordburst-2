@@ -357,7 +357,7 @@ do
 
         local enemy = to.Parent
         local success = pcall(function()
-            if enemy.Entity.Health.Value <= 0 then error't' end
+            if enemy.Entity.Health.Value <= 0 then error'' end
         end)
 
         if success then
@@ -567,23 +567,24 @@ do
     local remote_key = getupvalue(combat.Init, 2)
     local Event = Rs.Event
 
-    local function killaura_function(attacking_table, enemy, player)
+    local attacking = {}
+    local function killaura_function(enemy, player)
         while true do 
-            local i = table.find(attacking_table, enemy)
+            local i = table.find(attacking, enemy)
             
             local success = pcall(function()
-                if enemy.Entity.Health.Value <= 0 then error't' end
+                if enemy.Entity.Health.Value <= 0 then error'' end
             end)
 
             local enemy_hrp = enemy:FindFirstChild("HumanoidRootPart")
-            if not success or not settings.KA or enemy:FindFirstChild("Immortal") or (hrp.Position - enemy_hrp.Position).Magnitude > settings.KA_Range then
-                table.remove(attacking_table, i)
+            if not enemy_hrp or not success or not settings.KA or enemy:FindFirstChild("Immortal") or (hrp.Position - enemy_hrp.Position).Magnitude > settings.KA_Range then
+                table.remove(attacking, i)
 
                 break 
             end
 
             if player and not settings.AttackPlayers then
-                table.remove(attacking_table, i)
+                table.remove(attacking, i)
 
                 break
             end
@@ -594,30 +595,70 @@ do
         end
     end
 
+    local combat_style
+    local animations
+    for _, v in next, getgc(true) do
+        if typeof(v) == "table" then
+            if rawget(v, "InitAnimations") then
+                animations = rawget(v, "animations")
+            end
+            
+            local calculate = rawget(v, "CalculateCombatStyle")
+            if calculate then
+                combat_style = calculate
+            end
+        end
+        
+        if combat_style and animations then break end
+    end
+
     local ka_connection
+    local swinging
     farm_tab:AddToggle({
         Name = "Kill Aura",
         Default = false,
         Callback = function(bool)
             settings.KA = bool
 
-            local attacking = {} -- to overwrite attacking table when toggled off
+            attacking = {} -- to overwrite attacking table when toggled off
             if bool then
                 ka_connection = range.Touched:Connect(function(touching)  
                     if touching.Parent ~= char and touching.Name == "HumanoidRootPart" then
-                        local enemy = touching.Parent   
+                        local enemy = touching.Parent
                         
                         if not table.find(attacking, enemy) then 
                             table.insert(attacking, enemy)
+                            
+                            if not swinging then
+                                swinging = true
 
+                                coroutine.wrap(function()
+                                    while true do
+                                        if #attacking == 0 then swinging = false break end
+                                        
+                                        local animation_style = animations[combat_style()]
+                                        for _, v in next, animation_style do
+                                            if v.Name:find("Swing") then
+                                                local length = v.Length
+                                                v:AdjustSpeed(1 / length)
+                                                v:Play()
+
+                                                task.wait(.5)
+                                            end
+                                        end
+                                    end
+                                end)()
+                            end
+                
                             local mob = table.find(mobs_on_floor[placeid], enemy.Name)
                             local boss = table.find(bosses_on_floor[placeid], enemy.Name)
                             local chest = enemy.Name:match("Chest")
+
                             if mob or boss or chest then
-                                killaura_function(attacking, enemy)
+                                killaura_function(enemy)
 
                             elseif settings.AttackPlayers then
-                                killaura_function(attacking, enemy, true)
+                                killaura_function(enemy, true)
                             end
                         end
                     end
@@ -701,7 +742,7 @@ do
     
     local function AutoDismantle()
         local dismantle = settings.dismantle
-        if #dismantle == 0 then print("nothing here") return end
+        if #dismantle == 0 then return end
 
         task.wait(1)
 
@@ -1535,6 +1576,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("7/3/22", "Killaura now looks 'legit' (plays attack animation)")
     updates:AddParagraph("7/3/22", "Mute Swings now mutes others swings")
     updates:AddParagraph("7/3/22", "Added Auto Dismantle")
     updates:AddParagraph("7/2/22", "Added Mob Exclusion to Autofarm")
