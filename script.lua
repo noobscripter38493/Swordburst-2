@@ -336,17 +336,17 @@ do
     local mobs_table = {}
     
     local tween_create
-    local smooth_tween
     local function tween(to)
+        print("called!", to.Parent)
         local distance = (hrp.Position - to.Position).Magnitude
-        local t = distance / settings.Tween_Speed
+        local seconds = distance / settings.Tween_Speed
         
-        local tween_info = TweenInfo.new(t, Enum.EasingStyle.Linear)
+        local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
         local cframe = to.CFrame * CFrame.new(0, settings.Autofarm_Y_Offset, 0)
         tween_create = TweenS:Create(hrp, tween_info, {CFrame = cframe})
         
-        smooth_tween = RunS.RenderStepped:Connect(function()
-            hrp.Velocity = Vector3.new(0, 0, 0)
+        local smooth_tween = RunS.RenderStepped:Connect(function()
+            hrp.Velocity = Vector3.zero
         end)
 
         tween_create:Play()
@@ -1345,6 +1345,120 @@ do
 
             if confirm then
                 Dismantle_Rarity("Legendary")
+            end
+        end
+    })
+end
+
+do
+    local ESP_tab = window:MakeTab({
+        Name = "ESP",
+        Icon = "",
+        PremiumOnly = false
+    })
+
+    local ESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/ESP/main/ESP.lua"))()
+    ESP.Enabled = false
+
+    local function AddMobESP(remove)
+        if remove then
+
+            return
+        end
+        
+        for _, v in next, workspace.Mobs:GetDescendants() do
+            if v.Name == "HumanoidRootPart" then
+                ESP:New(v, {
+                    Name = v.Parent.Name,
+                    Color = Color3.fromRGB(98, 0, 255)
+                })
+            end
+        end
+    end
+
+    local players_esp = {}
+    local characters_added = {}
+    local function characterAdded(player)
+        characters_added[player] = player.CharacterAdded:Connect(function(character)
+            local hrp = character:WaitForChild("HumanoidRootPart")
+
+            players_esp[player] = hrp
+            ESP:New(hrp, {
+                Name = player.Name,
+                Color = Color3.fromRGB(255, 0, 0)
+            })
+        end)
+    end
+
+    local player_Added
+    local function AddPlayerESP(remove)
+        if remove then
+            if player_Added then
+                player_Added:Disconnect()
+            end
+            
+            for i, v in next, players_esp do
+                ESP:RemoveObj(v)
+                players_esp[i] = nil
+            end
+
+            for i, v in next, characters_added do
+                v:Disconnect()
+                characters_added[i] = nil
+            end
+
+            return
+        end
+
+        player_Added = Players.PlayerAdded:Connect(characterAdded)
+
+        for _, v in next, Players:GetPlayers() do
+            if v == plr then continue end
+
+            characterAdded(v)
+
+            local character = v.Character
+            local hrp = character:FindFirstChild("HumanoidRootPart", true)
+
+            if not hrp then continue end
+
+            players_esp[v] = hrp 
+            
+            ESP:New(hrp, {
+                Name = v.Name,
+                Color = Color3.fromRGB(255, 0, 0)
+            })
+        end
+    end
+
+    ESP_tab:AddToggle({
+        Name = "ESP",
+        Default = false,
+        Callback = function(bool)
+            ESP.Enabled = bool
+        end
+    })
+
+    ESP_tab:AddToggle({
+        Name = "Mob ESP (currently does nothing)",
+        Default = false,
+        Callback = function(bool)
+            if bool then
+                --AddMobESP()
+            else
+                --AddMobESP()
+            end
+        end
+    })
+
+    ESP_tab:AddToggle({
+        Name = "Player ESP",
+        Default = false,
+        Callback = function(bool)
+            if bool then
+                AddPlayerESP()
+            else
+                AddPlayerESP(true)
             end
         end
     })
