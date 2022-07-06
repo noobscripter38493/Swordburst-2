@@ -1228,7 +1228,30 @@ do
     end
 
     local function create_confirm()
-        return messagebox("CONFIRM DISMANTLE", "THIS DECISION CANNOT BE UNDONE", 4) == 6
+        local oldscreen = CoreGui:FindFirstChild("ScreenGui")
+        local screen = oldscreen or Instance.new("ScreenGui", CoreGui)
+        
+        local popup = CoreGui.RobloxGui.PopupFrame
+        local new = popup:Clone()
+        
+        local confirmed
+        new.PopupAcceptButton.MouseButton1Click:Connect(function()
+            confirmed = true
+        end)
+        
+        new.PopupDeclineButton.MouseButton1Click:Connect(function()
+            confirmed = false 
+        end)
+        
+        new.PopupText.Text = "Confirm Dismantle? (CANNOT BE UNDONE)"
+        new.Parent = screen
+        new.Visible = true
+        
+        repeat wait() until confirmed ~= nil
+        
+        new:Destroy()
+        
+        return confirmed
     end
 
     Smithing:AddButton({
@@ -1365,7 +1388,6 @@ do
 
             return
         end
-        
         for _, v in next, workspace.Mobs:GetDescendants() do
             if v.Name == "HumanoidRootPart" then
                 ESP:New(v, {
