@@ -317,6 +317,7 @@ while true do
     wait(.5)
 end
 
+local ESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/ESP/main/ESP.lua"))()
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
 
 local window = lib:MakeWindow({
@@ -1380,7 +1381,6 @@ do
         PremiumOnly = false
     })
 
-    local ESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/ESP/main/ESP.lua"))()
     ESP.Enabled = false
 
     local function AddMobESP(remove)
