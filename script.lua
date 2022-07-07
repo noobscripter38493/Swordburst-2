@@ -618,7 +618,24 @@ do
     end
 
     local ka_connection
-    local swinging
+
+    coroutine.wrap(function()
+        while true do
+            if #attacking == 0 then task.wait(.3) continue end
+            
+            local animation_style = animations[combat_style()]
+            for _, v in next, animation_style do
+                if v.Name:find("Swing") then
+                    local length = v.Length
+                    v:AdjustSpeed(1 / length)
+                    v:Play()
+
+                    task.wait(.5)
+                end
+            end
+        end
+    end)()
+
     farm_tab:AddToggle({
         Name = "Kill Aura",
         Default = false,
@@ -632,38 +649,17 @@ do
                         local enemy = touching.Parent
                         
                         if not table.find(attacking, enemy) then 
-                            table.insert(attacking, enemy)
-                            
-                            if not swinging then
-                                swinging = true
-
-                                coroutine.wrap(function()
-                                    while true do
-                                        if #attacking == 0 then swinging = false break end
-                                        
-                                        local animation_style = animations[combat_style()]
-                                        for _, v in next, animation_style do
-                                            if v.Name:find("Swing") then
-                                                local length = v.Length
-                                                v:AdjustSpeed(1 / length)
-                                                v:Play()
-
-                                                task.wait(.5)
-                                            end
-                                        end
-                                    end
-                                end)()
-                            end
-                
                             local mob = table.find(mobs_on_floor[placeid], enemy.Name)
                             local boss = table.find(bosses_on_floor[placeid], enemy.Name)
                             local chest = enemy.Name:match("Chest")
 
                             if mob or boss or chest then
-                                killaura_function(enemy)
+                                table.insert(attacking, enemy)
+                                return killaura_function(enemy)
 
                             elseif settings.AttackPlayers then
-                                killaura_function(enemy, true)
+                                table.insert(attacking, enemy)
+                                return killaura_function(enemy, true)
                             end
                         end
                     end
@@ -1381,10 +1377,8 @@ do
         PremiumOnly = false
     })
 
-    ESP.Enabled = false
-
     local function AddMobESP(remove)
-        if remove then
+        if remove then  
 
             return
         end
@@ -1405,6 +1399,7 @@ do
             local hrp = character:WaitForChild("HumanoidRootPart")
 
             players_esp[player] = hrp
+
             ESP:New(hrp, {
                 Name = player.Name,
                 Color = Color3.fromRGB(255, 0, 0)
@@ -1413,26 +1408,22 @@ do
     end
 
     local player_Added
-    local function AddPlayerESP(remove)
-        if remove then
+    local function InitPlayerESP(remove)
+        if not remove then
             if player_Added then
                 player_Added:Disconnect()
             end
-            
+        
             for i, v in next, players_esp do
                 ESP:RemoveObj(v)
-                players_esp[i] = nil
+                characters_added[i]:Disconnect()
             end
 
-            for i, v in next, characters_added do
-                v:Disconnect()
-                characters_added[i] = nil
-            end
+            table.clear(players_esp)
+            table.clear(characters_added)
 
             return
         end
-
-        player_Added = Players.PlayerAdded:Connect(characterAdded)
 
         for _, v in next, Players:GetPlayers() do
             if v == plr then continue end
@@ -1440,17 +1431,19 @@ do
             characterAdded(v)
 
             local character = v.Character
-            local hrp = character:FindFirstChild("HumanoidRootPart", true)
+            local hrp = character and character:FindFirstChild("HumanoidRootPart")
 
             if not hrp then continue end
 
-            players_esp[v] = hrp 
+            players_esp[v] = hrp
             
             ESP:New(hrp, {
                 Name = v.Name,
                 Color = Color3.fromRGB(255, 0, 0)
             })
         end
+
+        player_Added = Players.PlayerAdded:Connect(characterAdded)
     end
 
     ESP_tab:AddToggle({
@@ -1465,11 +1458,7 @@ do
         Name = "Mob ESP (currently does nothing)",
         Default = false,
         Callback = function(bool)
-            if bool then
-                --AddMobESP()
-            else
-                --AddMobESP()
-            end
+            --AddMobESP(bool)
         end
     })
 
@@ -1477,11 +1466,7 @@ do
         Name = "Player ESP",
         Default = false,
         Callback = function(bool)
-            if bool then
-                AddPlayerESP()
-            else
-                AddPlayerESP(true)
-            end
+            InitPlayerESP(bool)
         end
     })
 end
@@ -1717,6 +1702,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("7/3/22", "killaura animations works for players now")
     updates:AddParagraph("7/3/22", "Killaura now looks 'legit' (plays attack animation)")
     updates:AddParagraph("7/3/22", "Mute Swings now mutes others swings")
     updates:AddParagraph("7/3/22", "Added Auto Dismantle")
