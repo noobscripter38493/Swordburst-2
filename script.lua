@@ -1702,6 +1702,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("7/7/22", "Fixed ESP crash ( ithink)?")
     updates:AddParagraph("7/7/22", "Added player ESP (mob soon)")
     updates:AddParagraph("7/3/22", "killaura animations works for players now")
     updates:AddParagraph("7/3/22", "Killaura now looks 'legit' (plays attack animation)")
