@@ -398,7 +398,7 @@ do
     end
 
     farm_tab:AddToggle({
-        Name = "Autofarm (Ban Risk - Use Invisibility)",
+        Name = "Autofarm (HIGH BAN RISK)",
         Default = false,
         Callback = function(bool)
             settings.Autofarm = bool
@@ -627,7 +627,7 @@ do
 
     coroutine.wrap(function()
         while true do
-            if #attacking == 0 then task.wait(.3) continue end
+            if #attacking == 0 then task.wait(.1) continue end
             
             local animation_style = animations[combat_style()]
             for _, v in next, animation_style do
@@ -698,7 +698,6 @@ do
         end
     })
 end
-
 
 do
     local farm_tab2 = window:MakeTab({
