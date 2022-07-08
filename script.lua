@@ -604,8 +604,14 @@ do
     local animations
     for _, v in next, getgc(true) do
         if typeof(v) == "table" then
-            if rawget(v, "InitAnimations") then
-                animations = rawget(v, "animations")
+            local Initanis = rawget(v, "InitAnimations")
+            if Initanis then
+                coroutine.wrap(function()
+                    while true do
+                        animations = rawget(v, "animations")
+                        task.wait(1)
+                    end
+                end)()
             end
             
             local calculate = rawget(v, "CalculateCombatStyle")
@@ -1519,7 +1525,7 @@ end
 
 do  
     local function gethitEffectsfromnil()
-        for i, v in next, getnilinstances() do
+        for _, v in next, getnilinstances() do
             if v.Name == "HitEffects" then
                 return v
             end
@@ -1702,6 +1708,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("7/8/22", "Attack animation now plays after death")
     updates:AddParagraph("7/7/22", "Fixed ESP crash ( ithink)?")
     updates:AddParagraph("7/7/22", "Added player ESP (mob soon)")
     updates:AddParagraph("7/3/22", "killaura animations works for players now")
