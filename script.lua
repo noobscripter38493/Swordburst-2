@@ -1376,107 +1376,6 @@ do
 end
 
 do
-    local ESP_tab = window:MakeTab({
-        Name = "ESP",
-        Icon = "",
-        PremiumOnly = false
-    })
-
-    local function AddMobESP(remove)
-        if remove then  
-
-            return
-        end
-        for _, v in next, workspace.Mobs:GetDescendants() do
-            if v.Name == "HumanoidRootPart" then
-                ESP:New(v, {
-                    Name = v.Parent.Name,
-                    Color = Color3.fromRGB(98, 0, 255)
-                })
-            end
-        end
-    end
-
-    local players_esp = {}
-    local characters_added = {}
-    local function characterAdded(player)
-        characters_added[player] = player.CharacterAdded:Connect(function(character)
-            local hrp = character:WaitForChild("HumanoidRootPart")
-
-            players_esp[player] = hrp
-
-            ESP:New(hrp, {
-                Name = player.Name,
-                Color = Color3.fromRGB(255, 0, 0)
-            })
-        end)
-    end
-
-    local player_Added
-    local function InitPlayerESP(remove)
-        if not remove then
-            if player_Added then
-                player_Added:Disconnect()
-            end
-        
-            for i, v in next, players_esp do
-                ESP:RemoveObj(v)
-                characters_added[i]:Disconnect()
-            end
-
-            table.clear(players_esp)
-            table.clear(characters_added)
-
-            return
-        end
-
-        for _, v in next, Players:GetPlayers() do
-            if v == plr then continue end
-
-            characterAdded(v)
-
-            local character = v.Character
-            local hrp = character and character:FindFirstChild("HumanoidRootPart")
-
-            if not hrp then continue end
-
-            players_esp[v] = hrp
-            
-            ESP:New(hrp, {
-                Name = v.Name,
-                Color = Color3.fromRGB(255, 0, 0)
-            })
-        end
-
-        player_Added = Players.PlayerAdded:Connect(characterAdded)
-    end
-
-    ESP_tab:AddToggle({
-        Name = "ESP",
-        Default = false,
-        Callback = function(bool)
-            ESP.Enabled = bool
-        end
-    })
-
-    ESP_tab:AddToggle({
-        Name = "Mob ESP (currently does nothing)",
-        Default = false,
-        Callback = function(bool)
-            --AddMobESP(bool)
-        end
-    })
-
-    ESP_tab:AddToggle({
-        Name = "Player ESP",
-        Default = false,
-        Callback = function(bool)
-            InitPlayerESP(bool)
-        end
-    })
-end
-
-do
     local Stats = window:MakeTab({
         Name = "Session Stats",
         Icon = "",
@@ -1707,6 +1606,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("7/9/22", "removed esp (Crashes)")
     updates:AddParagraph("7/8/22", "Attack animation now plays after death")
     updates:AddParagraph("7/7/22", "Fixed ESP crash ( ithink)?")
     updates:AddParagraph("7/7/22", "Added player ESP (mob soon)")
