@@ -226,8 +226,6 @@ function find(mobs, element, boss)
             end
         end
     end
-    
-    return nil
 end
 
 local plr = Players.LocalPlayer
@@ -249,7 +247,6 @@ getgenv().settings = {
     Farm_Only_Bosses = false,
     Boss_Priority = false,
     MuteSwingSounds = false,
-    __IndexBypass = humanoid.WalkSpeed,
     Prioritized_Boss = nil,
     Mob_Priority = false,
     Prioritized_Mob = nil,
@@ -266,37 +263,6 @@ getgenv().settings = {
     excludedMobs = {},
     dismantle = {}
 }
-
--- disable M1s when killaura is enabled
-local setThreadIdentity = (syn and syn.set_thread_identity) or setthreadcontext 
-local getThreadIdentity = (syn and syn.get_thread_identity) or getthreadidentity
-
-local oldIndentity = getThreadIdentity()
-
-setThreadIdentity(2)
-
-for _, v in next, getconnections(UserInputS.InputBegan) do
-    local func = v.Function
-    
-    if func then
-        local info = getinfo(func)
-        
-        if info.source:find("Services.Input") then
-            local noMouseClick; noMouseClick = hookfunction(func, function(user_input, game_processed, ...) -- ... to avoid lame detections that i came up with (lol)
-                if user_input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    if settings.KA then
-                        return 
-                    end
-                end
-                
-                return noMouseClick(user_input, game_processed, ...)
-            end)
-        end
-    end
-end 
-
-setThreadIdentity(oldIndentity)
---
 
 plr.CharacterAdded:Connect(function(new)
     char = new
@@ -317,8 +283,34 @@ while true do
     wait(.5)
 end
 
-local ESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/ESP/main/ESP.lua"))()
+-- disable M1s when killaura is enabled
+local setThreadIdentity = syn.set_thread_identity 
+setThreadIdentity(2)
+
+for _, v in next, getconnections(UserInputS.InputBegan) do
+    local f = v.Function
+    if not f then continue end
+    
+    local info = getinfo(f)
+    if info.source:find("Services.Input") then
+        local noMouseClick; noMouseClick = hookfunction(f, function(user_input, game_processed, ...)
+            if user_input.UserInputType == Enum.UserInputType.MouseButton1 then
+                if settings.KA then
+                    return
+                end
+            end
+            
+            return noMouseClick(user_input, game_processed, ...)
+        end)
+
+        break
+    end
+end
+setThreadIdentity(7)
+
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+
+repeat wait() until lib
 
 local window = lib:MakeWindow({
     Name = "SB2 Script | Made By avg#1496",
@@ -338,7 +330,6 @@ do
     
     local tween_create
     local function tween(to)
-        print("called!", to.Parent)
         local distance = (hrp.Position - to.Position).Magnitude
         local seconds = distance / settings.Tween_Speed
         
@@ -661,11 +652,11 @@ do
 
                             if mob or boss or chest then
                                 table.insert(attacking, enemy)
-                                return killaura_function(enemy)
+                                killaura_function(enemy)
 
                             elseif settings.AttackPlayers then
                                 table.insert(attacking, enemy)
-                                return killaura_function(enemy, true)
+                                killaura_function(enemy, true)
                             end
                         end
                     end
@@ -1121,27 +1112,21 @@ do
         end
     })
 
-    -- wave goodbye to humanoid.Walkspeed = x. if humanoid.WalkSpeed ~= x __index detection. (sb2 doesnt have it tho)
-    local newindex; newindex = hookmetamethod(game, "__newindex", function(self, i, v)
-        if self == humanoid and i == "WalkSpeed" and not checkcaller() and typeof(v) == "number" then
-            settings.__IndexBypass = v
-        end
-
-        return newindex(self, i, v)
-    end)
-
+    local walkspeed = humanoid.WalkSpeed
+    local game_ws = humanoid.WalkSpeed
     local index_WS; index_WS = hookmetamethod(game, "__index", function(self, i)
         if self == humanoid and i == "WalkSpeed" and not checkcaller() then
-            return settings.__IndexBypass
+            return game_ws
         end
         
         return index_WS(self, i) 
     end)
     
     local newindex_WS; newindex_WS = hookmetamethod(game, "__newindex", function(self, i, v)
-        if settings.speed then 
-            if self == humanoid and i == "WalkSpeed" and not checkcaller() and typeof(v) == "number" then
-                v = settings.WalkSpeed
+        if settings.speed and not checkcaller() then 
+            if self == humanoid and i == "WalkSpeed" then
+                v = walkspeed
+                game_ws = walkspeed
             end
         end
         
@@ -1155,9 +1140,9 @@ do
             settings.speed = bool
             
             if bool then
-                humanoid.WalkSpeed = settings.WalkSpeed 
+                humanoid.WalkSpeed = walkspeed 
             else
-                humanoid.WalkSpeed = settings.__IndexBypass
+                humanoid.WalkSpeed = game_ws
             end
         end
     })
@@ -1166,12 +1151,12 @@ do
         Name = "WalkSpeed",
         Min = 0,
         Max = 50,
-        Default = settings.__IndexBypass,
+        Default = walkspeed,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
         ValueName = "Speed",
         Callback = function(speed)
-            settings.WalkSpeed = speed
+            walkspeed = speed
 
             if settings.speed then
                 humanoid.WalkSpeed = speed
@@ -1292,15 +1277,9 @@ do
 
     local crystalForge_module = require(ui_module.CrystalForge)
 
-    local secure_call = syn and syn.secure_call
     Smithing:AddButton({
         Name = "Open Crystal Forge",
         Callback = function()
-            if secure_call then
-                local func = crystalForge_module.Open
-                return secure_call(func, game_module)
-            end
-
             crystalForge_module.Open()
         end
     })
@@ -1309,11 +1288,6 @@ do
     Smithing:AddButton({
         Name = "Open Upgrader",
         Callback = function()
-            if secure_call then
-                local func = upgrade_module.Open
-                return secure_call(func, game_module)
-            end
-
             upgrade_module.Open()
         end
     })
@@ -1321,11 +1295,6 @@ do
     Smithing:AddButton({
         Name = "Open Dismantler",
         Callback = function()
-            if secure_call then
-                local func = dismantler_module.Open
-                return secure_call(func, game_module)
-            end
-
             dismantler_module.Open()
         end
     })
@@ -1466,6 +1435,7 @@ do
 
             if bool and workspace:FindFirstChild("HitEffects") then
                 workspace.HitEffects.Parent = nil
+                
             elseif nilHitEffects then
                 nilHitEffects.Parent = workspace
             end
@@ -1606,7 +1576,8 @@ do
         PremiumOnly = false
     }) 
     
-    updates:AddParagraph("7/9/22", "removed esp (Crashes)")
+    updates:AddParagraph("7/15/22", "fixed the script (ui lib issue)")
+    updates:AddParagraph("7/9/22", "removed esp (crashes)")
     updates:AddParagraph("7/8/22", "Attack animation now plays after death")
     updates:AddParagraph("7/7/22", "Fixed ESP crash ( ithink)?")
     updates:AddParagraph("7/7/22", "Added player ESP (mob soon)")
