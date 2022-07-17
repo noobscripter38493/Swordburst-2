@@ -284,7 +284,7 @@ while true do
 end
 
 -- disable M1s when killaura is enabled
-local setThreadIdentity = syn.set_thread_identity 
+local setThreadIdentity = syn and syn.set_thread_identity or setthreadcontext
 setThreadIdentity(2)
 
 for _, v in next, getconnections(UserInputS.InputBegan) do
@@ -293,7 +293,7 @@ for _, v in next, getconnections(UserInputS.InputBegan) do
     
     local info = getinfo(f)
     if info.source:find("Services.Input") then
-        local noMouseClick; noMouseClick = hookfunction(f, function(user_input, game_processed, ...)
+        local noMouseClick; noMouseClick = hookfunc(f, function(user_input, game_processed, ...)
             if user_input.UserInputType == Enum.UserInputType.MouseButton1 then
                 if settings.KA then
                     return
@@ -1576,7 +1576,6 @@ do
         PremiumOnly = false
     }) 
     
-    updates:AddParagraph("7/15/22", "fixed the script (ui lib issue)")
     updates:AddParagraph("7/9/22", "removed esp (crashes)")
     updates:AddParagraph("7/8/22", "Attack animation now plays after death")
     updates:AddParagraph("7/7/22", "Fixed ESP crash ( ithink)?")
