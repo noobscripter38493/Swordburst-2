@@ -401,7 +401,8 @@ do
 
                 return 
             end
-
+            
+             task.spawn(function()
             while true do
                 local excludedMobs = settings.excludedMobs
 
@@ -477,6 +478,7 @@ do
                     tween(mob_hrp)
                 end
             end
+                        end)
         end
     })
     
