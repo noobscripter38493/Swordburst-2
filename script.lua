@@ -402,7 +402,6 @@ do
                 return 
             end
             
-             task.spawn(function()
             while true do
                 local excludedMobs = settings.excludedMobs
 
@@ -421,7 +420,8 @@ do
 
                         tween(boss_hrp) 
                     end
-
+                    
+                    task.wait()
                     continue
                 end
 
@@ -440,6 +440,7 @@ do
                         if boss_hrp then
                             tween(boss_hrp)
                             
+                            task.wait()
                             continue
                         end
                     end
@@ -460,6 +461,7 @@ do
                         if mob_hrp then
                             tween(mob_hrp)
                             
+                            task.wait()
                             continue
                         end
                     end
@@ -477,8 +479,9 @@ do
                 if mob_hrp then
                     tween(mob_hrp)
                 end
+                
+                task.wait()
             end
-                        end)
         end
     })
     
