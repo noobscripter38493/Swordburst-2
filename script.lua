@@ -18,6 +18,9 @@ else
 end
 
 local mobs_on_floor = {
+    [540240728] = {}-- avoid errors llol // floor arcadia
+    [737272595] = {}, -- avoid errors llol // floor battle arena
+    
     [542351431] = { -- floor 1
         "Frenzy Boar",
         "Wolf",
@@ -69,6 +72,8 @@ local mobs_on_floor = {
         "Patrolman Elite",
     },
 
+    [566212942] = {}, -- avoid errors llol // floor 6
+    
     [582198062] = { -- floor 7
         "Jelly Wisp",
         "Firefly",
@@ -155,6 +160,8 @@ local bosses_on_floor = {
         "Fire Scorpion",
         "Sa'jun the Centurian Chieftain"
     },
+
+    
     
     [582198062] = { -- floor 7
         "Frogazoid",
@@ -654,7 +661,8 @@ do
                             local mob = table.find(mobs_on_floor[placeid], enemy.Name)
                             local boss = table.find(bosses_on_floor[placeid], enemy.Name)
                             local chest = enemy.Name:match("Chest")
-
+                            
+                            print(isnetworkowner(touching))
                             if mob or boss or chest then
                                 table.insert(attacking, enemy)
                                 killaura_function(enemy)
