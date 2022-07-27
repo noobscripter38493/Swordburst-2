@@ -662,7 +662,6 @@ do
                             local boss = table.find(bosses_on_floor[placeid], enemy.Name)
                             local chest = enemy.Name:match("Chest")
                             
-                            print(isnetworkowner(touching))
                             if mob or boss or chest then
                                 table.insert(attacking, enemy)
                                 killaura_function(enemy)
