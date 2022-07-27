@@ -320,7 +320,7 @@ local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware
 repeat wait() until lib
 
 local window = lib:MakeWindow({
-    Name = "SB2 Script | Made By avg#1496",
+    Name = "SB2 Script",
     HidePremium = false,
     SaveConfig = false,
     ConfigFolder = false
@@ -1623,27 +1623,6 @@ do
     updates:AddParagraph("6/4/22", "Made Some Floors show actual TP locations (wip)")
     updates:AddParagraph("6/3/22", "Autofarm Added (improving)")
     updates:AddParagraph("6/2/22", "M1s are stopped when Kill Aura is enabled")
-end
-
-do
-    local credits = window:MakeTab({
-        Name = "Credits",
-        Icon = "",
-        PremiumOnly = false
-    })
-
-    credits:AddParagraph("Credits", "Made by avg#1496 | DM Bugs")
-
-    if setclipboard then
-        credits:AddButton({
-            Name = "Copy Discord To Clipboard",
-            Callback = function()
-                setclipboard("avg#1496") 
-            end
-        })
-    else
-        credits:AddParagraph("error", "no setclipboard function")
-    end
 end
 
 lib:Init()
