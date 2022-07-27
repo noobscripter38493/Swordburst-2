@@ -18,7 +18,7 @@ else
 end
 
 local mobs_on_floor = {
-    [540240728] = {}-- avoid errors llol // floor arcadia
+    [540240728] = {}, -- avoid errors llol // floor arcadia
     [737272595] = {}, -- avoid errors llol // floor battle arena
     
     [542351431] = { -- floor 1
