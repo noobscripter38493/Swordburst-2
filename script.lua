@@ -18,9 +18,6 @@ else
 end
 
 local mobs_on_floor = {
-    [540240728] = {}, -- avoid errors llol // floor arcadia
-    [737272595] = {}, -- avoid errors llol // floor battle arena
-    
     [542351431] = { -- floor 1
         "Frenzy Boar",
         "Wolf",
@@ -72,8 +69,6 @@ local mobs_on_floor = {
         "Patrolman Elite",
     },
 
-    [566212942] = {}, -- avoid errors llol // floor 6
-    
     [582198062] = { -- floor 7
         "Jelly Wisp",
         "Firefly",
@@ -160,8 +155,6 @@ local bosses_on_floor = {
         "Fire Scorpion",
         "Sa'jun the Centurian Chieftain"
     },
-
-    
     
     [582198062] = { -- floor 7
         "Frogazoid",
@@ -320,7 +313,7 @@ local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware
 repeat wait() until lib
 
 local window = lib:MakeWindow({
-    Name = "SB2 Script",
+    Name = "SB2 Script | Made By OneTaPuXd on v3rm",
     HidePremium = false,
     SaveConfig = false,
     ConfigFolder = false
@@ -408,7 +401,7 @@ do
 
                 return 
             end
-            
+
             while true do
                 local excludedMobs = settings.excludedMobs
 
@@ -427,8 +420,7 @@ do
 
                         tween(boss_hrp) 
                     end
-                    
-                    task.wait()
+
                     continue
                 end
 
@@ -447,7 +439,6 @@ do
                         if boss_hrp then
                             tween(boss_hrp)
                             
-                            task.wait()
                             continue
                         end
                     end
@@ -468,7 +459,6 @@ do
                         if mob_hrp then
                             tween(mob_hrp)
                             
-                            task.wait()
                             continue
                         end
                     end
@@ -486,8 +476,6 @@ do
                 if mob_hrp then
                     tween(mob_hrp)
                 end
-                
-                task.wait()
             end
         end
     })
@@ -661,7 +649,7 @@ do
                             local mob = table.find(mobs_on_floor[placeid], enemy.Name)
                             local boss = table.find(bosses_on_floor[placeid], enemy.Name)
                             local chest = enemy.Name:match("Chest")
-                            
+
                             if mob or boss or chest then
                                 table.insert(attacking, enemy)
                                 killaura_function(enemy)
@@ -907,7 +895,7 @@ do
         lib:MakeNotification({
             Name = "Can't TP",
             Content = "Can't TP. Teleport Not Supported On This Floor (f1 or f7)", --[[
-                these 2 floors have a lower streaming radius, (meaning parts dont spawn until u approach them) and it's not an editable property
+                these 2 floors have a lower streaming radius, (meaning parts dont spawn until u approach them), nothing i can do abt it
                 
                 (https://developer.roblox.com/en-us/api-reference/property/Workspace/StreamingMinRadius)
                 ]]
@@ -926,9 +914,7 @@ do
                 Name = name,
                 Callback = function()
                     firetouchinterest(hrp, part, 0)
-                    
-                    wait(.5)
-                    
+                    task.wait(.1)
                     firetouchinterest(hrp, part, 1)
                 end
             })
@@ -1021,11 +1007,10 @@ do
         if placeid == 5287433115 then -- floor 11
             local miniboss = Vector3.new(4812, 1646, 2082)
             
-            loop_workspace(miniboss)
+            loop_workspace(nil, nil, miniboss)
         end
     end
 end 
-
 
 do
     local Character_tab = window:MakeTab({
@@ -1222,7 +1207,7 @@ do
         end
 
         if armor then
-
+            
         end
     end
 
@@ -1623,6 +1608,26 @@ do
     updates:AddParagraph("6/4/22", "Made Some Floors show actual TP locations (wip)")
     updates:AddParagraph("6/3/22", "Autofarm Added (improving)")
     updates:AddParagraph("6/2/22", "M1s are stopped when Kill Aura is enabled")
+end
+
+do
+    local credits = window:MakeTab({
+        Name = "Credits",
+        Icon = "",
+        PremiumOnly = false
+    })
+
+    credits:AddParagraph("Credits", "Made by OneTaPuXd on v3rm | PM Bugs")
+    if setclipboard then
+        credits:AddButton({
+            Name = "Copy v3rm url To Clipboard",
+            Callback = function()
+                setclipboard("https://v3rmillion.net/member.php?action=profile&uid=1229592") 
+            end
+        })
+    else
+        credits:AddParagraph("v3rm url", "https://v3rmillion.net/member.php?action=profile&uid=1229592")
+    end
 end
 
 lib:Init()
