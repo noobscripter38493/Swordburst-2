@@ -113,18 +113,18 @@ local mobs_on_floor = {
 
     [5287433115] = { -- floor 11
         "Reaper",
-        --"Elite Reaper",
-        --"DJ Reaper",
+        "Elite Reaper",
+        "DJ Reaper",
         "Soul Eater",
         "Shadow Figure",
-        --"Meta Figure",
+        "Meta Figure",
         "???????",
-        --"Rogue Android",
+        "Rogue Android",
         "Command Falcon",
-        --"Armageddon Eagle",
-        --"Sentry",
-        --"Watcher",
-        --"Cybold"
+        "Armageddon Eagle",
+        "Sentry",
+        "Watcher",
+        "Cybold"
     }
 }
 
@@ -181,9 +181,9 @@ local bosses_on_floor = {
         "Da",
         "Ra",
         "Ka",
-        --"Za",
-        --"Duality Reaper",
-        --"Saurus, the All-Seeing"
+        "Za",
+        "Duality Reaper",
+        "Saurus, the All-Seeing"
     }
 }
 
@@ -1573,6 +1573,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("7/29/22", "Added Killaura & Autofarm support for floor 11 dungeon")
     updates:AddParagraph("7/9/22", "removed esp (crashes)")
     updates:AddParagraph("7/8/22", "Attack animation now plays after death")
     updates:AddParagraph("7/7/22", "Fixed ESP crash ( ithink)?")
