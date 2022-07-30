@@ -255,6 +255,7 @@ getgenv().settings = {
     WalkSpeed = humanoid.WalkSpeed,
     speed = false,
     InfSprint = false,
+    InfJump = false,
     RemoveDeathEffects = false,
     RemoveDamageNumbers = false,
     AttackPlayers = false,
@@ -1102,6 +1103,25 @@ do
     end)
 
     Character_tab:AddToggle({
+        Name = "Infinite Jump",
+        Default = false,
+        Callback = function(bool)
+            settings.InfJump = bool
+        end
+    })
+
+    UserInputS.InputBegan:Connect(function(key, processed)
+        if processed then return end
+        if not settings.InfJump then return end
+        
+        if key.KeyCode == Enum.KeyCode.Space then
+            pcall(function() -- dont know if this can error // dont want to find out 
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end)
+        end
+    end)
+
+    Character_tab:AddToggle({
         Name = "Infinite Sprint",
         Default = false,
         Callback = function(bool)
@@ -1573,6 +1593,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("7/30/22", "Added Infinite Jump (avoid game making u fall through map on teleport)")
     updates:AddParagraph("7/29/22", "Added Killaura & Autofarm support for floor 11 dungeon")
     updates:AddParagraph("7/9/22", "removed esp (crashes)")
     updates:AddParagraph("7/8/22", "Attack animation now plays after death")
