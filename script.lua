@@ -181,7 +181,7 @@ local bosses_on_floor = {
         "Da",
         "Ra",
         "Ka",
-        "Za",
+        "Za, The Eldist",
         "Duality Reaper",
         "Saurus, the All-Seeing"
     }
