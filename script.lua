@@ -763,13 +763,7 @@ do
         end
     end
 
-    local rates = {Legendary = .05}
-    setmetatable(rates, {
-        __index = function()
-            return .04 
-        end
-    })
-
+    local rates = setmetatable({Legendary = .05}, {__index = function() return .04 end})
     local function AutoEquip()
         task.wait(1)
 
@@ -1238,24 +1232,22 @@ do
         local popup = CoreGui.RobloxGui.PopupFrame
         local new = popup:Clone()
         
-        local confirmed
+        local thread = coroutine.running()
         new.PopupAcceptButton.MouseButton1Click:Connect(function()
-            confirmed = true
+            new:Destroy()
+            coroutine.resume(thread, true)
         end)
         
         new.PopupDeclineButton.MouseButton1Click:Connect(function()
-            confirmed = false 
+            new:Destroy()
+            coroutine.resume(thread, false)
         end)
         
         new.PopupText.Text = "Confirm Dismantle? (CANNOT BE UNDONE)"
         new.Parent = screen
         new.Visible = true
         
-        repeat wait() until confirmed ~= nil
-        
-        new:Destroy()
-        
-        return confirmed
+        return coroutine.yield()
     end
 
     Smithing:AddButton({
