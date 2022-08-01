@@ -1205,25 +1205,25 @@ do
             end
         end
     end
-
+--[[
     local function upgrade_gear(side, armor)
         if side then
             local weapon_held = workspace[plr.Name]:FindFirstChild(side .. "Weapon")
 
             if weapon_held then
                 local inventory_id = weapon_held:FindFirstChild("InventoryID")
-                local weapon_inventory = inventory_id and functios.GetItemById(inventory_id.Value)
+                local weapon = inventory_id and functios.GetItemById(inventory_id.Value)
 
                 for _ = 1, settings.times do
-                    event:FireServer("Equipment", {"Upgrade", weapon_inventory, nil})
+                    event:FireServer("Equipment", {"Upgrade", weapon, nil})
                 end
             end
-        end
+        end         
 
         if armor then
             
         end
-    end
+    end]]
 
     local function create_confirm()
         local oldscreen = CoreGui:FindFirstChild("ScreenGui")
@@ -1249,7 +1249,7 @@ do
         
         return coroutine.yield()
     end
-
+--[[
     Smithing:AddButton({
         Name = "Upgrade Left Equipped Weapon",
         Callback = function()
@@ -1263,14 +1263,14 @@ do
             upgrade_gear("Right")
         end
     })
-    --[[
+    
     Smithing:AddButton({
         Name = "Upgrade Equipped Armor",
         Callback = function()
             upgrade_gear(nil, true)
         end
     })
-    ]]
+    
     Smithing:AddSlider({
         Name = "Amount of Upgrades",
         Min = 0,
@@ -1283,7 +1283,7 @@ do
             settings.times = v
         end
     })
-
+    ]]
     local crystalForge_module = require(ui_module.CrystalForge)
 
     Smithing:AddButton({
@@ -1585,6 +1585,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("8/1/22", "Removed multi upgrade (officially added in game)")
     updates:AddParagraph("7/30/22", "Added Infinite Jump (avoid game making u fall through map on teleport)")
     updates:AddParagraph("7/29/22", "Added Killaura & Autofarm support for floor 11 dungeon")
     updates:AddParagraph("7/9/22", "removed esp (crashes)")
