@@ -246,7 +246,7 @@ getgenv().humanoid = char:WaitForChild("Humanoid")
 
 repeat wait() until getrenv()._G.CalculateCombatStyle
 
-getgenv().settings = {
+local settings = {
     Autofarm = false,
     Autofarm_Y_Offset = 10,
     Tween_Speed = 50,
