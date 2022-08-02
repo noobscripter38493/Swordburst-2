@@ -4,10 +4,6 @@
 
 -- add more stat tracking 
 
--- make farm only bosses do some idle stuff while not farming
-
--- anti exploit makes mobs go invincibile if they are attcked and haven't attacked back after a long time and i should fix it eventually
-
 repeat wait() until game:IsLoaded() 
 
 local teleport_execute = (syn and syn.queue_on_teleport) or queue_on_teleport
@@ -210,6 +206,16 @@ for i, v in next, floor_data.floors do -- probably remove this
     end
 end
 
+local function copy_table(t)
+    local c = {}
+    
+    for i, v in next, t do
+        c[i] = v
+    end
+    
+    return c
+end
+
 function find(mobs, element, boss)
     if not boss then
         for _, v in next, mobs do
@@ -254,6 +260,7 @@ getgenv().settings = {
     KA_Range = 20,
     WalkSpeed = humanoid.WalkSpeed,
     speed = false,
+    AutoEquip = false,
     InfSprint = false,
     InfJump = false,
     RemoveDeathEffects = false,
@@ -326,9 +333,8 @@ do
         Icon = "",
         PremiumOnly = false
     })
-    
+    --[[
     local mobs_table = {}
-    
     local tween_create
     local function tween(to)
         local distance = (hrp.Position - to.Position).Magnitude
@@ -548,6 +554,7 @@ do
             settings.Tween_Speed = v
         end
     })
+    ]]
 
     local range = Instance.new("Part")
     range.Size = Vector3.new(25, 25, 25)
@@ -598,12 +605,20 @@ do
         if typeof(v) == "table" then
             local Initanis = rawget(v, "InitAnimations")
             if Initanis then
-                coroutine.wrap(function()
-                    while true do
-                        animations = rawget(v, "animations")
-                        task.wait(1)
+                local o = copy_table(v)
+                setrawmetatable(v, {
+                    __index = o, 
+                    __newindex = function(self, i, v)
+                        rawset(o, i, v)
+
+                        if i == "animations" then
+                            animations = v
+                        end
                     end
-                end)()
+                })
+                
+                animations = o.animations
+                table.clear(v)
             end
             
             local calculate = rawget(v, "CalculateCombatStyle")
@@ -614,8 +629,6 @@ do
         
         if combat_style and animations then break end
     end
-
-    local ka_connection
 
     coroutine.wrap(function()
         while true do
@@ -634,38 +647,34 @@ do
         end
     end)()
 
+    range.Touched:Connect(function(touching)  
+        if not settings.KA or touching.Parent == char or touching.Name ~= "HumanoidRootPart" then 
+            return
+        end
+
+        local enemy = touching.Parent
+        if not table.find(attacking, enemy) then 
+            local mob = table.find(mobs_on_floor[placeid], enemy.Name)
+            local boss = table.find(bosses_on_floor[placeid], enemy.Name)
+            local chest = enemy.Name:match("Chest")
+
+            if mob or boss or chest then
+                table.insert(attacking, enemy)
+                killaura_function(enemy)
+
+            elseif settings.AttackPlayers then
+                table.insert(attacking, enemy)
+                killaura_function(enemy, true)
+            end
+        end
+    end)
+
     farm_tab:AddToggle({
         Name = "Kill Aura",
         Default = false,
         Callback = function(bool)
             settings.KA = bool
-
             attacking = {} -- to overwrite attacking table when toggled off
-            if bool then
-                ka_connection = range.Touched:Connect(function(touching)  
-                    if touching.Parent ~= char and touching.Name == "HumanoidRootPart" then
-                        local enemy = touching.Parent
-                        
-                        if not table.find(attacking, enemy) then 
-                            local mob = table.find(mobs_on_floor[placeid], enemy.Name)
-                            local boss = table.find(bosses_on_floor[placeid], enemy.Name)
-                            local chest = enemy.Name:match("Chest")
-
-                            if mob or boss or chest then
-                                table.insert(attacking, enemy)
-                                killaura_function(enemy)
-
-                            elseif settings.AttackPlayers then
-                                table.insert(attacking, enemy)
-                                killaura_function(enemy, true)
-                            end
-                        end
-                    end
-                end) 
-
-            elseif ka_connection then
-                ka_connection:Disconnect()
-            end
         end
     })
 
@@ -765,6 +774,7 @@ do
 
     local rates = setmetatable({Legendary = .05}, {__index = function() return .04 end})
     local function AutoEquip()
+        if not settings.AutoEquip then return end
         task.wait(1)
 
         local highest_weapon
@@ -819,18 +829,12 @@ do
         end
     end
 
-    local autoequip
+    inventory.ChildAdded:Connect(AutoEquip)
     farm_tab2:AddToggle({
         Name = "Auto Equip Best Weapon/Armor",
         Default = false,
         Callback = function(bool)
-            if bool then
-                AutoEquip()
-                autoequip = inventory.ChildAdded:Connect(AutoEquip)
-            
-            elseif autoequip then
-                autoequip:Disconnect()
-            end
+            settings.AutoEquip = bool
         end
     })
 
@@ -856,7 +860,7 @@ do
 
     inventory.ChildAdded:Connect(AutoDismantle)
 end
-
+--[[
 do
     local farm_tab3 = window:MakeTab({
         Name = "Mob Exclusion",
@@ -882,7 +886,7 @@ do
         })
     end
 end
-
+]]
 do 
     local no_tp = {542351431, 582198062}
 
@@ -1585,12 +1589,12 @@ do
         PremiumOnly = false
     }) 
     
-    updates:AddParagraph("8/1/22", "Removed multi upgrade (officially added in game)")
+    updates:AddParagraph("8/2/22", "Removed Autofarm. I contemplated this for a while and due to the active moderators, especially on the higher floors I removed it")
     updates:AddParagraph("7/30/22", "Added Infinite Jump (avoid game making u fall through map on teleport)")
     updates:AddParagraph("7/29/22", "Added Killaura & Autofarm support for floor 11 dungeon")
     updates:AddParagraph("7/9/22", "removed esp (crashes)")
     updates:AddParagraph("7/8/22", "Attack animation now plays after death")
-    updates:AddParagraph("7/7/22", "Fixed ESP crash ( ithink)?")
+    updates:AddParagraph("7/7/22", "Fixed ESP crash (i think)?")
     updates:AddParagraph("7/7/22", "Added player ESP (mob soon)")
     updates:AddParagraph("7/3/22", "killaura animations works for players now")
     updates:AddParagraph("7/3/22", "Killaura now looks 'legit' (plays attack animation)")
