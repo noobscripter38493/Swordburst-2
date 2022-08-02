@@ -428,6 +428,7 @@ do
                         tween(boss_hrp) 
                     end
 
+                    task.wait()
                     continue
                 end
 
@@ -446,6 +447,7 @@ do
                         if boss_hrp then
                             tween(boss_hrp)
                             
+                            task.wait()
                             continue
                         end
                     end
@@ -466,6 +468,7 @@ do
                         if mob_hrp then
                             tween(mob_hrp)
                             
+                            task.wait()
                             continue
                         end
                     end
@@ -480,6 +483,7 @@ do
                     end
                 end
                 
+                task.wait()
                 if mob_hrp then
                     tween(mob_hrp)
                 end
@@ -1616,6 +1620,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("8/2/22", "reverted an accidentally reverted an old update that fixed an autofarm crash (aehaugaehugaeuh)")
     updates:AddParagraph("8/2/22", "Added KillAura Keybind")
     updates:AddParagraph("7/30/22", "Added Infinite Jump (avoid game making u fall through map on teleport)")
     updates:AddParagraph("7/29/22", "Added Killaura & Autofarm support for floor 11 dungeon")
