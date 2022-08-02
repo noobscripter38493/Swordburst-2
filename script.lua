@@ -216,7 +216,7 @@ local function copy_table(t)
     return c
 end
 
-function find(mobs, element, boss)
+local function find(mobs, element, boss)
     if not boss then
         for _, v in next, mobs do
             if v.Name == element then
