@@ -177,7 +177,7 @@ local bosses_on_floor = {
         "Da, the Demeanor",
         "Ra, the Enlightener",
         "Ka, the Mischief",
-        "Za, The Eldist",
+        "Za, the Eldest",
         "Duality Reaper",
         "Saurus, the All-Seeing"
     }
@@ -838,7 +838,7 @@ do
             AutoEquip()
         end
     })
-    
+
     local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
     local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
 
