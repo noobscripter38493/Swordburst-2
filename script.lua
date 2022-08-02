@@ -333,7 +333,8 @@ do
         Icon = "",
         PremiumOnly = false
     })
-    --[[
+
+    farm_tab:AddParagraph("Warning", "SB2 Mods are extremely active and autofarm will likely get you banned")
     local mobs_table = {}
     local tween_create
     local function tween(to)
@@ -554,7 +555,6 @@ do
             settings.Tween_Speed = v
         end
     })
-    ]]
 
     local range = Instance.new("Part")
     range.Size = Vector3.new(25, 25, 25)
@@ -1229,33 +1229,8 @@ do
         if armor then
             
         end
-    end]]
-
-    local function create_confirm()
-        local oldscreen = CoreGui:FindFirstChild("ScreenGui")
-        local screen = oldscreen or Instance.new("ScreenGui", CoreGui)
-        
-        local popup = CoreGui.RobloxGui.PopupFrame
-        local new = popup:Clone()
-        
-        local thread = coroutine.running()
-        new.PopupAcceptButton.MouseButton1Click:Connect(function()
-            new:Destroy()
-            coroutine.resume(thread, true)
-        end)
-        
-        new.PopupDeclineButton.MouseButton1Click:Connect(function()
-            new:Destroy()
-            coroutine.resume(thread, false)
-        end)
-        
-        new.PopupText.Text = "Confirm Dismantle? (CANNOT BE UNDONE)"
-        new.Parent = screen
-        new.Visible = true
-        
-        return coroutine.yield()
     end
---[[
+
     Smithing:AddButton({
         Name = "Upgrade Left Equipped Weapon",
         Callback = function()
@@ -1290,6 +1265,31 @@ do
         end
     })
     ]]
+    
+    local function create_confirm()
+        local oldscreen = CoreGui:FindFirstChild("ScreenGui")
+        local screen = oldscreen or Instance.new("ScreenGui", CoreGui)
+        
+        local popup = CoreGui.RobloxGui.PopupFrame
+        local new = popup:Clone()
+        
+        local thread = coroutine.running()
+        new.PopupAcceptButton.MouseButton1Click:Connect(function()
+            new:Destroy()
+            coroutine.resume(thread, true)
+        end)
+        
+        new.PopupDeclineButton.MouseButton1Click:Connect(function()
+            new:Destroy()
+            coroutine.resume(thread, false)
+        end)
+        
+        new.PopupText.Text = "Confirm Dismantle? (CANNOT BE UNDONE)"
+        new.Parent = screen
+        new.Visible = true
+        
+        return coroutine.yield()
+    end
 
     local crystalForge_module = require(ui_module.CrystalForge)
     Smithing:AddButton({
@@ -1589,7 +1589,6 @@ do
         PremiumOnly = false
     }) 
     
-    updates:AddParagraph("8/2/22", "Removed Autofarm. I contemplated this for a while and due to the active moderators, especially on the higher floors I removed it")
     updates:AddParagraph("7/30/22", "Added Infinite Jump (avoid game making u fall through map on teleport)")
     updates:AddParagraph("7/29/22", "Added Killaura & Autofarm support for floor 11 dungeon")
     updates:AddParagraph("7/9/22", "removed esp (crashes)")
