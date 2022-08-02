@@ -373,7 +373,6 @@ do
     end
 
     local mobs = workspace.Mobs
-
     mobs.ChildAdded:Connect(function(mob)
         mob:WaitForChild("HumanoidRootPart")
         
@@ -696,6 +695,43 @@ do
         ValueName = "Range",
         Callback = function(v)
             settings.KA_Range = v
+        end
+    })
+
+    local function getkabutton()
+        for _, v in next, CoreGui.Orion:GetDescendants() do -- slightly ugly code idk
+            if v:IsA("TextLabel") and v.Text == "Kill Aura" then
+                local o = v.Parent:FindFirstChild("TextButton")
+                if o then
+                    return o
+                end
+
+                lib:MakeNotification({
+                    Name = "KA Keybind Error",
+                    Content = "Failed to find button",
+                    Image = "",
+                    Time = 5
+                })
+            end
+        end
+    end
+
+    local ka_button = getkabutton()
+    farm_tab:AddBind({
+        Name = "Kill Aura Keybind",
+        Default = Enum.KeyCode.R,
+        Hold = false,
+        Callback = function()
+            if ka_button then
+                firesignal(ka_button.MouseButton1Down)
+                firesignal(ka_button.MouseButton1Up) 
+            else
+                ka_button = getkabutton()
+                if not ka_button then return end
+
+                firesignal(ka_button.MouseButton1Down)
+                firesignal(ka_button.MouseButton1Up)
+            end
         end
     })
 end
@@ -1403,15 +1439,7 @@ do
     end)()
 end
 
-do  
-    local function gethitEffectsfromnil()
-        for _, v in next, getnilinstances() do
-            if v.Name == "HitEffects" then
-                return v
-            end
-        end
-    end
-
+do
     local function removeEffects(func_name)
         for _, v in next, getgc(true) do
             local old = typeof(v) == "table" and rawget(v, func_name)
@@ -1440,18 +1468,17 @@ do
         PremiumOnly = false
     })
 
+    local hiteffects = workspace:FindFirstChild("HitEffects")
     Performance_tab:AddToggle({
         Name = "Remove Hit Effects",
         Default = false,
         Callback = function(bool)
-            local nilHitEffects = gethitEffectsfromnil()
-
-            if bool and workspace:FindFirstChild("HitEffects") then
-                workspace.HitEffects.Parent = nil
-                
-            elseif nilHitEffects then
-                nilHitEffects.Parent = workspace
+            if not hiteffects then
+                hiteffects = workspace:FindFirstChild("HitEffects")
+                if not hiteffects then return end
             end
+
+            hiteffects.Parent = bool and nil or workspace
         end
     })
 
@@ -1589,6 +1616,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("8/2/22", "Added KillAura Keybind")
     updates:AddParagraph("7/30/22", "Added Infinite Jump (avoid game making u fall through map on teleport)")
     updates:AddParagraph("7/29/22", "Added Killaura & Autofarm support for floor 11 dungeon")
     updates:AddParagraph("7/9/22", "removed esp (crashes)")
