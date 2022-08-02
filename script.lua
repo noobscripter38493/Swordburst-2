@@ -174,9 +174,9 @@ local bosses_on_floor = {
     },
 
     [5287433115] = { -- floor 11
-        "Da",
-        "Ra",
-        "Ka",
+        "Da, the Demeanor",
+        "Ra, the Enlightener",
+        "Ka, the Mischief",
         "Za, The Eldist",
         "Duality Reaper",
         "Saurus, the All-Seeing"
