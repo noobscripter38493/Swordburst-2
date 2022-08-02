@@ -1130,7 +1130,7 @@ do
     local walkspeed = humanoid.WalkSpeed
     local game_ws = humanoid.WalkSpeed
     local index_WS; index_WS = hookmetamethod(game, "__index", function(self, i)
-        if self == humanoid and i == "WalkSpeed" and not checkcaller() then
+        if settings.speed and self == humanoid and i == "WalkSpeed" and not checkcaller() then
             return game_ws
         end
         
@@ -1138,11 +1138,12 @@ do
     end)
     
     local newindex_WS; newindex_WS = hookmetamethod(game, "__newindex", function(self, i, v)
-        if settings.speed and not checkcaller() then 
-            if self == humanoid and i == "WalkSpeed" then
+        if self == humanoid and i == "WalkSpeed" and not checkcaller() then 
+            if settings.speed then 
                 v = walkspeed
-                game_ws = walkspeed
             end
+
+            game_ws = walkspeed
         end
         
         return newindex_WS(self, i, v)
@@ -1288,8 +1289,8 @@ do
         end
     })
     ]]
-    local crystalForge_module = require(ui_module.CrystalForge)
 
+    local crystalForge_module = require(ui_module.CrystalForge)
     Smithing:AddButton({
         Name = "Open Crystal Forge",
         Callback = function()
@@ -1395,9 +1396,7 @@ do
             hours = temp or hours
             
             local displayed = days .. " Days | " .. hours .. " Hours | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
-            
             local formatted = os.date(displayed, seconds)
-    
             time_label:Set("Time Elapsed: " .. formatted)
         end
     end)()
@@ -1416,7 +1415,7 @@ do
         for _, v in next, getgc(true) do
             local old = typeof(v) == "table" and rawget(v, func_name)
     
-            if old then -- me when too many upvalues
+            if old then
                 v[func_name] = function(...)
                     if func_name == "Damage Text" then
                        if settings.RemoveDamageNumbers then return end
