@@ -835,9 +835,10 @@ do
         Default = false,
         Callback = function(bool)
             settings.AutoEquip = bool
+            AutoEquip()
         end
     })
-
+    
     local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
     local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
 
