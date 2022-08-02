@@ -1097,29 +1097,24 @@ do
         return settings.Weapon_Animation
     end)
 
-    local invisibility
+    local invisibility = false
+    local function goinvisible(new)
+        if not invisibility then return end
+        local old_root = new:WaitForChild("LowerTorso"):WaitForChild("Root")
+        local new_root = old_root:Clone()
+
+        new_root.Parent = old_root.Parent
+        old_root:Destroy()
+    end
+
+    plr.CharacterAdded:Connect(goinvisible)
+
     Character_tab:AddToggle({
         Name = "Invisibility (Client Sided Character)", 
         Default = false, 
         Callback = function(bool)
-            if bool then
-                local old_root = char:FindFirstChild("Root", true)
-                local new_root = old_root:Clone()
-
-                new_root.Parent = old_root.Parent
-                old_root:Destroy()
-
-                invisibility = plr.CharacterAdded:Connect(function(new)
-                    local old_root = new:WaitForChild("LowerTorso"):WaitForChild("Root")
-                    local new_root = old_root:Clone()
-
-                    new_root.Parent = old_root.Parent
-                    old_root:Destroy()
-                end)
-
-            elseif invisibility then
-                invisibility:Disconnect()
-            end
+            invisibility = bool
+            goinvisible(char)
         end
     })
 
@@ -1502,32 +1497,40 @@ do
         end
     })
 
-    local DescendantAdded
+    local tomute = false
     local sound_names = {"SwordHit", "Unsheath", "SwordSlash"}
+    local function muteswings(descendant)
+        if descendant then
+            if not table.find(sound_names, descendant.Name) then return end
+
+            if tomute then
+                descendant.Volume = 0
+            else
+                descendant.Volume = .3
+            end
+
+            return
+        end
+
+        for _, v in next, workspace:GetDescendants() do
+            if table.find(sound_names, v.Name) then 
+                if tomute then
+                    v.Volume = 0
+                else
+                    v.Volume = .3
+                end
+            end
+        end 
+    end
+
+    workspace.DescendantAdded:Connect(muteswings)
+
     Performance_tab:AddToggle({
         Name = "Mute Swing Sounds",
         Default = false,
         Callback = function(bool)
-            if not bool then 
-                for i, v in next, workspace:GetDescendants() do
-                    if table.find(sound_names, v.Name) then v.Volume = .3 end
-                end
-                if DescendantAdded then DescendantAdded:Disconnect() end
-                return 
-            end
-
-            for _, v in next, workspace:GetDescendants() do
-                if table.find(sound_names, v.Name) then
-                    v.Volume = 0
-                end
-            end
-
-            DescendantAdded = workspace.DescendantAdded:Connect(function(d)
-                task.wait(1)
-                if table.find(sound_names, d.Name) then
-                    d.Volume = 0
-                end
-            end)
+            tomute = bool
+            muteswings()
         end
     })
 end
