@@ -8,7 +8,7 @@ repeat wait() until game:IsLoaded()
 
 local teleport_execute = (syn and syn.queue_on_teleport) or queue_on_teleport
 if teleport_execute then
-    teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
+    teleport_execute("loadfile('Scriptz/sb2 script.lua')()")
 else
     warn"failed to find execute on teleport function"
 end
@@ -929,128 +929,131 @@ do
 end
 
 do 
-    local no_tp = {542351431, 582198062}
+    local teleports_tab = window:MakeTab({
+        Name = 'Teleports',
+        Icon = "",
+        PremiumOnly = false
+    })
 
-    if table.find(no_tp, placeid) then
-        lib:MakeNotification({
-            Name = "Can't TP",
-            Content = "Can't TP. Teleport Not Supported On This Floor (f1 or f7)", --[[
-                these 2 floors have a lower streaming radius, (meaning parts dont spawn until u approach them), nothing i can do abt it
-                
-                (https://developer.roblox.com/en-us/api-reference/property/Workspace/StreamingMinRadius)
-                ]]
-            Image = "",
-            Time = 10
-        }) 
-    else
-        local teleports_tab = window:MakeTab({
-            Name = 'Teleports',
-            Icon = "",
-            PremiumOnly = false
+    local function makespecialtpbutotn(name, pos) -- floors 1,3,7,11 idk
+        teleports_tab:AddButton({
+            Name = name,
+            Callback = function()
+                hrp.Anchored = true
+                task.wait(.1)
+                hrp.CFrame = pos
+            end
         })
+    end
 
-        local function makeTPbutton(name, part)
-            teleports_tab:AddButton({
-                Name = name,
-                Callback = function()
-                    firetouchinterest(hrp, part, 0)
-                    task.wait(.1)
-                    firetouchinterest(hrp, part, 1)
-                end
-            })
-        end
-        
-        local floor = math.floor
-        local function loop_workspace(entrance, boss, miniboss, shop)
-            for _, v in next, workspace:GetChildren() do
-                if v.Name == "TeleportSystem" then
-                    for _, v2 in next, v:GetChildren() do
-                        local posX = floor(v2.Position.X)
-                        local posY = floor(v2.Position.Y)
-                        local posZ = floor(v2.Position.Z)
-                        local pos = Vector3.new(posX, posY, posZ)
+    local function makeTPbutton(name, part)
+        teleports_tab:AddButton({
+            Name = name,
+            Callback = function()
+                firetouchinterest(hrp, part, 0)
+                task.wait(.1)
+                firetouchinterest(hrp, part, 1)
+            end
+        })
+    end
+    
+    local floor = math.floor
+    local function loop_workspace(entrance, boss, miniboss, shop)
+        for _, v in next, workspace:GetChildren() do
+            if v.Name == "TeleportSystem" then
+                for _, v2 in next, v:GetChildren() do
+                    local posX = floor(v2.Position.X)
+                    local posY = floor(v2.Position.Y)
+                    local posZ = floor(v2.Position.Z)
+                    local pos = Vector3.new(posX, posY, posZ)
 
-                        if pos == entrance then
-                            makeTPbutton("Dungeon Entrance", v2)
-                        end
-    
-                        if pos == boss then
-                            makeTPbutton("Boss Room", v2)
-                        end
-    
-                        if pos == miniboss then
-                            makeTPbutton("Mini Boss", v2)
-                        end
-    
-                        if pos == shop then -- floor 10
-                            makeTPbutton("Shop", v2)
-                        end
+                    if pos == entrance then
+                        makeTPbutton("Dungeon Entrance", v2)
+                    end
+
+                    if pos == boss then
+                        makeTPbutton("Boss Room", v2)
+                    end
+
+                    if pos == miniboss then
+                        makeTPbutton("Mini Boss", v2)
+                    end
+
+                    if pos == shop then -- floor 10
+                        makeTPbutton("Shop", v2)
                     end
                 end
             end
         end
-
-        if placeid == 548231754 then -- floor 2
-            local dungeon_entrance = Vector3.new(-2185, 161, -2321)
-            local boss = Vector3.new(-2943, 201, -9805)
-            
-            loop_workspace(dungeon_entrance, boss)
-        end
-        
-        if placeid == 555980327 then -- floor 3
-            local dungeon_entrance = Vector3.new(1179, 6737, 1675)
-            
-            loop_workspace(dungeon_entrance)
-        end
-        
-        if placeid == 572487908 then -- floor 4
-            local dungeon_entrance = Vector3.new(-1946, 5169, -1415)
-            local boss = Vector3.new(-2319, 2280, -515)
-            
-            loop_workspace(dungeon_entrance, boss)
-        end
-        
-        if placeid == 580239979 then -- floor 5
-            local dungeon_entrance = Vector3.new(-1562, 4040, -868)
-            local boss = Vector3.new(2189, 1308, -122)
-            
-            loop_workspace(dungeon_entrance, boss)
-        end
-        
-        if placeid == 548878321 then -- floor 8
-            local dungeon_entrance = Vector3.new(-6679, 7801, 10006)
-            local boss = Vector3.new(1848, 4110, 7723)
-            local miniboss = Vector3.new(-808, 3174, -941)
-            
-            loop_workspace(dungeon_entrance, boss, miniboss)
-        end
-        
-        if placeid == 573267292 then -- floor 9
-            local dungeon_entrance = Vector3.new(878, 3452, -11139)
-            local boss = Vector3.new(12241, 461, -3656)
-            local miniboss_gargoyle = Vector3.new(-256, 3077, -4605)
-            local miniboss_poly = Vector3.new(1973, 2986, -4487)
-            
-            loop_workspace(dungeon_entrance, boss, miniboss_gargoyle)
-            loop_workspace(nil, nil, miniboss_poly)
-        end
-        
-        if placeid == 2659143505 then -- floor 10
-            local miniboss = Vector3.new(-895, 467, 6505)
-            local boss = Vector3.new(45, 1003, 25432)
-            local dungeon_entrance = Vector3.new(-606, 697, 9989)
-            local shop = Vector3.new(-252, 504, 6163)
-            
-            loop_workspace(dungeon_entrance, boss, miniboss, shop)
-        end
-        
-        if placeid == 5287433115 then -- floor 11
-            local miniboss = Vector3.new(4812, 1646, 2082)
-            
-            loop_workspace(nil, nil, miniboss)
-        end
     end
-end 
+
+    if game.PlaceId == 542351431 then
+        local boss = CFrame.new(-1938.35791, 428.030609, 795.363708)
+        makespecialtpbutotn("Boss Room", boss)
+    end
+
+    if placeid == 548231754 then -- floor 2
+        local dungeon_entrance = Vector3.new(-2185, 161, -2321)
+        local boss = Vector3.new(-2943, 201, -9805)
+        
+        loop_workspace(dungeon_entrance, boss)
+    end
+    
+    if placeid == 555980327 then -- floor 3
+        local dungeon_entrance = Vector3.new(1179, 6737, 1675)
+        local boss = CFrame.new(448.331146, 4279.3374, -385.050385)
+
+        makespecialtpbutotn("Boss Room", boss)
+        loop_workspace(dungeon_entrance)
+    end
+    
+    if placeid == 572487908 then -- floor 4
+        local dungeon_entrance = Vector3.new(-1946, 5169, -1415)
+        local boss = Vector3.new(-2319, 2280, -515)
+        
+        loop_workspace(dungeon_entrance, boss)
+    end
+    
+    if placeid == 580239979 then -- floor 5
+        local dungeon_entrance = Vector3.new(-1562, 4040, -868)
+        local boss = Vector3.new(2189, 1308, -122)
+        
+        loop_workspace(dungeon_entrance, boss)
+    end
+    
+    if placeid == 548878321 then -- floor 8
+        local dungeon_entrance = Vector3.new(-6679, 7801, 10006)
+        local boss = Vector3.new(1848, 4110, 7723)
+        local miniboss = Vector3.new(-808, 3174, -941)
+        
+        loop_workspace(dungeon_entrance, boss, miniboss)
+    end
+    
+    if placeid == 573267292 then -- floor 9
+        local dungeon_entrance = Vector3.new(878, 3452, -11139)
+        local boss = Vector3.new(12241, 461, -3656)
+        local miniboss_gargoyle = Vector3.new(-256, 3077, -4605)
+        local miniboss_poly = Vector3.new(1973, 2986, -4487)
+        
+        loop_workspace(dungeon_entrance, boss, miniboss_gargoyle)
+        loop_workspace(nil, nil, miniboss_poly)
+    end
+    
+    if placeid == 2659143505 then -- floor 10
+        local miniboss = Vector3.new(-895, 467, 6505)
+        local boss = Vector3.new(45, 1003, 25432)
+        local dungeon_entrance = Vector3.new(-606, 697, 9989)
+        local shop = Vector3.new(-252, 504, 6163)
+        
+        loop_workspace(dungeon_entrance, boss, miniboss, shop)
+    end
+    
+    if placeid == 5287433115 then -- floor 11
+        local miniboss = Vector3.new(4812, 1646, 2082)
+        
+        loop_workspace(nil, nil, miniboss)
+    end
+end
 
 do
     local Character_tab = window:MakeTab({
