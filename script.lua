@@ -1512,23 +1512,14 @@ do
     local function muteswings(descendant)
         if descendant then
             if not table.find(sound_names, descendant.Name) then return end
-
-            if tomute then
-                descendant.Volume = 0
-            else
-                descendant.Volume = .3
-            end
+            descendant.Volume = tomute and 0 or .3
 
             return
         end
 
         for _, v in next, workspace:GetDescendants() do
             if table.find(sound_names, v.Name) then 
-                if tomute then
-                    v.Volume = 0
-                else
-                    v.Volume = .3
-                end
+                v.Volume = tomute and 0 or .3
             end
         end 
     end
@@ -1580,7 +1571,7 @@ do
     end
     
     Players.PlayerAdded:Connect(function(player)
-        repeat wait() until Rs.Profiles:FindFirstChild(player.Name) ~= nil
+        repeat task.wait() until Rs.Profiles:FindFirstChild(player.Name) ~= nil
         
         refresh_inventoryViewer_list(inventory_viewer)
     end)
@@ -1594,7 +1585,7 @@ do
         Name = "Set FPS Cap (Requires executor FPS unlocker on)",
         Min = 0,
         Max = 500,
-        Default = fps, -- synapse does not have "getfpscap" (bad0)
+        Default = fps, -- synapse does not have getfpscap (bad0)
         Color = Color3.new(255, 255, 255),
         Increment = 1,
         ValueName = "FPS",
@@ -1633,6 +1624,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("8/3/22", "Added teleport support for floor 11 dungeon")
     updates:AddParagraph("8/2/22", "reverted an accidentally reverted an old update that fixed an autofarm crash (aehaugaehugaeuh)")
     updates:AddParagraph("8/2/22", "Added KillAura Keybind")
     updates:AddParagraph("7/30/22", "Added Infinite Jump (avoid game making u fall through map on teleport)")
@@ -1684,9 +1676,16 @@ do
     credits:AddParagraph("Credits", "Made by OneTaPuXd on v3rm | PM Bugs")
     if setclipboard then
         credits:AddButton({
-            Name = "Copy v3rm url To Clipboard",
+            Name = "Copy v3rm url to clipboard",
             Callback = function()
-                setclipboard("https://v3rmillion.net/member.php?action=profile&uid=1229592") 
+                setclipboard("https://v3rmillion.net/member.php?action=profile&uid=1229592")
+            end
+        })
+
+        credits:AddButton({
+            Name = "copy v3rm thread to clipboard",
+            Callback = function()
+                setclipboard("https://v3rmillion.net/showthread.php?tid=1172798")
             end
         })
     else
