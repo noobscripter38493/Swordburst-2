@@ -901,7 +901,7 @@ do
 
     inventory.ChildAdded:Connect(AutoDismantle)
 end
---[[
+
 do
     local farm_tab3 = window:MakeTab({
         Name = "Mob Exclusion",
@@ -927,7 +927,7 @@ do
         })
     end
 end
-]]
+
 do 
     local no_tp = {542351431, 582198062}
 
