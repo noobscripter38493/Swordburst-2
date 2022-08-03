@@ -1,4 +1,4 @@
--- for me: loadfile('Scriptz/sb2 script.lua')()
+-- loadfile('Scriptz/sb2 script.lua')()
 -- loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()  
 
 -- add keybinds to some stuff
@@ -612,11 +612,11 @@ do
                 local o = copy_table(v)
                 setrawmetatable(v, {
                     __index = o, 
-                    __newindex = function(self, i, v)
-                        rawset(o, i, v)
+                    __newindex = function(self, i2, v2)
+                        rawset(o, i2, v2)
 
-                        if i == "animations" then
-                            animations = v
+                        if i2 == "animations" then
+                            animations = v2
                         end
                     end
                 })
@@ -704,7 +704,7 @@ do
     })
 
     local function getkabutton()
-        for _, v in next, CoreGui.Orion:GetDescendants() do -- slightly ugly code idk
+        for _, v in next, CoreGui.Orion:GetDescendants() do
             if v:IsA("TextLabel") and v.Text == "Kill Aura" then
                 local o = v.Parent:FindFirstChild("TextButton")
                 if o then
@@ -936,7 +936,7 @@ do
         PremiumOnly = false
     })
 
-    local function makespecialtpbutotn(name, pos) -- floors 1,3,7,11 idk
+    local function makespecialtpbutton(name, pos) -- floors 1,3,7,11
         teleports_tab:AddButton({
             Name = name,
             Callback = function()
@@ -990,7 +990,7 @@ do
 
     if game.PlaceId == 542351431 then
         local boss = CFrame.new(-1938.35791, 428.030609, 795.363708)
-        makespecialtpbutotn("Boss Room", boss)
+        makespecialtpbutton("Boss Room", boss)
     end
 
     if placeid == 548231754 then -- floor 2
@@ -1004,7 +1004,7 @@ do
         local dungeon_entrance = Vector3.new(1179, 6737, 1675)
         local boss = CFrame.new(448.331146, 4279.3374, -385.050385)
 
-        makespecialtpbutotn("Boss Room", boss)
+        makespecialtpbutton("Boss Room", boss)
         loop_workspace(dungeon_entrance)
     end
     
@@ -1050,9 +1050,15 @@ do
     end
     
     if placeid == 5287433115 then -- floor 11
-        local miniboss = Vector3.new(4812, 1646, 2082)
-        
-        loop_workspace(nil, nil, miniboss)
+        local DaRaKa = CFrame.new(4846.48242, 1639.76953, 2090.85107)
+        local duality_reaper = CFrame.new(5899.98291, 852.757568, -4255.58643)
+        local neon_chest = CFrame.new(4834.57959, 2543.39868, 5274.56055)
+        local sauraus = CFrame.new(5208.86279, 2349.82617, 5985.12402)
+
+        makespecialtpbutton("Duality Reaper", duality_reaper)
+        makespecialtpbutton("Da, Ra, Ka", DaRaKa)
+        makespecialtpbutton("Neon Chest", neon_chest)
+        makespecialtpbutton("Boss Room", sauraus)
     end
 end
 
@@ -1083,7 +1089,7 @@ do
     end 
 
     Character_tab:AddDropdown({
-        Name = "Weapon Animations (Fixed)",
+        Name = "Weapon Animations",
         Default = settings.Animation,
         Options = ANIMATIONS,
         Callback = function(animation)
