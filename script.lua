@@ -1,4 +1,5 @@
 -- for me: loadfile('Scriptz/sb2 script.lua')()
+-- loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()  
 
 -- add keybinds to some stuff
 
@@ -8,7 +9,7 @@ repeat wait() until game:IsLoaded()
 
 local teleport_execute = (syn and syn.queue_on_teleport) or queue_on_teleport
 if teleport_execute then
-    teleport_execute("loadfile('Scriptz/sb2 script.lua')()")
+    teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
 else
     warn"failed to find execute on teleport function"
 end
