@@ -1487,7 +1487,11 @@ do
                 if not hiteffects then return end
             end
 
-            hiteffects.Parent = bool and nil or workspace
+            if bool then
+                hiteffects.Parent = workspace
+            else
+                hiteffects.Parent = nil
+            end
         end
     })
 
