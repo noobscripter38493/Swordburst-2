@@ -292,6 +292,7 @@ end
 local setThreadIdentity = (syn and syn.set_thread_identity) or setthreadcontext or (fluxus and fluxus.set_thread_identity)
 setThreadIdentity(2)
 
+getgenv().hookfunc = hookfunction
 for _, v in next, getconnections(UserInputS.InputBegan) do
     local f = v.Function
     if not f then continue end
@@ -1096,7 +1097,7 @@ do
 
     local combat = require(game_module.Services.Combat)
     
-    local hook; hook = hookfunction(combat.CalculateCombatStyle, function(bool, ...)
+    local hook; hook = hookfunc(combat.CalculateCombatStyle, function(bool, ...)
         if bool ~= nil and not bool then
             return hook(bool, ...)    
         end
