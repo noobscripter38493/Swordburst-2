@@ -1197,7 +1197,7 @@ do
                 v = walkspeed
             end
 
-            game_ws = walkspeed
+            game_ws = v
         end
         
         return newindex_WS(self, i, v)
