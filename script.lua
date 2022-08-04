@@ -1420,9 +1420,9 @@ do
     }) 
     
     local time_label = Stats:AddLabel("Elapsed Time")
-    
+    local floor = math.floor
     coroutine.wrap(function()
-        while true do task.wait(1) -- what r string patterns (for real)
+        while true do -- what r string patterns (for real)
             --[[
             local round = math.round
             local seconds = round(time())
@@ -1452,24 +1452,25 @@ do
             local displayed = days .. " Days | " .. hours .. " Hours | " .. "%M Minutes | " .. "%S Seconds"
             local formatted = os.date(displayed, seconds)
             ]]
---[[
-            local seconds = math.floor(time())
+            
+            task.wait(1)
+            local seconds = floor(time())
             local minutes = 0
             local hours = 0
             local days = 0
             
             while true do
-                if seconds > 60 then
+                if seconds >= 60 then
                     seconds = seconds - 60
                     minutes = minutes + 1
                 end
                 
-                if minutes > 60 then
+                if minutes >= 60 then
                     minutes = minutes - 60
                     hours = hours + 1
                 end
                 
-                if hours > 24 then
+                if hours >= 24 then
                     hours = hours - 24
                     days = days + 1
                 end
@@ -1485,7 +1486,7 @@ do
             local o4 = seconds == 1 and "Second" or "Seconds"
 
             local displayed = ("%s %s | %s %s | %s %s | %s %s"):format(days, o1, hours, o2, minutes, o3, seconds, o4) -- wtf
-            time_label:Set("Time Elapsed: " .. displayed)]]
+            time_label:Set("Time Elapsed: " .. displayed)
         end
     end)()
 end
