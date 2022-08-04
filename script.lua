@@ -1,13 +1,9 @@
 -- loadfile('Scriptz/sb2 script.lua')()
--- loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()  
-
--- add keybinds to some stuff
-
--- add more stat tracking 
+-- loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()
 
 repeat wait() until game:IsLoaded() 
 
-local teleport_execute = (syn and syn.queue_on_teleport) or queue_on_teleport
+local teleport_execute = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
 if teleport_execute then
     teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
 else
@@ -293,7 +289,7 @@ while true do
 end
 
 -- disable M1s when killaura is enabled
-local setThreadIdentity = syn and syn.set_thread_identity or setthreadcontext
+local setThreadIdentity = (syn and syn.set_thread_identity) or setthreadcontext or (fluxus and fluxus.set_thread_identity)
 setThreadIdentity(2)
 
 for _, v in next, getconnections(UserInputS.InputBegan) do
@@ -1080,10 +1076,11 @@ do
             table.insert(ANIMATIONS, v.Name)
             
             if not animSettings:FindFirstChild(v.Name) then
-                local string_value = Instance.new("StringValue", animSettings)
+                local string_value = Instance.new("StringValue")
                 
                 string_value.Name = v.Name
                 string_value.Value = ""
+                string_value.Parent = animSettings
             end
         end
     end 
@@ -1227,7 +1224,7 @@ do
     })
 end
 
-do
+do  
     local Smithing = window:MakeTab({
         Name = "Smithing",
         Icon = "",
@@ -1482,10 +1479,8 @@ do
         Name = "Remove Hit Effects",
         Default = false,
         Callback = function(bool)
-            if not hiteffects then
-                hiteffects = workspace:FindFirstChild("HitEffects")
-                if not hiteffects then return end
-            end
+            hiteffects = hiteffects or workspace:FindFirstChild("HitEffects")
+            if not hiteffects then return end
 
             if bool then
                 hiteffects.Parent = workspace
