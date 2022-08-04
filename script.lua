@@ -189,6 +189,7 @@ local Rs = game:GetService("ReplicatedStorage")
 
 getgenv().getupvalue = debug.getupvalue -- not sure if other exploits that aren't synapse have an alias so this is for that i guess
 getgenv().setupvalue = debug.setupvalue
+getgenv().getinfo = debug.getinfo
 
 local placeid = game.PlaceId
 
@@ -280,12 +281,13 @@ while true do
     for _, v in next, getnilinstances() do
         if v.Name == "MainModule" then
             game_module = v
+            break
         end
     end 
 
     if game_module then break end
 
-    wait(.5)
+    task.wait(.5)
 end
 
 -- disable M1s when killaura is enabled
@@ -317,6 +319,14 @@ setThreadIdentity(7)
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
 
 repeat wait() until lib
+
+local protected = gethui and gethui() or CoreGui
+local orion
+while true do
+    orion = protected:FindFirstChild("Orion")
+    if orion then break end
+    task.wait(1)
+end
 
 local window = lib:MakeWindow({
     Name = "SB2 Script | Made By OneTaPuXd on v3rm",
@@ -701,7 +711,7 @@ do
     })
 
     local function getkabutton()
-        for _, v in next, CoreGui.Orion:GetDescendants() do
+        for _, v in next, orion:GetDescendants() do
             if v:IsA("TextLabel") and v.Text == "Kill Aura" then
                 local o = v.Parent:FindFirstChild("TextButton")
                 if o then
@@ -1606,7 +1616,6 @@ do
         end
     })
     
-    local orion = CoreGui.Orion
     Misc_tab:AddBind({
         Name = "GUI Keybind",
         Default = Enum.KeyCode.RightShift,
@@ -1624,6 +1633,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("8/4/22", "Added support for more exploits")
     updates:AddParagraph("8/3/22", "Added teleport support for floor 11 dungeon")
     updates:AddParagraph("8/2/22", "reverted an accidentally reverted an old update that fixed an autofarm crash (aehaugaehugaeuh)")
     updates:AddParagraph("8/2/22", "Added KillAura Keybind")
