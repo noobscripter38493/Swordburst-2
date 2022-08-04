@@ -1494,9 +1494,9 @@ do
             if not hiteffects then return end
 
             if bool then
-                hiteffects.Parent = workspace
-            else
                 hiteffects.Parent = nil
+            else
+                hiteffects.Parent = workspace
             end
         end
     })
