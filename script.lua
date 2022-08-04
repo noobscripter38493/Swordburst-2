@@ -1452,7 +1452,7 @@ do
             local displayed = days .. " Days | " .. hours .. " Hours | " .. "%M Minutes | " .. "%S Seconds"
             local formatted = os.date(displayed, seconds)
             ]]
-
+--[[
             local seconds = math.floor(time())
             local minutes = 0
             local hours = 0
@@ -1485,7 +1485,7 @@ do
             local o4 = seconds == 1 and "Second" or "Seconds"
 
             local displayed = ("%s %s | %s %s | %s %s | %s %s"):format(days, o1, hours, o2, minutes, o3, seconds, o4) -- wtf
-            time_label:Set("Time Elapsed: " .. displayed)
+            time_label:Set("Time Elapsed: " .. displayed)]]
         end
     end)()
 end
