@@ -1421,10 +1421,10 @@ do
     
     local time_label = Stats:AddLabel("Elapsed Time")
     
-    local round = math.round
-    
     coroutine.wrap(function()
-        while true do wait(1) -- what r string patterns (for real)
+        while true do task.wait(1) -- what r string patterns (for real)
+            --[[
+            local round = math.round
             local seconds = round(time())
             local minutes = round(seconds / 60)
             local hours = round(minutes / 60)
@@ -1443,15 +1443,49 @@ do
                 temp = hours - 72
             end
             
-            if hours >= 96 then -- roblox servers don't last longer than this
+            if hours >= 96 then
                temp = hours - 96
             end
             
             hours = temp or hours
             
-            local displayed = days .. " Days | " .. hours .. " Hours | " .. "%M" .. " Minutes | " .. "%S" .. " Seconds"
+            local displayed = days .. " Days | " .. hours .. " Hours | " .. "%M Minutes | " .. "%S Seconds"
             local formatted = os.date(displayed, seconds)
-            time_label:Set("Time Elapsed: " .. formatted)
+            ]]
+
+            local seconds = math.floor(time())
+            local minutes = 0
+            local hours = 0
+            local days = 0
+            
+            while true do
+                if seconds > 60 then
+                    seconds = seconds - 60
+                    minutes = minutes + 1
+                end
+                
+                if minutes > 60 then
+                    minutes = minutes - 60
+                    hours = hours + 1
+                end
+                
+                if hours > 24 then
+                    hours = hours - 24
+                    days = days + 1
+                end
+                
+                if hours < 24 and minutes < 60 and seconds < 60 then
+                    break
+                end
+            end
+            
+            local o1 = days == 1 and "Day" or "Days"
+            local o2 = hours == 1 and "Hour" or "Hours"
+            local o3 = minutes == 1 and "Minute" or "Minutes"
+            local o4 = seconds == 1 and "Second" or "Seconds"
+
+            local displayed = ("%s %s | %s %s | %s %s | %s %s"):format(days, o1, hours, o2, minutes, o3, seconds, o4) -- wtf
+            time_label:Set("Time Elapsed: " .. displayed)
         end
     end)()
 end
@@ -1633,6 +1667,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("8/4/22", "session time shows the correct time now")
     updates:AddParagraph("8/4/22", "Added support for more exploits")
     updates:AddParagraph("8/3/22", "Added teleport support for floor 11 dungeon")
     updates:AddParagraph("8/2/22", "reverted an accidentally reverted an old update that fixed an autofarm crash (aehaugaehugaeuh)")
