@@ -804,7 +804,7 @@ do
 
         for _, item in next, inventory:GetChildren() do
             local itemdata = inv_utility.GetItemData(item)
-            local class = itemdata.type
+            local class = itemdata.Type
 
             if class ~= "Weapon" and class ~= "Clothing" then continue end
 
@@ -830,10 +830,10 @@ do
 
         for _, item in next, inventory:GetChildren() do
             local itemdata = inv_utility.GetItemData(item)
-            local class = itemdata.type
+            local class = itemdata.Type
 
             if class ~= "Weapon" and class ~= "Clothing" then continue end
-                    
+            
             for _, v2 in next, data:GetChildren() do
                 if v2.Name == item.Name then
                     local stats = getStats(v2)
@@ -1184,7 +1184,7 @@ do
     local walkspeed = humanoid.WalkSpeed
     local game_ws = humanoid.WalkSpeed
     local index_WS; index_WS = hookmetamethod(game, "__index", function(self, i)
-        if settings.speed and self == humanoid and i == "WalkSpeed" and not checkcaller() then
+        if self == humanoid and i == "WalkSpeed" and not checkcaller() then
             return game_ws
         end
         
@@ -1668,6 +1668,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("8/4/22", "Fixed auto equip")
     updates:AddParagraph("8/4/22", "session time shows the correct time now")
     updates:AddParagraph("8/4/22", "Added support for more exploits")
     updates:AddParagraph("8/3/22", "Added teleport support for floor 11 dungeon")
