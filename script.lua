@@ -3,7 +3,7 @@
 
 repeat wait() until game:IsLoaded() 
 
-local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) --or (syn and syn.queue_on_teleport) currently broken
+local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) --or (syn and syn.queue_on_teleport)
 if teleport_execute then
     teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
 else
