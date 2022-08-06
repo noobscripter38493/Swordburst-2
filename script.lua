@@ -3,7 +3,7 @@
 
 repeat wait() until game:IsLoaded() 
 
-local teleport_execute = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
+local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or --(syn and syn.queue_on_teleport) currently broken
 if teleport_execute then
     teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
 else
@@ -1668,6 +1668,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("8/6/22", "queue on teleport removed for synapse until it's fixed")
     updates:AddParagraph("8/4/22", "Fixed auto equip")
     updates:AddParagraph("8/4/22", "session time shows the correct time now")
     updates:AddParagraph("8/4/22", "Added support for more exploits")
