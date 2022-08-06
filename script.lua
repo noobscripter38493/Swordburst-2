@@ -1669,7 +1669,7 @@ do
     }) 
     
     updates:AddParagraph("8/6/22", "queue on teleport removed for synapse until it's fixed")
-    updates:AddParagraph("8/4/22", "Fixed auto equip")
+    updates:AddParagraph("8/4/22", "Fixed auto equip & auto dismantle")
     updates:AddParagraph("8/4/22", "session time shows the correct time now")
     updates:AddParagraph("8/4/22", "Added support for more exploits")
     updates:AddParagraph("8/3/22", "Added teleport support for floor 11 dungeon")
