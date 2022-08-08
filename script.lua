@@ -291,7 +291,7 @@ while true do
 end
 
 -- disable M1s when killaura is enabled
-local setThreadIdentity = (syn and syn.set_thread_identity) or setthreadcontext or (fluxus and fluxus.set_thread_identity)
+local setThreadIdentity = (syn and syn.set_thread_identity) or setthreadcontext or (fluxus and fluxus.set_thread_identity) or setidentity
 setThreadIdentity(2)
 
 getgenv().hookfunc = hookfunction
@@ -1246,13 +1246,13 @@ do
 
     local dismantler_module = require(ui_module.Dismantle)
 
-    local functios = getupvalue(dismantler_module.Init, 4) -- i completely forget which module script these functions are in and i have no idea what to name this variable
+    local inv_utility = getupvalue(dismantler_module.Init, 4)
 
     local event = Rs.Event
     local inventory = Rs.Profiles[plr.Name].Inventory
     local function Dismantle_Rarity(rarity)
         for _, item in next, inventory:GetChildren() do
-            local data = functios.GetItemData(item)
+            local data = inv_utility.GetItemData(item)
             
             if data.rarity == rarity then
                 for _, v2 in next, data do
@@ -1668,8 +1668,7 @@ do
         PremiumOnly = false
     }) 
     
-    updates:AddParagraph("8/6/22", "added queue on teleport back for synapse")
-    updates:AddParagraph("8/6/22", "queue on teleport removed for synapse until it's fixed")
+    updates:AddParagraph("8/8/22", "scriptware support")
     updates:AddParagraph("8/4/22", "Fixed auto equip & auto dismantle")
     updates:AddParagraph("8/4/22", "session time shows the correct time now")
     updates:AddParagraph("8/4/22", "Added support for more exploits")
