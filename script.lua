@@ -267,7 +267,6 @@ local settings = {
     Animation = getrenv()._G.CalculateCombatStyle(),
     times = 1,
     excludedMobs = {},
-    dismantle = {}
 }
 
 plr.CharacterAdded:Connect(function(new)
@@ -422,6 +421,7 @@ do
 
                 if not settings.Autofarm then break end
                 
+                task.wait()
                 if settings.Farm_Only_Bosses then
                     local boss = find(mobs_table, nil, bosses_on_floor[placeid])
                     local boss_hrp = boss and boss:FindFirstChild("HumanoidRootPart")
@@ -436,7 +436,6 @@ do
                         tween(boss_hrp) 
                     end
 
-                    task.wait()
                     continue
                 end
 
@@ -455,7 +454,6 @@ do
                         if boss_hrp then
                             tween(boss_hrp)
                             
-                            task.wait()
                             continue
                         end
                     end
@@ -464,7 +462,7 @@ do
                 if settings.Mob_Priority and settings.Prioritized_Mob ~= nil then
                     local mob = find(mobs_table, settings.Prioritized_Mob)
             
-                    if mob and not table.find(excludedMobs, mob.Name) then
+                    if mob and not excludedMobs[mob.Name] then
                         local success = pcall(function()
                             if mob.Entity.Health.Value <= 0 then error() end
                         end)
@@ -476,7 +474,6 @@ do
                         if mob_hrp then
                             tween(mob_hrp)
                             
-                            task.wait()
                             continue
                         end
                     end
@@ -484,14 +481,13 @@ do
                 
                 local mob_hrp
                 for _, mob in next, mobs_table do
-                    if not table.find(excludedMobs, mob.Name) then
+                    if not excludedMobs[mob.Name] then
                         mob_hrp = mob:FindFirstChild("HumanoidRootPart")
 
                         if mob_hrp then break end
                     end
                 end
                 
-                task.wait()
                 if mob_hrp then
                     tween(mob_hrp)
                 end
@@ -795,30 +791,6 @@ do
     local inventory = profiles[plr.Name].Inventory
     local rf = Rs.Function
     local event = Rs.Event
-    
-    local function AutoDismantle()
-        local dismantle = settings.dismantle
-        if #dismantle == 0 then return end
-
-        task.wait(1)
-
-        for _, item in next, inventory:GetChildren() do
-            local itemdata = inv_utility.GetItemData(item)
-            local class = itemdata.Type
-
-            if class ~= "Weapon" and class ~= "Clothing" then continue end
-
-            for _, v2 in next, data:GetChildren() do
-                if v2.Name == item.Name then
-                    local rarity = getRarity(v2)
-                    
-                    if table.find(dismantle, rarity) then
-                        event:FireServer("Equipment", {"Dismantle", item})
-                    end
-                end
-            end
-        end
-    end
 
     local rates = setmetatable({Legendary = .05}, {__index = function() return .04 end})
     local function AutoEquip()
@@ -887,6 +859,37 @@ do
         end
     })
 
+    local dismantle = {}
+    local function AutoDismantle()
+        local shouldDismantle = false
+        for _, v in next, dismantle do
+            if v then
+                shouldDismantle = true
+                break
+            end
+        end
+
+        if not shouldDismantle then return end
+
+        task.wait(1)
+        for _, item in next, inventory:GetChildren() do
+            local itemdata = inv_utility.GetItemData(item)
+            local class = itemdata.Type
+
+            if class ~= "Weapon" and class ~= "Clothing" then continue end
+
+            for _, v2 in next, data:GetChildren() do
+                if v2.Name == item.Name then
+                    local rarity = getRarity(v2)
+                    
+                    if dismantle[rarity] then
+                        event:FireServer("Equipment", {"Dismantle", item})
+                    end
+                end
+            end
+        end
+    end
+
     local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
     local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
 
@@ -895,14 +898,8 @@ do
             Name = "Auto Dismantle " .. v,
             Default = false,
             Callback = function(bool)
-                local dismantle = settings.dismantle
-                local i2 = table.find(dismantle, rarities[i])
-                if bool then
-                    table.insert(dismantle, rarities[i])
-
-                elseif i2 then
-                    table.remove(dismantle, i2)
-                end
+                local rarity = rarities[i]
+                dismantle[rarity] = bool
             end
         })
     end
@@ -917,26 +914,19 @@ do
         PremiumOnly = false
     })
 
-    for _, v in next, mobs_on_floor[placeid] do
+    for _, mob_name in next, mobs_on_floor[placeid] do
         farm_tab3:AddToggle({
-            Name = v,
+            Name = mob_name,
             Default = false,
             Callback = function(bool)
                 local excludedMobs = settings.excludedMobs
-                local i = table.find(excludedMobs, v)
-
-                if bool then
-                    table.insert(excludedMobs, v)
-
-                elseif i then
-                    table.remove(excludedMobs, i)
-                end
+                excludedMobs[mob_name] = bool
             end
         })
     end
 end
 
-do 
+do
     local teleports_tab = window:MakeTab({
         Name = 'Teleports',
         Icon = "",
@@ -1139,10 +1129,10 @@ do
     local Event = Rs.Event
     local infSprint; infSprint = hookmetamethod(game, "__namecall", function(self, ...)
         local ncm = getnamecallmethod()
-        local args = {...}
         
         if settings.InfSprint and ncm == "FireServer"  then
             if self == Event then
+                local args = {...}
                 if args[1] == "Actions" then
                     if args[2][2] == "Step" then
                         return
@@ -1668,7 +1658,6 @@ do
         PremiumOnly = false
     }) 
     
-    updates:AddParagraph("8/8/22", "scriptware support")
     updates:AddParagraph("8/4/22", "Fixed auto equip & auto dismantle")
     updates:AddParagraph("8/4/22", "session time shows the correct time now")
     updates:AddParagraph("8/4/22", "Added support for more exploits")
