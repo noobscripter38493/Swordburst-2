@@ -925,13 +925,28 @@ do
         PremiumOnly = false
     })
 
+    local function getTouchPart()
+        for _, v in next, workspace:GetDescendants() do
+            if v.Parent.Name == "TeleportSystem" and v.Name == "Part" then
+                return v
+            end
+        end
+    end
+
     local function makespecialtpbutton(name, pos) -- floors 1,3,7,11
         teleports_tab:AddButton({
-            Name = name,
+            Name = name .. " | may have to press twice",
             Callback = function()
-                hrp.Anchored = true
+                local totouch = getTouchPart()
+                firetouchinterest(hrp, totouch, 0)
                 task.wait(.1)
-                hrp.CFrame = pos
+
+                for _ = 1, 100 do
+                    hrp.CFrame = pos
+                    task.wait()
+                end
+
+                firetouchinterest(hrp, totouch, 1)
             end
         })
     end
@@ -1650,6 +1665,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("8/9/22", "further improved teleports on f11")
     updates:AddParagraph("8/4/22", "Fixed auto equip & auto dismantle")
     updates:AddParagraph("8/4/22", "session time shows the correct time now")
     updates:AddParagraph("8/4/22", "Added support for more exploits")
