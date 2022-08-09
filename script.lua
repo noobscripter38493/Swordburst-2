@@ -1418,7 +1418,7 @@ do
     local time_label = Stats:AddLabel("Elapsed Time")
     local floor = math.floor
     coroutine.wrap(function()
-        while true do -- what r string patterns (for real)
+        -- what r string patterns (for real)
             --[[
             local round = math.round
             local seconds = round(time())
@@ -1449,32 +1449,46 @@ do
             local formatted = os.date(displayed, seconds)
             ]]
             
-            task.wait(1)
+            --[[
+                local seconds = floor(time())
+                local minutes = 0
+                local hours = 0
+                local days = 0
+                
+                while true do
+                    if seconds >= 60 then
+                        seconds = seconds - 60
+                        minutes = minutes + 1
+                    end
+                    
+                    if minutes >= 60 then
+                        minutes = minutes - 60
+                        hours = hours + 1
+                    end
+                    
+                    if hours >= 24 then
+                        hours = hours - 24
+                        days = days + 1
+                    end
+                    
+                    if hours < 24 and minutes < 60 and seconds < 60 then
+                        break
+                    end
+                end
+            ]]
+
+        while true do task.wait(1) -- this is the last time i rewrite this
+            local floor = math.floor
+
             local seconds = floor(time())
-            local minutes = 0
-            local hours = 0
-            local days = 0
+            local minutes = floor(seconds / 60)
+            seconds = seconds - 60 * minutes
             
-            while true do
-                if seconds >= 60 then
-                    seconds = seconds - 60
-                    minutes = minutes + 1
-                end
-                
-                if minutes >= 60 then
-                    minutes = minutes - 60
-                    hours = hours + 1
-                end
-                
-                if hours >= 24 then
-                    hours = hours - 24
-                    days = days + 1
-                end
-                
-                if hours < 24 and minutes < 60 and seconds < 60 then
-                    break
-                end
-            end
+            local hours = floor(minutes / 60)
+            minutes = minutes - (60 * hours)
+            
+            local days = floor(hours / 24)
+            hours = hours - (24 * days)
             
             local o1 = days == 1 and "Day" or "Days"
             local o2 = hours == 1 and "Hour" or "Hours"
