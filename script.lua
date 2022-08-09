@@ -933,7 +933,7 @@ do
         end
     end
 
-    local function makespecialtpbutton(name, pos) -- floors 1,3,7,11
+    local function makespecialtpbutton(name, pos) -- floors 3 and 11
         teleports_tab:AddButton({
             Name = name .. " | may have to press twice",
             Callback = function()
@@ -990,11 +990,6 @@ do
                 end
             end
         end
-    end
-
-    if game.PlaceId == 542351431 then
-        local boss = CFrame.new(-1938.35791, 428.030609, 795.363708)
-        makespecialtpbutton("Boss Room", boss)
     end
 
     if placeid == 548231754 then -- floor 2
