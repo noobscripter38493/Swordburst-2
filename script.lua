@@ -320,12 +320,7 @@ local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware
 repeat wait() until lib
 
 local protected = gethui and gethui() or CoreGui
-local orion
-while true do
-    orion = protected:FindFirstChild("Orion")
-    if orion then break end
-    task.wait(1)
-end
+local orion = protected:WaitForChild("Orion")
 
 local window = lib:MakeWindow({
     Name = "SB2 Script | Made By OneTaPuXd on v3rm",
@@ -783,7 +778,7 @@ do
 
     local ui_module = game_module.Services.UI
     local dismantler_module = require(ui_module.Dismantle)
-    local inv_utility = getupvalue(dismantler_module.Init, 4) -- i completely forget which module script these functions are in and i have no idea what to name this variable
+    local inv_utility = getupvalue(dismantler_module.Init, 4)
 
     local profiles = Rs.Profiles
     local highest_damage = 0
