@@ -11,6 +11,10 @@ else
 end
 
 local mobs_on_floor = {
+    [540240728] = {}, -- arcadia -- floor 1
+    [737272595] = {}, -- battle arena floor 1
+    [566212942] = {}, -- floor 6 helmfrith
+
     [542351431] = { -- floor 1
         "Frenzy Boar",
         "Wolf",
@@ -1665,7 +1669,6 @@ do
     updates:AddParagraph("8/4/22", "session time shows the correct time now")
     updates:AddParagraph("8/4/22", "Added support for more exploits")
     updates:AddParagraph("8/3/22", "Added teleport support for floor 11 dungeon")
-    updates:AddParagraph("8/2/22", "reverted an accidentally reverted an old update that fixed an autofarm crash (aehaugaehugaeuh)")
     updates:AddParagraph("8/2/22", "Added KillAura Keybind")
     updates:AddParagraph("7/30/22", "Added Infinite Jump (avoid game making u fall through map on teleport)")
     updates:AddParagraph("7/29/22", "Added Killaura & Autofarm support for floor 11 dungeon")
@@ -1678,15 +1681,12 @@ do
     updates:AddParagraph("7/3/22", "Mute Swings now mutes others swings")
     updates:AddParagraph("7/3/22", "Added Auto Dismantle")
     updates:AddParagraph("7/2/22", "Added Mob Exclusion to Autofarm")
-    updates:AddParagraph("7/2/22", "Killaura now supports chests (mostly useless lo(l))")
-    updates:AddParagraph("7/2/22", "Changed how to retrieve teleports again")
+    updates:AddParagraph("7/2/22", "Killaura now supports chests (mostly useless (lol))")
     updates:AddParagraph("7/1/22", "Added Auto Equip Best Weapon")
     updates:AddParagraph("7/1/22", "Added Tween Speed")
     updates:AddParagraph("7/1/22", "Added Performance Boosters")
     updates:AddParagraph("6/28/22", "Killaura now works for baal & grim")
     updates:AddParagraph("6/27/22", "Moved dismantle confirm to an external popup box")
-    updates:AddParagraph("6/27/22", "Cleaned Code")
-    updates:AddParagraph("6/15/22", "Added FPS Cap Setter")
     updates:AddParagraph("6/15/22", "Added Upgrade Equipped Weapons (armors later)")
     updates:AddParagraph("6/15/22", "Added a confirm to dismantle all (there is a bug when u dismantle an equipped item)")
     updates:AddParagraph("6/15/22", "Added dismantle all of a certain rarity")
@@ -1697,8 +1697,7 @@ do
     updates:AddParagraph("6/13/22", "Skills Now Work with Animations")
     updates:AddParagraph("6/13/22", "Fixed Attack Players not toggling off")
     updates:AddParagraph("6/13/22", "Removed a Useless Animation Feature")
-    updates:AddParagraph("6/12/22", "Made Autofarm Tweening Smooth (asf)")
-    updates:AddParagraph("6/12/22", "Made WalkSpeed less detectable (wasn't detected tho)")
+    updates:AddParagraph("6/12/22", "Made Autofarm Tweening Smooth")
     updates:AddParagraph("6/12/22", "Fixed an Autofarm Bug (Teleport after death)")
     updates:AddParagraph("6/5/22", "Made All Floors show actual TP locations")
     updates:AddParagraph("6/4/22", "Made Some Floors show actual TP locations (wip)")
