@@ -1,7 +1,7 @@
 -- loadfile('Scriptz/sb2 script.lua')()
 -- loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()
 
-repeat wait() until game:IsLoaded() 
+repeat task.wait() until game:IsLoaded() 
 
 local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or (syn and syn.queue_on_teleport)
 if teleport_execute then
@@ -359,44 +359,40 @@ do
         if not settings.Autofarm then return end
 
         local enemy = to.Parent
-        local success = pcall(function()
-            if enemy.Entity.Health.Value <= 0 then error() end
+        local success, shouldfarm = pcall(function()
+            if enemy.Entity.Health.Value > 0 then 
+                return true
+            end
         end)
 
-        if success then
+        if success and shouldfarm then
             return tween(to)
         end
         
-        local i = table.find(mobs_table, to.Parent)
-        
-        if i then
-            table.remove(mobs_table, i)
-        end
+        xpcall(function()
+            mobs_table[enemy] = nil
+        end, warn)
     end
 
     local mobs = workspace.Mobs
     mobs.ChildAdded:Connect(function(mob)
         mob:WaitForChild("HumanoidRootPart")
-        
-        table.insert(mobs_table, mob)
+        mobs_table[mob] = mob
     end)
     
     mobs.ChildRemoved:Connect(function(mob)
-        local i = table.find(mobs_table, mob)
-        
-        if i then
-            table.remove(mobs_table, i)
-        end
+        xpcall(function()
+            mobs_table[mob] = nil
+        end, warn)
     end)
     
     for _, v in next, mobs:GetChildren() do
-        local mob_hrp = v:FindFirstChild("HumanoidRootPart")
-        
-        if mob_hrp and v:FindFirstChild("Healthbar") then
-            table.insert(mobs_table, v)
-        end
+        coroutine.wrap(function()
+            v:WaitForChild("HumanoidRootPart")
+            mobs_table[v] = v
+        end)()
     end
-
+    
     farm_tab:AddToggle({
         Name = "Autofarm (HIGH BAN RISK)",
         Default = false,
@@ -406,6 +402,7 @@ do
             if not bool then        
                 if tween_create then
                     tween_create:Cancel()
+                    tween_create = nil
                 end
 
                 return 
@@ -597,7 +594,7 @@ do
             
             Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
             
-            wait(.3) 
+            task.wait(.3) 
         end
     end
 
@@ -1677,9 +1674,11 @@ do
     updates:AddParagraph("7/1/22", "Added Performance Boosters")
     updates:AddParagraph("6/28/22", "Killaura now works for baal & grim")
     updates:AddParagraph("6/27/22", "Moved dismantle confirm to an external popup box")
+    updates:AddParagraph("6/27/22", "Cleaned Code")
+    updates:AddParagraph("6/15/22", "Added FPS Cap Setter")
     updates:AddParagraph("6/15/22", "Added Upgrade Equipped Weapons (armors later)")
     updates:AddParagraph("6/15/22", "Added a confirm to dismantle all (there is a bug when u dismantle an equipped item)")
-    updates:AddParagraph("6/15/22", "Added dismantle all of x rarity")
+    updates:AddParagraph("6/15/22", "Added dismantle all of a certain rarity")
     updates:AddParagraph("6/13/22", "Included Crystal Forge to the smithing tab")
     updates:AddParagraph("6/13/22", "Fixed farm only bosses making your velocity 0")
     updates:AddParagraph("6/13/22", "Fixed farm only bosses not working")
@@ -1721,6 +1720,31 @@ do
     else
         credits:AddParagraph("v3rm url", "https://v3rmillion.net/member.php?action=profile&uid=1229592")
     end
+
+    local http = game:GetService("HttpService")
+    local request = (syn and syn.request) or (fluxus and fluxus.request) or request
+    credits:AddButton({
+        Name = "Discord Server (Auto Prompt) join code: eWGZ8rYpxR",
+        Callback = function()
+            if typeof(request) ~= "function" then return end
+
+            request({
+                Url = "http://127.0.0.1:6463/rpc?v=1",
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json",
+                    ["Origin"] = "https://discord.com"
+                },
+                Body = http:JSONEncode({
+                    cmd = "INVITE_BROWSER",
+                    args = {
+                        code = "eWGZ8rYpxR"
+                    },
+                    nonce = http:GenerateGUID()
+                })
+            })
+        end
+    })
 end
 
 lib:Init()
