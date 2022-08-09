@@ -126,6 +126,10 @@ local mobs_on_floor = {
 }
 
 local bosses_on_floor = {
+    [540240728] = {}, -- arcadia -- floor 1
+    [737272595] = {}, -- battle arena floor 1
+    [566212942] = {}, -- floor 6 helmfrith
+    
     [542351431] = { -- floor 1
         "Dire Wolf",
         "Rahjin the Thief King"
@@ -218,24 +222,6 @@ local function copy_table(t)
     return c
 end
 
-local function find(mobs, element, boss)
-    if not boss then
-        for _, v in next, mobs do
-            if v.Name == element then
-                return v
-            end
-        end
-    else
-        for _, v in next, mobs do
-            for _, v2 in next, boss do
-                if v.Name == v2 then
-                    return v
-                end
-            end
-        end
-    end
-end
-
 local plr = Players.LocalPlayer
 
 for _, v in next, getconnections(plr.Idled) do
@@ -270,6 +256,7 @@ local settings = {
     AttackPlayers = false,
     Animation = getrenv()._G.CalculateCombatStyle(),
     times = 1,
+    MaxAutofarmDistance = 10000,
     excludedMobs = {},
 }
 
@@ -279,7 +266,7 @@ plr.CharacterAdded:Connect(function(new)
     humanoid = char:WaitForChild("Humanoid")
 end)
 
-getgenv().game_module = nil
+local game_module = nil
 while true do
     for _, v in next, getnilinstances() do
         if v.Name == "MainModule" then
@@ -298,6 +285,7 @@ local setThreadIdentity = (syn and syn.set_thread_identity) or setthreadcontext 
 setThreadIdentity(2)
 
 getgenv().hookfunc = hookfunction
+
 for _, v in next, getconnections(UserInputS.InputBegan) do
     local f = v.Function
     if not f then continue end
@@ -396,6 +384,40 @@ do
             mobs_table[v] = v
         end)()
     end
+
+    local function distanceCheck(enemy) 
+        local enemy_hrp = enemy:WaitForChild("HumanoidRootPart")
+        local maxdistance = settings.MaxAutofarmDistance
+    
+        local distance = (hrp.Position - enemy_hrp.Position).Magnitude
+        return distance < maxdistance
+    end
+    
+    local function searchForMob(mobName)
+        for _, mob in next, mobs_table do
+            if mob.Name == mobName and distanceCheck(mob) then
+                return mob
+            end
+        end
+    end
+    
+    local function searchForBoss(bossName)
+        for _, boss in next, mobs_table do
+            if boss.Name == bossName and distanceCheck(boss) then
+                return boss
+            end
+        end
+    end
+    
+    local function searchForAnyBoss(bosses)
+        for _, boss in next, mobs_table do
+            for _, bossName in next, bosses do
+                if boss.Name == bossName and distanceCheck(boss) then
+                    return boss
+                end
+            end
+        end
+    end
     
     farm_tab:AddToggle({
         Name = "Autofarm (HIGH BAN RISK)",
@@ -419,7 +441,7 @@ do
                 
                 task.wait()
                 if settings.Farm_Only_Bosses then
-                    local boss = find(mobs_table, nil, bosses_on_floor[placeid])
+                    local boss = searchForAnyBoss(bosses_on_floor[placeid])
                     local boss_hrp = boss and boss:FindFirstChild("HumanoidRootPart")
 
                     if boss_hrp then
@@ -436,7 +458,7 @@ do
                 end
 
                 if settings.Boss_Priority and settings.Prioritized_Boss ~= nil then
-                    local boss = find(mobs_table, settings.Prioritized_Boss)
+                    local boss = searchForBoss(settings.Prioritized_Boss)
 
                     if boss then
                         local success = pcall(function()
@@ -456,7 +478,7 @@ do
                 end
 
                 if settings.Mob_Priority and settings.Prioritized_Mob ~= nil then
-                    local mob = find(mobs_table, settings.Prioritized_Mob)
+                    local mob = searchForMob(settings.Prioritized_Mob)
             
                     if mob and not excludedMobs[mob.Name] then
                         local success = pcall(function()
@@ -478,9 +500,11 @@ do
                 local mob_hrp
                 for _, mob in next, mobs_table do
                     if not excludedMobs[mob.Name] then
-                        mob_hrp = mob:FindFirstChild("HumanoidRootPart")
+                        mob_hrp = distanceCheck(mob) and mob:FindFirstChild("HumanoidRootPart")
 
-                        if mob_hrp then break end
+                        if mob_hrp then 
+                            break
+                        end
                     end
                 end
                 
@@ -533,6 +557,19 @@ do
         end
     })
 
+    farm_tab:AddSlider({
+        Name = "Max Autofarm Radius",
+        Min = 0,
+        Max = 10000,
+        Default = 5000,
+        Color = Color3.new(255, 255, 255),
+        Increment = 100,
+        ValueName = "Studs",
+        Callback = function(v)
+            settings.MaxAutofarmDistance = v
+        end
+    })
+    
     farm_tab:AddSlider({
         Name = "Autofarm Y Offset",
         Min = 0,
@@ -776,7 +813,7 @@ do
     legends: math.floor(base + (base * 0.05 * upgrade_count))
 
     ]]
-
+    
     local ui_module = game_module.Services.UI
     local dismantler_module = require(ui_module.Dismantle)
     local inv_utility = getupvalue(dismantler_module.Init, 4)
@@ -1260,60 +1297,8 @@ do
             end
         end
     end
---[[
-    local function upgrade_gear(side, armor)
-        if side then
-            local weapon_held = workspace[plr.Name]:FindFirstChild(side .. "Weapon")
-
-            if weapon_held then
-                local inventory_id = weapon_held:FindFirstChild("InventoryID")
-                local weapon = inventory_id and functios.GetItemById(inventory_id.Value)
-
-                for _ = 1, settings.times do
-                    event:FireServer("Equipment", {"Upgrade", weapon, nil})
-                end
-            end
-        end         
-
-        if armor then
-            
-        end
-    end
-
-    Smithing:AddButton({
-        Name = "Upgrade Left Equipped Weapon",
-        Callback = function()
-            upgrade_gear("Left")
-        end
-    })
-
-    Smithing:AddButton({
-        Name = "Upgrade Right Equipped Weapon",
-        Callback = function()
-            upgrade_gear("Right")
-        end
-    })
     
-    Smithing:AddButton({
-        Name = "Upgrade Equipped Armor",
-        Callback = function()
-            upgrade_gear(nil, true)
-        end
-    })
-    
-    Smithing:AddSlider({
-        Name = "Amount of Upgrades",
-        Min = 0,
-        Max = 50,
-        Default = 1,
-        Color = Color3.new(255, 255, 255),
-        Increment = 1,
-        ValueName = "Times",
-        Callback = function(v)
-            settings.times = v
-        end
-    })
-    ]]
+
     
     local function create_confirm()
         local oldscreen = CoreGui:FindFirstChild("ScreenGui")
@@ -1416,80 +1401,20 @@ do
     }) 
     
     local time_label = Stats:AddLabel("Elapsed Time")
-    local floor = math.floor
     coroutine.wrap(function()
-        -- what r string patterns (for real)
-            --[[
-            local round = math.round
-            local seconds = round(time())
-            local minutes = round(seconds / 60)
-            local hours = round(minutes / 60)
-            local days = round(hours / 24)
-            
-            local temp
-            if hours >= 24 then
-                temp = hours - 24
-            end
-            
-            if hours >= 48 then
-                temp = hours - 48
-            end
-            
-            if hours >= 72 then
-                temp = hours - 72
-            end
-            
-            if hours >= 96 then
-               temp = hours - 96
-            end
-            
-            hours = temp or hours
-            
-            local displayed = days .. " Days | " .. hours .. " Hours | " .. "%M Minutes | " .. "%S Seconds"
-            local formatted = os.date(displayed, seconds)
-            ]]
-            
-            --[[
-                local seconds = floor(time())
-                local minutes = 0
-                local hours = 0
-                local days = 0
-                
-                while true do
-                    if seconds >= 60 then
-                        seconds = seconds - 60
-                        minutes = minutes + 1
-                    end
-                    
-                    if minutes >= 60 then
-                        minutes = minutes - 60
-                        hours = hours + 1
-                    end
-                    
-                    if hours >= 24 then
-                        hours = hours - 24
-                        days = days + 1
-                    end
-                    
-                    if hours < 24 and minutes < 60 and seconds < 60 then
-                        break
-                    end
-                end
-            ]]
+        local floor = math.floor
 
         while true do task.wait(1) -- this is the last time i rewrite this
-            local floor = math.floor
+            local seconds = time()
+            local minutes = seconds / 60
+            seconds = floor(seconds - (60 * minutes))
+            
+            local hours = minutes / 60
+            minutes = floor(minutes - (60 * hours))
+            
+            local days = hours / 24
+            hours = floor(hours - (24 * days))
 
-            local seconds = floor(time())
-            local minutes = floor(seconds / 60)
-            seconds = seconds - 60 * minutes
-            
-            local hours = floor(minutes / 60)
-            minutes = minutes - (60 * hours)
-            
-            local days = floor(hours / 24)
-            hours = hours - (24 * days)
-            
             local o1 = days == 1 and "Day" or "Days"
             local o2 = hours == 1 and "Hour" or "Hours"
             local o3 = minutes == 1 and "Minute" or "Minutes"
@@ -1564,29 +1489,34 @@ do
 
     local tomute = false
     local sound_names = {"SwordHit", "Unsheath", "SwordSlash"}
-    local function muteswings(descendant)
-        if descendant then
-            if not table.find(sound_names, descendant.Name) then return end
-            descendant.Volume = tomute and 0 or .3
+    local sounds = {}
 
-            return
+    for _, v in next, workspace:GetDescendants() do
+        if table.find(sound_names, v.Name) then
+            sounds[v] = v
         end
+    end 
 
-        for _, v in next, workspace:GetDescendants() do
-            if table.find(sound_names, v.Name) then 
-                v.Volume = tomute and 0 or .3
-            end
-        end 
+    local function muteswings(descendant)
+        if table.find(sound_names, descendant.Name) then
+            sounds[descendant] = descendant
+            descendant.Volume = tomute and 0 or .3
+        end
     end
 
     workspace.DescendantAdded:Connect(muteswings)
+    workspace.DescendantRemoving:Connect(function(descendant)
+        sounds[descendant] = nil
+    end)
 
     Performance_tab:AddToggle({
         Name = "Mute Swing Sounds",
         Default = false,
         Callback = function(bool)
             tomute = bool
-            muteswings()
+            for _, v in next, sounds do
+                v.Volume = tomute and 0 or .3
+            end
         end
     })
 end
@@ -1678,6 +1608,7 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("8/9/22", "Added Autofarm Radius Slider")
     updates:AddParagraph("8/9/22", "further improved teleports on f11")
     updates:AddParagraph("8/4/22", "Fixed auto equip & auto dismantle")
     updates:AddParagraph("8/4/22", "session time shows the correct time now")
