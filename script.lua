@@ -255,8 +255,7 @@ local settings = {
     RemoveDamageNumbers = false,
     AttackPlayers = false,
     Animation = getrenv()._G.CalculateCombatStyle(),
-    times = 1,
-    MaxAutofarmDistance = 10000,
+    MaxAutofarmDistance = 5000,
     excludedMobs = {},
 }
 
@@ -328,42 +327,43 @@ do
         PremiumOnly = false
     })
 
+    
+    local function getMobHealth(mob)
+        local entity = mob and mob:FindFirstChild("Entity")
+        return entity and entity:FindFirstChild("Health")
+    end
+
     farm_tab:AddParagraph("Warning", "SB2 Mods are extremely active and autofarm will likely get you banned")
     local mobs_table = {}
-    local tween_create
-    local function tween(to)
+    local tween
+    local function recursiveTween(to)
         local distance = (hrp.Position - to.Position).Magnitude
         local seconds = distance / settings.Tween_Speed
         
         local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
         local cframe = to.CFrame * CFrame.new(0, settings.Autofarm_Y_Offset, 0)
-        tween_create = TweenS:Create(hrp, tween_info, {CFrame = cframe})
-        
+        tween = TweenS:Create(hrp, tween_info, {CFrame = cframe})
+
         local smooth_tween = RunS.RenderStepped:Connect(function()
             hrp.Velocity = Vector3.zero
         end)
 
-        tween_create:Play()
-        tween_create.Completed:Wait()
-
+        tween:Play()
+        tween.Completed:Wait()
+        
         smooth_tween:Disconnect()
         
         if not settings.Autofarm then return end
-
+        
         local enemy = to.Parent
-        local success, shouldfarm = pcall(function()
-            if enemy.Entity.Health.Value > 0 then 
-                return true
-            end
-        end)
-
-        if success and shouldfarm then
-            return tween(to)
+        local health = getMobHealth(enemy)
+        if health and health.Value > 0 then
+            return recursiveTween(to)
         end
         
-        xpcall(function()
+        pcall(function()
             mobs_table[enemy] = nil
-        end, warn)
+        end)
     end
 
     local mobs = workspace.Mobs
@@ -373,9 +373,9 @@ do
     end)
     
     mobs.ChildRemoved:Connect(function(mob)
-        xpcall(function()
+        pcall(function()
             mobs_table[mob] = nil
-        end, warn)
+        end)
     end)
     
     for _, v in next, mobs:GetChildren() do
@@ -426,51 +426,44 @@ do
             settings.Autofarm = bool
 
             if not bool then        
-                if tween_create then
-                    tween_create:Cancel()
-                    tween_create = nil
+                if tween then
+                    tween:Cancel()
+                    tween = nil
                 end
 
                 return 
             end
 
-            while true do
+            while true do task.wait()
                 local excludedMobs = settings.excludedMobs
 
                 if not settings.Autofarm then break end
                 
-                task.wait()
                 if settings.Farm_Only_Bosses then
                     local boss = searchForAnyBoss(bosses_on_floor[placeid])
                     local boss_hrp = boss and boss:FindFirstChild("HumanoidRootPart")
 
                     if boss_hrp then
-                        local success = pcall(function()
-                            if boss.Entity.Health.Value <= 0 then error() end
-                        end)
-
-                        if not success then continue end
-
-                        tween(boss_hrp) 
+                        local health = getMobHealth(boss)
+                        if health and health.Value > 0 then
+                            recursiveTween(boss_hrp) 
+                        end
                     end
 
                     continue
                 end
-
+                
                 if settings.Boss_Priority and settings.Prioritized_Boss ~= nil then
                     local boss = searchForBoss(settings.Prioritized_Boss)
 
                     if boss then
-                        local success = pcall(function()
-                            if boss.Entity.Health.Value <= 0 then error() end
-                        end)
-                        
-                        if not success then continue end
-                        
                         local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
                         
                         if boss_hrp then
-                            tween(boss_hrp)
+                            local health = getMobHealth(boss)
+                            if health and health.Value > 0 then
+                                recursiveTween(boss_hrp)
+                            end
                             
                             continue
                         end
@@ -481,16 +474,13 @@ do
                     local mob = searchForMob(settings.Prioritized_Mob)
             
                     if mob and not excludedMobs[mob.Name] then
-                        local success = pcall(function()
-                            if mob.Entity.Health.Value <= 0 then error() end
-                        end)
-                        
-                        if not success then continue end
-                        
                         local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
                         
                         if mob_hrp then
-                            tween(mob_hrp)
+                            local health = getMobHealth(mob)
+                            if health and health.Value > 0 then
+                                recursiveTween(mob_hrp)
+                            end
                             
                             continue
                         end
@@ -502,14 +492,15 @@ do
                     if not excludedMobs[mob.Name] then
                         mob_hrp = distanceCheck(mob) and mob:FindFirstChild("HumanoidRootPart")
 
-                        if mob_hrp then 
+                        local health = getMobHealth(mob)
+                        if mob_hrp and health and health.Value > 0 then 
                             break
                         end
                     end
                 end
-                
+
                 if mob_hrp then
-                    tween(mob_hrp)
+                    recursiveTween(mob_hrp)
                 end
             end
         end
@@ -1402,19 +1393,77 @@ do
     
     local time_label = Stats:AddLabel("Elapsed Time")
     coroutine.wrap(function()
+        -- what r string patterns (for real)
+        --[[
+        local round = math.round
+        local seconds = round(time())
+        local minutes = round(seconds / 60)
+        local hours = round(minutes / 60)
+        local days = round(hours / 24)
+        
+        local temp
+        if hours >= 24 then
+            temp = hours - 24
+        end
+        
+        if hours >= 48 then
+            temp = hours - 48
+        end
+        
+        if hours >= 72 then
+            temp = hours - 72
+        end
+        
+        if hours >= 96 then
+            temp = hours - 96
+        end
+        
+        hours = temp or hours
+        
+        local displayed = days .. " Days | " .. hours .. " Hours | " .. "%M Minutes | " .. "%S Seconds"
+        local formatted = os.date(displayed, seconds)
+        ]]
+        
+        --[[
+            local seconds = floor(time())
+            local minutes = 0
+            local hours = 0
+            local days = 0
+            
+            while true do
+                if seconds >= 60 then
+                    seconds = seconds - 60
+                    minutes = minutes + 1
+                end
+                
+                if minutes >= 60 then
+                    minutes = minutes - 60
+                    hours = hours + 1
+                end
+                
+                if hours >= 24 then
+                    hours = hours - 24
+                    days = days + 1
+                end
+                
+                if hours < 24 and minutes < 60 and seconds < 60 then
+                    break
+                end
+            end
+        ]]
+
         local floor = math.floor
-
         while true do task.wait(1) -- this is the last time i rewrite this
-            local seconds = time()
-            local minutes = seconds / 60
-            seconds = floor(seconds - (60 * minutes))
+            local seconds = floor(time())
+            local minutes = floor(seconds / 60)
+            seconds = seconds - (60 * minutes)
             
-            local hours = minutes / 60
-            minutes = floor(minutes - (60 * hours))
+            local hours = floor(minutes / 60)
+            minutes = minutes - (60 * hours)
             
-            local days = hours / 24
-            hours = floor(hours - (24 * days))
-
+            local days = floor(hours / 24)
+            hours = hours - (24 * days)
+            
             local o1 = days == 1 and "Day" or "Days"
             local o2 = hours == 1 and "Hour" or "Hours"
             local o3 = minutes == 1 and "Minute" or "Minutes"
