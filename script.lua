@@ -232,7 +232,7 @@ getgenv().char = plr.Character or plr.CharacterAdded:Wait()
 getgenv().hrp = char:WaitForChild("HumanoidRootPart")
 getgenv().humanoid = char:WaitForChild("Humanoid")
 
-repeat wait() until getrenv()._G.CalculateCombatStyle
+repeat task.wait() until getrenv()._G.CalculateCombatStyle
 
 local settings = {
     Autofarm = false,
@@ -308,7 +308,7 @@ setThreadIdentity(7)
 
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
 
-repeat wait() until lib
+repeat task.wait() until lib
 
 local protected = gethui and gethui() or CoreGui
 local orion = protected:WaitForChild("Orion")
@@ -883,6 +883,16 @@ do
         end
     })
 
+    local isEquipped
+    for _, v in next, getgc() do
+        if typeof(v) == "function" and islclosure(v) then
+            if getinfo(v).name == "isEquipped" then
+                isEquipped = v
+                break
+            end
+        end
+    end
+
     local dismantle = {}
     local function AutoDismantle()
         local shouldDismantle = false
@@ -896,10 +906,12 @@ do
         if not shouldDismantle then return end
 
         task.wait(1)
+        local items = {}
         for _, item in next, inventory:GetChildren() do
             local itemdata = inv_utility.GetItemData(item)
-            local class = itemdata.Type
+            if isEquipped(item) then continue end
 
+            local class = itemdata.Type
             if class ~= "Weapon" and class ~= "Clothing" then continue end
 
             for _, v2 in next, data:GetChildren() do
@@ -907,9 +919,13 @@ do
                     local rarity = getRarity(v2)
                     
                     if dismantle[rarity] then
-                        event:FireServer("Equipment", {"Dismantle", item})
+                        items[#items + 1] = item
                     end
                 end
+            end
+
+            if #items > 0 then
+                event:FireServer("Equipment", {"Dismantle", {unpack(items)}})
             end
         end
     end
@@ -1266,30 +1282,42 @@ do
         PremiumOnly = false
     })
 
+    local isEquipped
+    for _, v in next, getgc() do
+        if typeof(v) == "function" and islclosure(v) then
+            if getinfo(v).name == "isEquipped" then
+                isEquipped = v
+                break
+            end
+        end
+    end
+
     local ui_module = game_module.Services.UI
-
     local dismantler_module = require(ui_module.Dismantle)
-
     local inv_utility = getupvalue(dismantler_module.Init, 4)
 
     local event = Rs.Event
     local inventory = Rs.Profiles[plr.Name].Inventory
     local function Dismantle_Rarity(rarity)
+        local items = {}
         for _, item in next, inventory:GetChildren() do
             local data = inv_utility.GetItemData(item)
-            
+            if isEquipped(item) then continue end
+
             if data.rarity == rarity then
                 for _, v2 in next, data do
                     if v2 == "Weapon" or v2 == "Armor" then
-                        event:FireServer("Equipment", {"Dismantle", item})
+                        items[#items + 1] = item
                         break
                     end
                 end
             end
+
+            if #items > 0 then
+                event:FireServer("Equipment", {"Dismantle", {unpack(items)}})
+            end
         end
     end
-    
-
     
     local function create_confirm()
         local oldscreen = CoreGui:FindFirstChild("ScreenGui")
