@@ -393,30 +393,91 @@ do
         return distance < maxdistance
     end
     
+    local excludedMobs = settings.excludedMobs
     local function searchForMob(mobName)
+        local closest_magnitude = math.huge
+        local closest_mob
+
         for _, mob in next, mobs_table do
+            if excludedMobs[mob.Name] then continue end
+
             if mob.Name == mobName and distanceCheck(mob) then
-                return mob
-            end
-        end
-    end
-    
-    local function searchForBoss(bossName)
-        for _, boss in next, mobs_table do
-            if boss.Name == bossName and distanceCheck(boss) then
-                return boss
-            end
-        end
-    end
-    
-    local function searchForAnyBoss(bosses)
-        for _, boss in next, mobs_table do
-            for _, bossName in next, bosses do
-                if boss.Name == bossName and distanceCheck(boss) then
-                    return boss
+                local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
+                if not mob_hrp then continue end
+
+                local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
+                if magnitude < closest_magnitude then
+                    closest_mob = mob
+                    closest_magnitude = magnitude
                 end
             end
         end
+
+        return closest_mob
+    end
+
+    local function searchForAnyEnemy()
+        local closest_magnitude = math.huge
+        local closest_mob
+        
+        for _, mob in next, mobs_table do
+            if excludedMobs[mob.Name] then continue end
+
+            if distanceCheck(mob) then
+                local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
+                if not mob_hrp then continue end
+
+                local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
+                if magnitude < closest_magnitude then
+                    closest_mob = mob
+                    closest_magnitude = magnitude
+                end
+            end
+        end
+
+        return closest_mob
+    end
+    
+    local function searchForBoss(bossName)
+        local closest_magnitude = 0
+        local closest_boss
+
+        for _, boss in next, mobs_table do
+            if boss.Name == bossName and distanceCheck(boss) then
+                local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
+                if not boss_hrp then continue end
+
+                local magnitude = (boss_hrp.Position - hrp.Position).Magnitude
+                if magnitude < closest_magnitude then
+                    closest_boss = boss
+                    closest_magnitude = magnitude
+                end
+            end
+        end
+
+        return closest_boss
+    end
+    
+    local function searchForAnyBoss(bosses)
+        local closest_magnitude = 0
+        local closest_boss
+
+        for _, boss in next, mobs_table do
+            for _, bossName in next, bosses do
+                if boss.Name == bossName and distanceCheck(boss) then
+                    local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
+                    if not boss_hrp then continue end
+    
+                    local magnitude = (boss_hrp.Position - hrp.Position).Magnitude
+                    if magnitude < closest_magnitude then
+                        closest_boss = boss
+                        closest_magnitude = magnitude
+                    end
+                end
+            end
+        end
+
+        return closest_boss
     end
     
     farm_tab:AddToggle({
@@ -435,8 +496,6 @@ do
             end
 
             while true do task.wait()
-                local excludedMobs = settings.excludedMobs
-
                 if not settings.Autofarm then break end
                 
                 if settings.Farm_Only_Bosses then
@@ -455,52 +514,39 @@ do
                 
                 if settings.Boss_Priority and settings.Prioritized_Boss ~= nil then
                     local boss = searchForBoss(settings.Prioritized_Boss)
-
-                    if boss then
-                        local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
+                    local boss_hrp = boss and boss:FindFirstChild("HumanoidRootPart")
                         
-                        if boss_hrp then
-                            local health = getMobHealth(boss)
-                            if health and health.Value > 0 then
-                                recursiveTween(boss_hrp)
-                            end
-                            
-                            continue
+                    if boss_hrp then
+                        local health = getMobHealth(boss)
+                        if health and health.Value > 0 then
+                            recursiveTween(boss_hrp)
                         end
+                        
+                        continue
                     end
                 end
 
                 if settings.Mob_Priority and settings.Prioritized_Mob ~= nil then
                     local mob = searchForMob(settings.Prioritized_Mob)
-            
-                    if mob and not excludedMobs[mob.Name] then
-                        local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
+                    local mob_hrp = mob and mob:FindFirstChild("HumanoidRootPart")
                         
-                        if mob_hrp then
-                            local health = getMobHealth(mob)
-                            if health and health.Value > 0 then
-                                recursiveTween(mob_hrp)
-                            end
-                            
-                            continue
+                    if mob_hrp then
+                        local health = getMobHealth(mob)
+                        if health and health.Value > 0 then
+                            recursiveTween(mob_hrp)
                         end
+                        
+                        continue
                     end
                 end
                 
-                local mob_hrp
-                for _, mob in next, mobs_table do
-                    if not excludedMobs[mob.Name] then
-                        mob_hrp = distanceCheck(mob) and mob:FindFirstChild("HumanoidRootPart")
-
-                        local health = getMobHealth(mob)
-                        if mob_hrp and health and health.Value > 0 then 
-                            break
-                        end
-                    end
-                end
-
+                local mob = searchForAnyEnemy()
+                local mob_hrp = mob and mob:FindFirstChild("HumanoidRootPart")
                 if mob_hrp then
-                    recursiveTween(mob_hrp)
+                    local health = getMobHealth(mob)
+                    if health and health.Value > 0 then
+                        recursiveTween(mob_hrp)
+                    end
                 end
             end
         end
