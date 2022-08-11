@@ -288,14 +288,16 @@ for _, v in next, getconnections(UserInputS.InputBegan) do
     local f = v.Function
     if not f then continue end
     
-    local noMouseClick; noMouseClick = hookfunc(f, function(user_input, game_processed, ...)
-        if user_input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if settings.KA then
-                return
+    pcall(function()
+        local noMouseClick; noMouseClick = hookfunc(f, function(user_input, game_processed, ...)
+            if user_input.UserInputType == Enum.UserInputType.MouseButton1 then
+                if settings.KA then
+                    return
+                end
             end
-        end
-        
-        return noMouseClick(user_input, game_processed, ...)
+            
+            return noMouseClick(user_input, game_processed, ...)
+        end)
     end)
 end
 setThreadIdentity(7)
