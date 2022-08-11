@@ -810,8 +810,6 @@ do
     local inv_utility = getupvalue(dismantler_module.Init, 4)
 
     local profiles = Rs.Profiles
-    local highest_damage = 0
-    local highest_defense = 0
     local inventory = profiles[plr.Name].Inventory
     local rf = Rs.Function
     local event = Rs.Event
@@ -821,13 +819,15 @@ do
         if not settings.AutoEquip then return end
         task.wait(1)
 
+        local highest_damage = 0
+        local highest_defense = 0
         local highest_weapon
         local highest_armor
 
         for _, item in next, inventory:GetChildren() do
             local itemdata = inv_utility.GetItemData(item)
-            local class = itemdata.Type
 
+            local class = itemdata.Type
             if class ~= "Weapon" and class ~= "Clothing" then continue end
             
             for _, v2 in next, data:GetChildren() do
@@ -860,9 +860,6 @@ do
                 end
             end
         end
-        
-        highest_damage = 0
-        highest_defense = 0
         
         if highest_weapon then
             rf:InvokeServer("Equipment", {"EquipWeapon", highest_weapon, "Right"})
