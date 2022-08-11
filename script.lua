@@ -529,13 +529,10 @@ do
             settings.Autofarm = bool
 
             if not bool then
-                local active = 1
-                while active ~= 0 do
-                    active = 0
+                while #tweens ~= 0 do
                     for i, v in next, tweens do
                         v:Cancel()
                         tweens[i] = nil
-                        active = active + 1
                     end
 
                     task.wait()
@@ -1765,6 +1762,8 @@ do
         PremiumOnly = false
     }) 
     
+    updates:AddParagraph("8/11/22", "Fixed autofarm staggers")
+    updates:AddParagraph("8/11/22", "Autofarm now targets closest mobs")
     updates:AddParagraph("8/9/22", "Added Autofarm Radius Slider")
     updates:AddParagraph("8/9/22", "further improved teleports on f11")
     updates:AddParagraph("8/4/22", "Fixed auto equip & auto dismantle")
