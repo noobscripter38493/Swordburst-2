@@ -435,11 +435,12 @@ do
             end
         end
 
+        print(closest_mob)
         return closest_mob
     end
     
     local function searchForBoss(bossName)
-        local closest_magnitude = 0
+        local closest_magnitude = math.huge
         local closest_boss
 
         for _, boss in next, mobs_table do
@@ -459,7 +460,7 @@ do
     end
     
     local function searchForAnyBoss(bosses)
-        local closest_magnitude = 0
+        local closest_magnitude = math.huge
         local closest_boss
 
         for _, boss in next, mobs_table do
