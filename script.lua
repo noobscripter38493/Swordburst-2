@@ -229,9 +229,9 @@ for _, v in next, getconnections(plr.Idled) do
     v:Disable() 
 end
 
-getgenv().char = plr.Character or plr.CharacterAdded:Wait()
-getgenv().hrp = char:WaitForChild("HumanoidRootPart")
-getgenv().humanoid = char:WaitForChild("Humanoid")
+local char = plr.Character or plr.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+local humanoid = char:WaitForChild("Humanoid")
 
 repeat task.wait() until getrenv()._G.CalculateCombatStyle
 
@@ -260,10 +260,41 @@ local settings = {
     excludedMobs = {},
 }
 
+local parts = {}
+local function setNoClipParts()
+    table.clear(parts)
+
+    while #parts ~= 3 do
+        for _, part in next, char:GetDescendants() do
+            if part:IsA("BasePart") and part.CanCollide then
+                if table.find(parts, part) then continue end
+
+                parts[#parts + 1] = part
+            end
+        end
+
+        task.wait(1)
+    end
+end
+
+setNoClipParts()
+
+local function noclip()
+    if not settings.Autofarm then return end
+    
+    for _, v in next, parts do
+        v.CanCollide = false -- thx infinite yield
+    end
+end
+
+RunS.Stepped:Connect(noclip)
+
 plr.CharacterAdded:Connect(function(new)
     char = new
     hrp = char:WaitForChild("HumanoidRootPart")
     humanoid = char:WaitForChild("Humanoid")
+
+    setNoClipParts()
 end)
 
 local game_module = nil
@@ -322,7 +353,6 @@ do
         Icon = "",
         PremiumOnly = false
     })
-
     
     local function getMobHealth(mob)
         local entity = mob and mob:FindFirstChild("Entity")
@@ -331,30 +361,33 @@ do
 
     farm_tab:AddParagraph("Warning", "SB2 Mods are extremely active and autofarm will likely get you banned")
     local mobs_table = {}
-    local tween
-    local function recursiveTween(to)
-        local distance = (hrp.Position - to.Position).Magnitude
-        local seconds = distance / settings.Tween_Speed
-        
-        local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
-        local cframe = to.CFrame * CFrame.new(0, settings.Autofarm_Y_Offset, 0)
-        tween = TweenS:Create(hrp, tween_info, {CFrame = cframe})
-
-        local smooth_tween = RunS.RenderStepped:Connect(function()
-            hrp.Velocity = Vector3.zero
-        end)
-
-        tween:Play()
-        tween.Completed:Wait()
-        
-        smooth_tween:Disconnect()
-        
-        if not settings.Autofarm then return end
-        
+    local tweens = {}
+    local function TweenF(to)
         local enemy = to.Parent
         local health = getMobHealth(enemy)
-        if health and health.Value > 0 then
-            return recursiveTween(to)
+        while health and health.Value > 0 do
+            coroutine.wrap(function()
+                local distance = (hrp.Position - to.Position).Magnitude
+                local seconds = distance / settings.Tween_Speed
+                
+                local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
+                local cframe = to.CFrame * CFrame.new(0, settings.Autofarm_Y_Offset, 0)
+ 
+                local tween = TweenS:Create(hrp, tween_info, {CFrame = cframe})
+                tweens[#tweens + 1] = tween
+
+                local smooth_tween = RunS.RenderStepped:Connect(function()
+                    hrp.Velocity = Vector3.zero
+                end)
+                
+                tween:Play()
+                tween.Completed:Wait()
+                
+                smooth_tween:Disconnect()
+            end)()
+            
+            if not settings.Autofarm then break end
+            task.wait()
         end
         
         pcall(function()
@@ -402,10 +435,13 @@ do
                 local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
                 if not mob_hrp then continue end
 
-                local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
-                if magnitude < closest_magnitude then
-                    closest_mob = mob
-                    closest_magnitude = magnitude
+                local health = getMobHealth(mob)
+                if health and health.Value > 0 then
+                    local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
+                    if magnitude < closest_magnitude then
+                        closest_mob = mob
+                        closest_magnitude = magnitude
+                    end
                 end
             end
         end
@@ -424,10 +460,13 @@ do
                 local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
                 if not mob_hrp then continue end
 
-                local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
-                if magnitude < closest_magnitude then
-                    closest_mob = mob
-                    closest_magnitude = magnitude
+                local health = getMobHealth(mob)
+                if health and health.Value > 0 then
+                    local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
+                    if magnitude < closest_magnitude then
+                        closest_mob = mob
+                        closest_magnitude = magnitude
+                    end
                 end
             end
         end
@@ -444,10 +483,13 @@ do
                 local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
                 if not boss_hrp then continue end
 
-                local magnitude = (boss_hrp.Position - hrp.Position).Magnitude
-                if magnitude < closest_magnitude then
-                    closest_boss = boss
-                    closest_magnitude = magnitude
+                local health = getMobHealth(boss)
+                if health and health.Value > 0 then
+                    local magnitude = (boss_hrp.Position - hrp.Position).Magnitude
+                    if magnitude < closest_magnitude then
+                        closest_boss = boss
+                        closest_magnitude = magnitude
+                    end
                 end
             end
         end
@@ -464,11 +506,14 @@ do
                 if boss.Name == bossName and distanceCheck(boss) then
                     local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
                     if not boss_hrp then continue end
-    
-                    local magnitude = (boss_hrp.Position - hrp.Position).Magnitude
-                    if magnitude < closest_magnitude then
-                        closest_boss = boss
-                        closest_magnitude = magnitude
+
+                    local health = getMobHealth(boss)
+                    if health and health.Value > 0 then
+                        local magnitude = (boss_hrp.Position - hrp.Position).Magnitude
+                        if magnitude < closest_magnitude then
+                            closest_boss = boss
+                            closest_magnitude = magnitude
+                        end
                     end
                 end
             end
@@ -483,13 +528,20 @@ do
         Callback = function(bool)
             settings.Autofarm = bool
 
-            if not bool then        
-                if tween then
-                    tween:Cancel()
-                    tween = nil
-                end
+            if not bool then
+                local active = 1
+                while active ~= 0 do
+                    active = 0
+                    for i, v in next, tweens do
+                        v:Cancel()
+                        tweens[i] = nil
+                        active = active + 1
+                    end
 
-                return 
+                    task.wait()
+                end
+                
+                return
             end
 
             while true do task.wait()
@@ -500,10 +552,7 @@ do
                     local boss_hrp = boss and boss:FindFirstChild("HumanoidRootPart")
 
                     if boss_hrp then
-                        local health = getMobHealth(boss)
-                        if health and health.Value > 0 then
-                            recursiveTween(boss_hrp) 
-                        end
+                        TweenF(boss_hrp) 
                     end
 
                     continue
@@ -514,10 +563,7 @@ do
                     local boss_hrp = boss and boss:FindFirstChild("HumanoidRootPart")
                         
                     if boss_hrp then
-                        local health = getMobHealth(boss)
-                        if health and health.Value > 0 then
-                            recursiveTween(boss_hrp)
-                        end
+                        TweenF(boss_hrp)
                         
                         continue
                     end
@@ -528,10 +574,7 @@ do
                     local mob_hrp = mob and mob:FindFirstChild("HumanoidRootPart")
                         
                     if mob_hrp then
-                        local health = getMobHealth(mob)
-                        if health and health.Value > 0 then
-                            recursiveTween(mob_hrp)
-                        end
+                        TweenF(mob_hrp)
                         
                         continue
                     end
@@ -540,10 +583,7 @@ do
                 local mob = searchForAnyEnemy()
                 local mob_hrp = mob and mob:FindFirstChild("HumanoidRootPart")
                 if mob_hrp then
-                    local health = getMobHealth(mob)
-                    if health and health.Value > 0 then
-                        recursiveTween(mob_hrp)
-                    end
+                    TweenF(mob_hrp)
                 end
             end
         end
