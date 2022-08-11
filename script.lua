@@ -198,6 +198,7 @@ local Rs = game:GetService("ReplicatedStorage")
 getgenv().getupvalue = debug.getupvalue -- not sure if other exploits that aren't synapse have an alias so this is for that i guess
 getgenv().setupvalue = debug.setupvalue
 getgenv().getinfo = debug.getinfo
+getgenv().hookfunc = hookfunction
 
 local placeid = game.PlaceId
 
@@ -283,26 +284,19 @@ end
 local setThreadIdentity = (syn and syn.set_thread_identity) or setthreadcontext or (fluxus and fluxus.set_thread_identity) or setidentity
 setThreadIdentity(2)
 
-getgenv().hookfunc = hookfunction
-
 for _, v in next, getconnections(UserInputS.InputBegan) do
     local f = v.Function
     if not f then continue end
     
-    local info = getinfo(f)
-    if info.source:find("Services.Input") then
-        local noMouseClick; noMouseClick = hookfunc(f, function(user_input, game_processed, ...)
-            if user_input.UserInputType == Enum.UserInputType.MouseButton1 then
-                if settings.KA then
-                    return
-                end
+    local noMouseClick; noMouseClick = hookfunc(f, function(user_input, game_processed, ...)
+        if user_input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if settings.KA then
+                return
             end
-            
-            return noMouseClick(user_input, game_processed, ...)
-        end)
-
-        break
-    end
+        end
+        
+        return noMouseClick(user_input, game_processed, ...)
+    end)
 end
 setThreadIdentity(7)
 
@@ -386,10 +380,11 @@ do
     end
 
     local function distanceCheck(enemy) 
-        local enemy_hrp = enemy:WaitForChild("HumanoidRootPart")
-        local maxdistance = settings.MaxAutofarmDistance
-    
+        local enemy_hrp = enemy:FindFirstChild("HumanoidRootPart")
+        if not enemy_hrp then return end
+
         local distance = (hrp.Position - enemy_hrp.Position).Magnitude
+        local maxdistance = settings.MaxAutofarmDistance
         return distance < maxdistance
     end
     
@@ -435,7 +430,6 @@ do
             end
         end
 
-        print(closest_mob)
         return closest_mob
     end
     
