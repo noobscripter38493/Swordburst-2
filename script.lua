@@ -1014,7 +1014,6 @@ do
         end     
     end
 
-    local data = Rs.Database.Items
     --[[
     formulas
 
@@ -1038,6 +1037,8 @@ do
             return .04 
         end
     })
+    
+    local data = Rs.Database.Items
     local function AutoEquip()
         if not settings.AutoEquip then return end
         task.wait(1)
@@ -1103,49 +1104,20 @@ do
         end
     })
 
-    local isEquipped
-    for _, v in next, getgc() do
-        if typeof(v) == "function" and islclosure(v) then
-            if getinfo(v).name == "isEquipped" then
-                isEquipped = v
-                break
-            end
-        end
-    end
-
     local dismantle = {}
-    local function AutoDismantle()
-        local shouldDismantle = false
-        for _, v in next, dismantle do
-            if v then
-                shouldDismantle = true
-                break
-            end
-        end
-
-        if not shouldDismantle then return end
-
+    local function AutoDismantle(item)
         task.wait(1)
-        local items = {}
-        for _, item in next, inventory:GetChildren() do
-            local itemdata = inv_utility.GetItemData(item)
-            if isEquipped(item) then continue end
 
-            local class = itemdata.Type
-            if class ~= "Weapon" and class ~= "Clothing" then continue end
-
-            for _, v2 in next, data:GetChildren() do
-                if v2.Name == item.Name then
-                    local rarity = getRarity(v2)
-                    
-                    if dismantle[rarity] then
-                        items[#items + 1] = item
-                    end
+        local itemdata = inv_utility.GetItemData(item)
+        local class = rawget(itemdata, "Type")
+        if class ~= "Weapon" and class ~= "Clothing" then return end
+        for _, v2 in next, data:GetChildren() do
+            if v2.Name == item.Name then
+                local rarity = getRarity(v2)
+                
+                if dismantle[rarity] then
+                    event:FireServer("Equipment", {"Dismantle", {item}})
                 end
-            end
-
-            if #items > 0 then
-                event:FireServer("Equipment", {"Dismantle", {unpack(items)}})
             end
         end
     end
@@ -1841,7 +1813,7 @@ do
         end
     })
 
-    local function refresh_inventoryViewer_list(dp) 
+    local function refresh_inventoryViewer_list() 
         local players_instances = Players:GetPlayers()
         local players_names = {}
         
@@ -1849,17 +1821,17 @@ do
             table.insert(players_names, v.Name)
         end
         
-        dp:Refresh(players_names, true)
+        inventory_viewer:Refresh(players_names, true)
     end
     
     Players.PlayerAdded:Connect(function(player)
         repeat task.wait() until Rs.Profiles:FindFirstChild(player.Name) ~= nil
         
-        refresh_inventoryViewer_list(inventory_viewer)
+        refresh_inventoryViewer_list()
     end)
     
     Players.PlayerRemoving:Connect(function()
-        refresh_inventoryViewer_list(inventory_viewer)
+        refresh_inventoryViewer_list()
     end)
     
     local fps = getfpscap and getfpscap() or 60
