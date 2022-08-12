@@ -1107,18 +1107,16 @@ do
     local dismantle = {}
     local function AutoDismantle(item)
         task.wait(1)
-
+        
         local itemdata = inv_utility.GetItemData(item)
         local class = rawget(itemdata, "Type")
         if class ~= "Weapon" and class ~= "Clothing" then return end
-        for _, v2 in next, data:GetChildren() do
-            if v2.Name == item.Name then
-                local rarity = getRarity(v2)
-                
-                if dismantle[rarity] then
-                    event:FireServer("Equipment", {"Dismantle", {item}})
-                end
-            end
+
+        local v = data[item.Name]
+        local rarity = getRarity(v)
+        
+        if dismantle[rarity] then
+            event:FireServer("Equipment", {"Dismantle", {item}})
         end
     end
 
