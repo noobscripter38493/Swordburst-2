@@ -344,32 +344,30 @@ while true do
 end
 
 -- disable M1s when killaura is enabled
-local setThreadIdentity = (syn and syn.set_thread_identity) or setthreadcontext or (fluxus and fluxus.set_thread_identity) or setidentity
-setThreadIdentity(2)
-
-for _, v in next, getconnections(UserInputS.InputBegan) do
-    local f = v.Function
-    if not f then continue end
-    
-    local info = getinfo(f)
-    if info.source:find("Input") then
-        local noMouseClick; noMouseClick = hookfunc(f, function(user_input, game_processed, ...)
-            if user_input.UserInputType == Enum.UserInputType.MouseButton1 then
-                if settings.KA then
-                    return
+local find = table.find
+for _, v in next, getreg() do
+    if typeof(v) == "function" and islclosure(v) then
+        local consts = getconstants(v)
+        if find(consts, "MouseButton1") then
+            local noMouseClick; noMouseClick = hookfunc(v, function(user_input, game_processed)
+                if user_input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if settings.KA then
+                        return
+                    end
                 end
-            end
-            
-            return noMouseClick(user_input, game_processed, ...)
-        end)
-
-        break
+                
+                return noMouseClick(user_input, game_processed)
+            end)
+        end
     end
 end
 
-setThreadIdentity(7)
-
-local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
+local request = (syn and syn.request) or (fluxus and fluxus.request) or request
+local response = request({
+    Url = "https://raw.githubusercontent.com/shlexware/Orion/main/source",
+    Method = "GET"
+})
+local lib = loadstring(response.Body)()
 
 repeat task.wait() until lib
 
@@ -377,7 +375,7 @@ local protected = gethui and gethui() or CoreGui
 local orion = protected:WaitForChild("Orion")
 
 local window = lib:MakeWindow({
-    Name = "SB2 Script | Made By OneTaPuXd on v3rm",
+    Name = "SB2 Script | OneTaPuXd on v3rm | discord.gg/eWGZ8rYpxR",
     HidePremium = false,
     SaveConfig = false,
     ConfigFolder = false
@@ -549,7 +547,7 @@ do
     local function TweenF(to)
         local enemy = to.Parent
         to = playerHealthChecks(to)
-
+        
         local mob_health
         if not shouldFloat then
             mob_health = getMobHealth(enemy)
@@ -811,7 +809,7 @@ do
     RunS.RenderStepped:Connect(function()
         range.CFrame = char:GetPivot()
     end)
-
+    
     range.Parent = workspace
 
     local _combat = require(game_module.Services.Combat)
@@ -820,23 +818,25 @@ do
 
     local attacking = {}
     local function killaura_function(enemy, player)
-        while true do 
+        while true do
             local i = table.find(attacking, enemy)
-            
-            local success = pcall(function()
-                if enemy.Entity.Health.Value <= 0 then error() end
+            local success, shouldFarm = pcall(function()
+                return enemy.Entity.Health.Value > 0
             end)
 
-            local enemy_hrp = enemy:FindFirstChild("HumanoidRootPart")
-            if not enemy_hrp or not success or not settings.KA or enemy:FindFirstChild("Immortal") or (hrp.Position - enemy_hrp.Position).Magnitude > settings.KA_Range then
+            if not success or not shouldFarm or not settings.KA then
                 table.remove(attacking, i)
+                return
+            end
 
+            local enemy_hrp = enemy:FindFirstChild("HumanoidRootPart")
+            if not enemy_hrp or enemy:FindFirstChild("Immortal") or (hrp.Position - enemy_hrp.Position).Magnitude > settings.KA_Range then
+                table.remove(attacking, i)
                 break 
             end
 
             if player and not settings.AttackPlayers then
                 table.remove(attacking, i)
-
                 break
             end
             
@@ -898,7 +898,7 @@ do
         if not settings.KA or touching.Parent == char or touching.Name ~= "HumanoidRootPart" then 
             return
         end
-
+        
         local enemy = touching.Parent
         if not table.find(attacking, enemy) then 
             local mob = table.find(mobs_on_floor[placeid], enemy.Name)
@@ -906,11 +906,11 @@ do
             local chest = enemy.Name:match("Chest")
 
             if mob or boss or chest then
-                table.insert(attacking, enemy)
+                attacking[#attacking + 1] = enemy
                 killaura_function(enemy)
 
             elseif settings.AttackPlayers then
-                table.insert(attacking, enemy)
+                attacking[#attacking + 1] = enemy
                 killaura_function(enemy, true)
             end
         end
