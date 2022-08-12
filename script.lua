@@ -307,7 +307,8 @@ local function setUpPlayerHealthValues(health)
     end)
     maxPlayerHealth = health.MaxValue
 
-    humanoid.Died:Connect(function()
+    local humanoidDied; humanoidDied = humanoid.Died:Connect(function()
+        humanoidDied:Disconnect()
         maxHealthSignal:Disconnect()
         currentHealthSignal:Disconnect()
     end)
@@ -335,6 +336,7 @@ while true do
             break
         end
     end 
+
     game_module = game_module or plr.PlayerScripts.CardinalClient:FindFirstChild("MainModule")
     if game_module then break end
 
