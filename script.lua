@@ -1,5 +1,7 @@
 -- loadfile('Scriptz/sb2 script.lua')()
 -- loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()
+if SB2Script then return end
+getgenv().SB2Script = true
 
 repeat task.wait() until game:IsLoaded() 
 
@@ -258,6 +260,9 @@ local settings = {
     Animation = getrenv()._G.CalculateCombatStyle(),
     MaxAutofarmDistance = 5000,
     excludedMobs = {},
+    Height = 30,
+    Autofarm_Idle_Min = 30,
+    Autofarm_Idle_Max = 70
 }
 
 local parts = {}
@@ -289,15 +294,40 @@ end
 
 RunS.Stepped:Connect(noclip)
 
+local playerHealth
+local maxPlayerHealth
+local function setUpPlayerHealthValues(health)
+    local currentHealthSignal = health:GetPropertyChangedSignal("Value"):Connect(function()
+        playerHealth = health.Value
+    end)
+    playerHealth = health.Value
+
+    local maxHealthSignal = health:GetPropertyChangedSignal("MaxValue"):Connect(function()
+        maxPlayerHealth = health.MaxValue
+    end)
+    maxPlayerHealth = health.MaxValue
+
+    humanoid.Died:Connect(function()
+        maxHealthSignal:Disconnect()
+        currentHealthSignal:Disconnect()
+    end)
+end
+
+local health = char:WaitForChild("Entity"):WaitForChild("Health")
+setUpPlayerHealthValues(health)
+
 plr.CharacterAdded:Connect(function(new)
     char = new
     hrp = char:WaitForChild("HumanoidRootPart")
     humanoid = char:WaitForChild("Humanoid")
 
+    health = new:WaitForChild("Entity"):WaitForChild("Health")
+    setUpPlayerHealthValues(health)
+
     setNoClipParts()
 end)
 
-local game_module = nil
+local game_module
 while true do
     for _, v in next, getnilinstances() do
         if v.Name == "MainModule" then
@@ -305,7 +335,7 @@ while true do
             break
         end
     end 
-
+    game_module = game_module or plr.PlayerScripts.CardinalClient:FindFirstChild("MainModule")
     if game_module then break end
 
     task.wait(.5)
@@ -319,7 +349,8 @@ for _, v in next, getconnections(UserInputS.InputBegan) do
     local f = v.Function
     if not f then continue end
     
-    pcall(function()
+    local info = getinfo(f)
+    if info.source:find("Input") then
         local noMouseClick; noMouseClick = hookfunc(f, function(user_input, game_processed, ...)
             if user_input.UserInputType == Enum.UserInputType.MouseButton1 then
                 if settings.KA then
@@ -329,8 +360,11 @@ for _, v in next, getconnections(UserInputS.InputBegan) do
             
             return noMouseClick(user_input, game_processed, ...)
         end)
-    end)
+
+        break
+    end
 end
+
 setThreadIdentity(7)
 
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
@@ -349,7 +383,7 @@ local window = lib:MakeWindow({
 
 do
     local farm_tab = window:MakeTab({
-        Name = "Farm",
+        Name = "Autofarm",
         Icon = "",
         PremiumOnly = false
     })
@@ -361,58 +395,6 @@ do
 
     farm_tab:AddParagraph("Warning", "SB2 Mods are extremely active and autofarm will likely get you banned")
     local mobs_table = {}
-    local tweens = {}
-    local function TweenF(to)
-        local enemy = to.Parent
-        local health = getMobHealth(enemy)
-        while health and health.Value > 0 do
-            coroutine.wrap(function()
-                local distance = (hrp.Position - to.Position).Magnitude
-                local seconds = distance / settings.Tween_Speed
-                
-                local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
-                local cframe = to.CFrame * CFrame.new(0, settings.Autofarm_Y_Offset, 0)
- 
-                local tween = TweenS:Create(hrp, tween_info, {CFrame = cframe})
-                tweens[#tweens + 1] = tween
-
-                local smooth_tween = RunS.RenderStepped:Connect(function()
-                    hrp.Velocity = Vector3.zero
-                end)
-                
-                tween:Play()
-                tween.Completed:Wait()
-                
-                smooth_tween:Disconnect()
-            end)()
-            
-            if not settings.Autofarm then break end
-            task.wait()
-        end
-        
-        pcall(function()
-            mobs_table[enemy] = nil
-        end)
-    end
-
-    local mobs = workspace.Mobs
-    mobs.ChildAdded:Connect(function(mob)
-        mob:WaitForChild("HumanoidRootPart")
-        mobs_table[mob] = mob
-    end)
-    
-    mobs.ChildRemoved:Connect(function(mob)
-        pcall(function()
-            mobs_table[mob] = nil
-        end)
-    end)
-    
-    for _, v in next, mobs:GetChildren() do
-        coroutine.wrap(function()
-            v:WaitForChild("HumanoidRootPart")
-            mobs_table[v] = v
-        end)()
-    end
 
     local function distanceCheck(enemy) 
         local enemy_hrp = enemy:FindFirstChild("HumanoidRootPart")
@@ -435,8 +417,8 @@ do
                 local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
                 if not mob_hrp then continue end
 
-                local health = getMobHealth(mob)
-                if health and health.Value > 0 then
+                local mob_health = getMobHealth(mob)
+                if mob_health and mob_health.Value > 0 then
                     local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
                     if magnitude < closest_magnitude then
                         closest_mob = mob
@@ -460,8 +442,8 @@ do
                 local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
                 if not mob_hrp then continue end
 
-                local health = getMobHealth(mob)
-                if health and health.Value > 0 then
+                local mob_health = getMobHealth(mob)
+                if mob_health and mob_health.Value > 0 then
                     local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
                     if magnitude < closest_magnitude then
                         closest_mob = mob
@@ -483,8 +465,8 @@ do
                 local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
                 if not boss_hrp then continue end
 
-                local health = getMobHealth(boss)
-                if health and health.Value > 0 then
+                local boss_health = getMobHealth(boss)
+                if boss_health and boss_health.Value > 0 then
                     local magnitude = (boss_hrp.Position - hrp.Position).Magnitude
                     if magnitude < closest_magnitude then
                         closest_boss = boss
@@ -507,8 +489,8 @@ do
                     local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
                     if not boss_hrp then continue end
 
-                    local health = getMobHealth(boss)
-                    if health and health.Value > 0 then
+                    local boss_health = getMobHealth(boss)
+                    if boss_health and boss_health.Value > 0 then
                         local magnitude = (boss_hrp.Position - hrp.Position).Magnitude
                         if magnitude < closest_magnitude then
                             closest_boss = boss
@@ -521,6 +503,108 @@ do
 
         return closest_boss
     end
+
+    local tweens = {}
+
+    local floatPart = Instance.new("Part")
+    floatPart.Transparency = 1
+    floatPart.Anchored = true
+    floatPart.Size = Vector3.new(1, 1, 1)
+    floatPart.CanCollide = false
+
+    local shouldFloat = false
+    RunS.RenderStepped:Connect(function()
+        if shouldFloat then return end
+
+        local height = settings.Height
+        floatPart.CFrame = hrp.CFrame * CFrame.new(0, height, 0)
+    end)
+    floatPart.Parent = workspace
+    
+    local function playerHealthChecks(to)
+        local minPercentage = settings.Autofarm_Idle_Min
+        local maxPercantage = settings.Autofarm_Idle_Max
+        if shouldFloat then
+            if playerHealth > maxPercantage / 100 * maxPlayerHealth then
+                shouldFloat = false
+            else
+                to = floatPart
+            end
+        end
+
+        if playerHealth < minPercentage / 100 * maxPlayerHealth then
+            to = floatPart
+            shouldFloat = true
+        end
+
+        if to == floatPart then
+            to = searchForAnyBoss(bosses_on_floor[placeid]) or floatPart
+        end
+
+        return to
+    end
+
+    local function TweenF(to)
+        local enemy = to.Parent
+        to = playerHealthChecks(to)
+
+        local mob_health
+        if not shouldFloat then
+            mob_health = getMobHealth(enemy)
+        end
+        while mob_health and mob_health.Value > 0 or shouldFloat do
+            coroutine.wrap(function()
+                to = playerHealthChecks(to)
+                local distance = (hrp.Position - to.Position).Magnitude
+                local seconds = distance / settings.Tween_Speed
+
+                local y_offset = shouldFloat and 0 or settings.Autofarm_Y_Offset
+                local cframe = to.CFrame * CFrame.new(0, y_offset, 0)
+
+                local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
+                local tween = TweenS:Create(hrp, tween_info, {CFrame = cframe})
+                tweens[#tweens + 1] = tween
+                
+                tween:Play()
+                tween.Completed:Wait()
+            end)()
+            
+            if not settings.Autofarm or not to.Parent then
+                break 
+            end
+
+            task.wait()
+        end
+        
+        pcall(function()
+            mobs_table[enemy] = nil
+        end)
+    end
+
+    RunS.RenderStepped:Connect(function() -- smooth tween
+        if not settings.Autofarm then return end
+        hrp.Velocity = Vector3.zero
+    end)
+    
+
+    local mobs = workspace.Mobs
+    mobs.ChildAdded:Connect(function(mob)
+        mob:WaitForChild("HumanoidRootPart")
+        mobs_table[mob] = mob
+    end)
+    
+    mobs.ChildRemoved:Connect(function(mob)
+        pcall(function()
+            mobs_table[mob] = nil
+        end)
+    end)
+    
+    for _, v in next, mobs:GetChildren() do
+        coroutine.wrap(function()
+            v:WaitForChild("HumanoidRootPart")
+            mobs_table[v] = v
+        end)()
+    end
     
     farm_tab:AddToggle({
         Name = "Autofarm (HIGH BAN RISK)",
@@ -531,6 +615,7 @@ do
             if not bool then
                 while #tweens ~= 0 do
                     for i, v in next, tweens do
+                        shouldFloat = false
                         v:Cancel()
                         tweens[i] = nil
                     end
@@ -549,9 +634,11 @@ do
                     local boss_hrp = boss and boss:FindFirstChild("HumanoidRootPart")
 
                     if boss_hrp then
-                        TweenF(boss_hrp) 
+                        TweenF(boss_hrp)
+                    else
+                        TweenF(floatPart)
                     end
-
+                    
                     continue
                 end
                 
@@ -655,6 +742,45 @@ do
     })
 
     farm_tab:AddSlider({
+        Name = "Idle Float Height (supports only farm bosses & health %)",
+        Min = 30,
+        Max = 100,
+        Default = 30,
+        Color = Color3.new(255, 255, 255),
+        Increment = 1,
+        ValueName = "Studs",
+        Callback = function(v)
+            settings.Height = v
+        end
+    })
+
+    farm_tab:AddSlider({
+        Name = "Idle farm when under % health",
+        Min = 0,
+        Max = 100,
+        Default = 30,
+        Color = Color3.new(255, 255, 255),
+        Increment = 1,
+        ValueName = "%",
+        Callback = function(v)
+            settings.Autofarm_Idle_Min = v
+        end
+    })
+
+    farm_tab:AddSlider({
+        Name = "Resume farm when over % health",
+        Min = 0,
+        Max = 100,
+        Default = 70,
+        Color = Color3.new(255, 255, 255),
+        Increment = 1,
+        ValueName = "%",
+        Callback = function(v)
+            settings.Autofarm_Idle_Max = v
+        end
+    })
+
+    farm_tab:AddSlider({
         Name = "Tween Speed",
         Min = 0, 
         Max = 100,
@@ -666,6 +792,14 @@ do
             settings.Tween_Speed = v
         end
     })
+end
+
+do
+    local combat = window:MakeTab({
+        Name = "Combat",
+        Icon = "",
+        PremiumOnly = false
+    })
 
     local range = Instance.new("Part")
     range.Size = Vector3.new(25, 25, 25)
@@ -673,13 +807,13 @@ do
     range.Transparency = 1
 
     RunS.RenderStepped:Connect(function()
-        range.CFrame = game.Players.LocalPlayer.Character:GetPivot()
+        range.CFrame = char:GetPivot()
     end)
 
     range.Parent = workspace
 
-    local combat = require(game_module.Services.Combat)
-    local remote_key = getupvalue(combat.Init, 2)
+    local _combat = require(game_module.Services.Combat)
+    local remote_key = getupvalue(_combat.Init, 2)
     local Event = Rs.Event
 
     local attacking = {}
@@ -780,7 +914,7 @@ do
         end
     end)
 
-    farm_tab:AddToggle({
+    combat:AddToggle({
         Name = "Kill Aura",
         Default = false,
         Callback = function(bool)
@@ -789,7 +923,7 @@ do
         end
     })
 
-    farm_tab:AddToggle({
+    combat:AddToggle({
         Name = "Attack Players",
         Default = false,
         Callback = function(bool)
@@ -797,7 +931,7 @@ do
         end
     })
     
-    farm_tab:AddSlider({
+    combat:AddSlider({
         Name = "Kill Aura Range",
         Min = 0,
         Max = 25,
@@ -829,7 +963,7 @@ do
     end
 
     local ka_button = getkabutton()
-    farm_tab:AddBind({
+    combat:AddBind({
         Name = "Kill Aura Keybind",
         Default = Enum.KeyCode.R,
         Hold = false,
@@ -863,7 +997,7 @@ do
     end
 
     for _, v in next, getgc() do
-        if typeof(v) == "function" then
+        if typeof(v) == "function" and islclosure(v) then
             local info = getinfo(v)
             
             if info.name == "getStats" then
@@ -873,6 +1007,8 @@ do
             if info.name == "getUpgrade" then
                 getUpgrade = v 
             end
+            
+            if getStats and getUpgrade then break end
         end     
     end
 
@@ -894,7 +1030,12 @@ do
     local rf = Rs.Function
     local event = Rs.Event
 
-    local rates = setmetatable({Legendary = .05}, {__index = function() return .04 end})
+    local rates = setmetatable({Legendary = .05}, {
+        __index = function(self, i)
+            self[i] = .04
+            return .04 
+        end
+    })
     local function AutoEquip()
         if not settings.AutoEquip then return end
         task.wait(1)
@@ -1762,8 +1903,6 @@ do
         PremiumOnly = false
     }) 
     
-    updates:AddParagraph("8/11/22", "Fixed autofarm staggers")
-    updates:AddParagraph("8/11/22", "Autofarm now targets closest mobs")
     updates:AddParagraph("8/9/22", "Added Autofarm Radius Slider")
     updates:AddParagraph("8/9/22", "further improved teleports on f11")
     updates:AddParagraph("8/4/22", "Fixed auto equip & auto dismantle")
