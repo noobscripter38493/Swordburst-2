@@ -540,10 +540,14 @@ do
             to = floatPart
         end
 
-        if settings.Farm_Only_Bosses then
+        if settings.Farm_Only_Bosses then -- kind of messy but it works
             to = searchForAnyBoss(bosses_on_floor[placeid])
             if to then
-                to = to and to:FindFirstChild("HumanoidRootPart")
+                to = to:FindFirstChild("HumanoidRootPart")
+                if not to then
+                    shouldFloat = true
+                    to = floatPart
+                end
             else
                 shouldFloat = true
                 to = floatPart
