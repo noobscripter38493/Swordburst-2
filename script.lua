@@ -537,10 +537,11 @@ do
             shouldFloat = true
         end
 
-        if to == floatPart then
-            to = searchForAnyBoss(bosses_on_floor[placeid]) or floatPart
+        if to == floatPart and settings.Farm_Only_Bosses then
+            to = searchForAnyBoss(bosses_on_floor[placeid])
+            to = to and to:FindFirstChild("HumanoidRootPart") or floatPart
         end
-
+        
         return to
     end
 
@@ -555,6 +556,7 @@ do
         while mob_health and mob_health.Value > 0 or shouldFloat do
             coroutine.wrap(function()
                 to = playerHealthChecks(to)
+
                 local distance = (hrp.Position - to.Position).Magnitude
                 local seconds = distance / settings.Tween_Speed
 
@@ -1354,7 +1356,7 @@ do
         new_root.Parent = old_root.Parent
         old_root:Destroy()
     end
-
+    
     plr.CharacterAdded:Connect(goinvisible)
 
     Character_tab:AddToggle({
