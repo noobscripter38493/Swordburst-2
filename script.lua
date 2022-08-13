@@ -524,27 +524,35 @@ do
     local function playerHealthChecks(to)
         local minPercentage = settings.Autofarm_Idle_Min
         local maxPercantage = settings.Autofarm_Idle_Max
+
         if shouldFloat then
             if playerHealth > maxPercantage / 100 * maxPlayerHealth then
                 shouldFloat = false
+                to = searchForAnyEnemy()
+                to = to and to:FindFirstChild("HumanoidRootPart")
             else
                 to = floatPart
             end
         end
 
         if playerHealth < minPercentage / 100 * maxPlayerHealth then
-            to = floatPart
             shouldFloat = true
+            to = floatPart
         end
 
-        if to == floatPart and settings.Farm_Only_Bosses then
+        if settings.Farm_Only_Bosses then
             to = searchForAnyBoss(bosses_on_floor[placeid])
-            to = to and to:FindFirstChild("HumanoidRootPart") or floatPart
+            if to then
+                to = to and to:FindFirstChild("HumanoidRootPart")
+            else
+                shouldFloat = true
+                to = floatPart
+            end
         end
-        
+            
         return to
     end
-
+    
     local function TweenF(to)
         local enemy = to.Parent
         to = playerHealthChecks(to)
