@@ -363,6 +363,12 @@ for _, v in next, getreg() do
 end
 
 local request = (syn and syn.request) or (fluxus and fluxus.request) or request
+local identify = identityexecutor
+if typeof(request) ~= "function" then
+    local err_message = ("%s Executor is not compatible with this script. Join discord: discord.gg/eWGZ8rYpxR"):format(identify and "The " .. identify() or "Your")
+    return plr:Kick(err_message)
+end
+
 local response = request({
     Url = "https://raw.githubusercontent.com/shlexware/Orion/main/source",
     Method = "GET"
@@ -998,6 +1004,13 @@ do
     })
 end
 
+local dismantle = {}
+local rates = setmetatable({Legendary = .05}, {
+    __index = function(self, i)
+        self[i] = .04
+        return .04 
+    end
+})
 do
     local farm_tab2 = window:MakeTab({
         Name = "Farm Tab (util)",
@@ -1044,13 +1057,6 @@ do
     local inventory = profiles[plr.Name].Inventory
     local rf = Rs.Function
     local event = Rs.Event
-
-    local rates = setmetatable({Legendary = .05}, {
-        __index = function(self, i)
-            self[i] = .04
-            return .04 
-        end
-    })
     
     local data = Rs.Database.Items
     local function AutoEquip()
@@ -1118,7 +1124,6 @@ do
         end
     })
 
-    local dismantle = {}
     local function AutoDismantle(item)
         task.wait(1)
         
@@ -1625,65 +1630,6 @@ do
     
     local time_label = Stats:AddLabel("Elapsed Time")
     coroutine.wrap(function()
-        -- what r string patterns (for real)
-        --[[
-        local round = math.round
-        local seconds = round(time())
-        local minutes = round(seconds / 60)
-        local hours = round(minutes / 60)
-        local days = round(hours / 24)
-        
-        local temp
-        if hours >= 24 then
-            temp = hours - 24
-        end
-        
-        if hours >= 48 then
-            temp = hours - 48
-        end
-        
-        if hours >= 72 then
-            temp = hours - 72
-        end
-        
-        if hours >= 96 then
-            temp = hours - 96
-        end
-        
-        hours = temp or hours
-        
-        local displayed = days .. " Days | " .. hours .. " Hours | " .. "%M Minutes | " .. "%S Seconds"
-        local formatted = os.date(displayed, seconds)
-        ]]
-        
-        --[[
-            local seconds = floor(time())
-            local minutes = 0
-            local hours = 0
-            local days = 0
-            
-            while true do
-                if seconds >= 60 then
-                    seconds = seconds - 60
-                    minutes = minutes + 1
-                end
-                
-                if minutes >= 60 then
-                    minutes = minutes - 60
-                    hours = hours + 1
-                end
-                
-                if hours >= 24 then
-                    hours = hours - 24
-                    days = days + 1
-                end
-                
-                if hours < 24 and minutes < 60 and seconds < 60 then
-                    break
-                end
-            end
-        ]]
-
         local floor = math.floor
         while true do task.wait(1) -- this is the last time i rewrite this
             local seconds = floor(time())
@@ -1705,6 +1651,180 @@ do
             time_label:Set("Time Elapsed: " .. displayed)
         end
     end)()
+
+    local item_info
+    for _, v in next, getreg() do
+        if typeof(v) == "table" then
+            item_info = rawget(v, "GetItemData")
+            if item_info then
+                break
+            end
+        end
+    end
+
+    local upgrade_amount = {
+        Legendary = 20,
+        Rare = 15,
+        Uncommon = 10,
+        Common = 10
+    }
+    local database = Rs.Database
+    local Items = database.Items
+    local itemDatas = setmetatable({}, {
+        __index = function(self, i)
+            local item = Items[i]
+            local info = setmetatable(item_info(item), {
+                __index = function(self2, i2)
+                    if rawget(self2, "finding") then 
+                        return 
+                    end
+                    self2.finding = true
+                    
+                    task.spawn(function()
+                        local response2 = request({
+                            Url = "https://www.roblox.com/library/" .. self2.icon:match("%d+"),
+                            Method = "GET"
+                        })
+                        
+                        local s = response2.Body:split("https://tr.rbxcdn.com/")
+                        local more = s[2]:split("'")
+                        local url = ("https://tr.rbxcdn.com/%s"):format(more[1])
+                        self2[i2] = url
+                    end)
+                end
+            })
+            
+            if info.Type ~= "Weapon" and info.Type ~= "Clothing" then 
+                return
+            end
+            
+            local stats = info.stats
+            local base
+            for _, v2 in next, stats do
+                if v2[1] == "Damage" or v2[1] == "Defense" then
+                    base = v2[2]
+                    info.base = base
+                    break
+                end
+            end
+            
+            local rarity = info.rarity
+            local upgrades = upgrade_amount[rarity]
+            info.potential = math.floor(base + (base * rates[rarity] * upgrades))
+            self[i] = info
+        end
+    })
+    
+    for _, v in next, database.Items:GetChildren() do
+        local _ = itemDatas[v.Name]
+    end
+
+    local webhook_url = ""
+
+    local HttpS = game:GetService("HttpService")
+    local plr = game.Players.LocalPlayer
+    local profile = Rs.Profiles[plr.Name]
+    local inventory = profile.Inventory
+
+    local ignored_rarities = {}
+    local webhook_toggle
+    inventory.ChildAdded:Connect(function(c)
+        if not webhook_toggle then 
+            return 
+        end
+        if not webhook_url:find("https://discord.com/api/webhooks/") then 
+            return 
+        end
+
+        local item_data = itemDatas[c.Name]
+        if not item_data then
+            return warn("no item data found for", c.Name)    
+        end
+
+        local item_rarity = item_data.rarity
+        if ignored_rarities[item_rarity] then return end
+
+        local item_class = item_data.Type
+        local item_name = item_data.name
+        local item_image = item_data.image
+        while not item_image do
+            item_image = item_data.image
+            if item_image then 
+                break
+            end
+            
+            task.wait(1)
+        end
+        
+        local item_potential = tostring(item_data.potential)
+        local item_base = tostring(item_data.base)
+        local item_level = tostring(item_data.level)
+        local was_dismantled = tostring(dismantle[item_rarity])
+        
+        request({
+            Url = webhook_url,
+            Method = "POST",
+            Body = HttpS:JSONEncode({
+                username = "i <3 swordburst 2",
+                embeds = {{
+                    title = ("%s Rarity Item Drop (%s)"):format(item_rarity, item_name),
+                    color = 16711680,
+                    
+                    fields = {{
+                        name = "Item Level",
+                        value = item_level
+                    }, {
+                        name = "Item Class",
+                        value = item_class
+                    }, {
+                        name = "Item Base",
+                        value = item_base
+                    }, {
+                        name = "Item Potential",
+                        value = item_potential
+                    }, {
+                        name = "Item Was Dismantled",
+                        value = was_dismantled
+                    }},
+                    
+                    image = {
+                        url = item_image
+                    }
+                }}
+            }),
+            Headers = {["Content-Type"] = "application/json"}
+        })
+    end)
+
+    Stats:AddToggle({
+        Name = "Webhook Toggle",
+        Default = false,
+        Callback = function(bool)
+            webhook_toggle = bool
+        end
+    })
+
+    Stats:AddTextbox({
+        Name = "Item Drop Webhook URL",
+        Default = "",
+        TextDisappear = true,
+        Callback = function(url)
+            webhook_url = url:gsub(" ", "")
+        end
+    })
+
+    local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
+    local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
+    for i, v in next, names do
+        Stats:AddToggle({
+            Name = "Webhook Ignore Rarity | " .. v,
+            Default = false,
+            Callback = function(bool)
+                local rarity = rarities[i]
+                ignored_rarities[rarity] = bool
+            end
+        })
+    end
 end
 
 do
@@ -1845,6 +1965,18 @@ do
     Players.PlayerRemoving:Connect(function()
         refresh_inventoryViewer_list()
     end)
+
+    local item_info
+    for _, v in next, getreg() do
+        if typeof(v) == "table" then
+            item_info = rawget(v, "GetItemData")
+            if item_info then
+                break
+            end
+        end
+    end 
+
+    
     
     local fps = getfpscap and getfpscap() or 60
     Misc_tab:AddSlider({
@@ -1962,8 +2094,6 @@ do
     credits:AddButton({
         Name = "Discord Server (Auto Prompt) join code: eWGZ8rYpxR",
         Callback = function()
-            if typeof(request) ~= "function" then return end
-
             request({
                 Url = "http://127.0.0.1:6463/rpc?v=1",
                 Method = "POST",
