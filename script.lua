@@ -277,7 +277,7 @@ end
 
 local saved_settings = HttpS:JSONDecode(readfile("SB2 Script/Settings.json"))
 for i, v in next, saved_settings do
-    settings[i] = v    
+    settings[i] = v
 end
 ]]
 
@@ -543,64 +543,48 @@ do
     end)
     floatPart.Parent = workspace
     
-    local function playerHealthChecks(to)
+    local function playerHealthChecks()
+        local to
         local minPercentage = settings.Autofarm_Idle_Min
         local maxPercantage = settings.Autofarm_Idle_Max
 
-        if shouldFloat then
-            if playerHealth > maxPercantage / 100 * maxPlayerHealth then
-                shouldFloat = false
-
-                local boss = settings.Prioritized_Boss
-                local mob = settings.Prioritized_Mob
-                if settings.Boss_Priority and boss then
-                    to = searchForBoss(boss)
-                end
-
-                if not to then
-                    if settings.Mob_Priority and mob then
-                        to = searchForMob(mob)
-                    else
-                        to = searchForAnyEnemy()
-                    end
-                end
-
+        if playerHealth > maxPercantage / 100 * maxPlayerHealth then
+            if settings.Farm_Only_Bosses then
+                to = searchForAnyBoss(bosses_on_floor[placeid])
                 to = to and to:FindFirstChild("HumanoidRootPart")
-            else
-                to = floatPart
-            end
-        end
 
-        if settings.Farm_Only_Bosses and playerHealth > maxPercantage / 100 * maxPlayerHealth then
-            to = searchForAnyBoss(bosses_on_floor[placeid])
-            if to then
-                to = to:FindFirstChild("HumanoidRootPart")
-                if not to then
-                    shouldFloat = true
-                    to = floatPart
-                end
-            else
-                shouldFloat = true
-                to = floatPart
+                shouldFloat = to == floatPart
+                return to or floatPart
             end
-        end
 
-        if not to and playerHealth > maxPercantage / 100 * maxPlayerHealth then
-            to = searchForAnyEnemy()
+            local boss = settings.Prioritized_Boss
+            local mob = settings.Prioritized_Mob
+            if settings.Boss_Priority and boss then
+                to = searchForBoss(boss)
+            end
+
+            if not to and settings.Mob_Priority and mob then
+                to = searchForMob(mob)
+            end
+
+            if not to then
+                to = searchForAnyEnemy()
+            end
+
             to = to and to:FindFirstChild("HumanoidRootPart")
         end
-
+        
         if not to or playerHealth < minPercentage / 100 * maxPlayerHealth then
-            shouldFloat = true
             to = floatPart
         end
-        
+
+        shouldFloat = to == floatPart
         return to
     end
     
     local function TweenF(to)
         local enemy = to.Parent
-        to = playerHealthChecks(to)
+        to = playerHealthChecks()
         
         local mob_health
         if not shouldFloat then
@@ -608,7 +592,7 @@ do
         end
         while mob_health and mob_health.Value > 0 or shouldFloat do
             coroutine.wrap(function()
-                to = playerHealthChecks(to)
+                to = playerHealthChecks()
 
                 local distance = (hrp.Position - to.Position).Magnitude
                 local seconds = distance / settings.Tween_Speed
