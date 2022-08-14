@@ -397,7 +397,7 @@ local protected = gethui and gethui() or CoreGui
 local orion = protected:WaitForChild("Orion")
 
 local window = lib:MakeWindow({
-    Name = "SB2 Script | OneTaPuXd on v3rm | discord.gg/eWGZ8rYpxR",
+    Name = "SB2 Script | OneTaPuXd on v3rm | .gg/eWGZ8rYpxR",
     HidePremium = false,
     SaveConfig = false,
     ConfigFolder = false
@@ -2127,7 +2127,7 @@ do
 
     local http = game:GetService("HttpService")
     credits:AddButton({
-        Name = "Discord Server (Auto Prompt) join code: eWGZ8rYpxR",
+        Name = "Discord Server (Auto Prompt) code: eWGZ8rYpxR",
         Callback = function()
             request({
                 Url = "http://127.0.0.1:6463/rpc?v=1",
