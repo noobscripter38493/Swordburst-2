@@ -237,7 +237,7 @@ local humanoid = char:WaitForChild("Humanoid")
 
 repeat task.wait() until getrenv()._G.CalculateCombatStyle
 
-local settings = {
+local settings = { -- defaults
     Autofarm = false,
     Autofarm_Y_Offset = 10,
     Tween_Speed = 50,
@@ -255,6 +255,7 @@ local settings = {
     InfSprint = false,
     InfJump = false,
     RemoveDeathEffects = false,
+    KA_Keybind = "R",
     RemoveDamageNumbers = false,
     AttackPlayers = false,
     Animation = getrenv()._G.CalculateCombatStyle(),
@@ -262,10 +263,46 @@ local settings = {
     excludedMobs = {},
     Height = 30,
     Autofarm_Idle_Min = 30,
-    Autofarm_Idle_Max = 70
+    Autofarm_Idle_Max = 70,
+    WebhookURL = ""
+}
+
+local doLoad = {
+    Height = true,
+    Autofarm_Idle_Min = true,
+    Autofarm_Idle_Max = true,
+    MaxAutofarmDistance = true,
+    KA_Keybind = true,
+    KA_Range = true,
+    Autofarm_Y_Offset = true,
+    WebhookURL = true,
+    Tween_Speed = true
 }
 
 local HttpS = game:GetService("HttpService")
+if not isfolder("SB2 Script") then
+    makefolder("SB2 Script")
+end
+
+if not isfile("SB2 Script/Settings.json") then
+    writefile("SB2 Script/Settings.json", HttpS:JSONEncode(settings))
+end
+
+local saved_settings = HttpS:JSONDecode(readfile("SB2 Script/Settings.json"))
+for i, v in next, saved_settings do
+    if not doLoad[i] then 
+        continue
+    end
+    
+    settings[i] = v
+end
+
+coroutine.wrap(function()
+    while true do
+        writefile("SB2 Script/Settings.json", HttpS:JSONEncode(settings))
+        task.wait(5)
+    end
+end)()
 
 local parts = {}
 local function setNoClipParts()
@@ -383,7 +420,7 @@ local protected = gethui and gethui() or CoreGui
 local orion = protected:WaitForChild("Orion")
 
 local window = lib:MakeWindow({
-    Name = "SB2 Script | OneTaPuXd on v3rm | gg/eWGZ8rYpxR",
+    Name = "SB2 Script | OneTaPuXd on v3rm | .gg/eWGZ8rYpxR",
     HidePremium = false,
     SaveConfig = false,
     ConfigFolder = false
@@ -574,7 +611,7 @@ do
             shouldFloat = true
             return floatPart
         end
-        
+
         if IsWaitingFromHealthFloat and playerHealth > maxPercantage * maxPlayerHealth then
             IsWaitingFromHealthFloat = false
         end
@@ -763,7 +800,7 @@ do
         Name = "Max Autofarm Radius",
         Min = 0,
         Max = 10000,
-        Default = 5000,
+        Default = settings.MaxAutofarmDistance,
         Color = Color3.new(255, 255, 255),
         Increment = 100,
         ValueName = "Studs",
@@ -776,7 +813,7 @@ do
         Name = "Autofarm Y Offset",
         Min = 0,
         Max = 30,
-        Default = 10,
+        Default = settings.Autofarm_Y_Offset,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
         ValueName = "Y Offset",
@@ -789,7 +826,7 @@ do
         Name = "Idle Float Height (supports only farm bosses & health %)",
         Min = 30,
         Max = 100,
-        Default = 30,
+        Default = settings.Height,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
         ValueName = "Studs",
@@ -802,7 +839,7 @@ do
         Name = "Idle Float when under % health",
         Min = 0,
         Max = 100,
-        Default = 30,
+        Default = settings.Autofarm_Idle_Min,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
         ValueName = "%",
@@ -815,7 +852,7 @@ do
         Name = "Resume Farm when over % health",
         Min = 0,
         Max = 100,
-        Default = 70,
+        Default = settings.Autofarm_Idle_Max,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
         ValueName = "%",
@@ -828,7 +865,7 @@ do
         Name = "Tween Speed",
         Min = 0, 
         Max = 100,
-        Default = 50,
+        Default = settings.Tween_Speed,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
         ValueName = "Speed",
@@ -981,7 +1018,7 @@ do
         Name = "Kill Aura Range",
         Min = 0,
         Max = 25,
-        Default = 20,
+        Default = settings.KA_Range,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
         ValueName = "Range",
@@ -1009,9 +1046,9 @@ do
     end
 
     local ka_button = getkabutton()
-    combat:AddBind({
+    local ka_bind = combat:AddBind({
         Name = "Kill Aura Keybind",
-        Default = Enum.KeyCode.R,
+        Default = Enum.KeyCode[settings.KA_Keybind],
         Hold = false,
         Callback = function()
             if ka_button then
@@ -1026,6 +1063,29 @@ do
             end
         end
     })
+
+    combat:AddTextbox({
+        Name = "Change Killaura Keybind (config)",
+        Default = settings.KA_Keybind,
+        TextDisappear = false,
+        Callback = function(key)
+            if key:len() ~= 1 then 
+                return 
+            end
+
+            local success, key_code = pcall(function()
+                return Enum.KeyCode[key:upper()]
+            end)
+
+            if not success then
+                return
+            end
+
+            settings.KA_Keybind = key:upper()
+            ka_bind:Set(key_code)
+        end
+    })
+
 end
 
 local dismantle = {}
@@ -1755,8 +1815,6 @@ do
         itemDatas[v.Name] = v
     end
 
-    local webhook_url = ""
-
     local profile = Rs.Profiles[plr.Name]
     local inventory = profile.Inventory
 
@@ -1766,7 +1824,9 @@ do
         if not webhook_toggle then 
             return 
         end
-        if not webhook_url:find("https://discord.com/api/webhooks/") then 
+
+        local webhookURL = settings.WebhookURL
+        if not webhookURL:find("https://discord.com/api/webhooks/") then 
             return 
         end
 
@@ -1796,7 +1856,7 @@ do
         local was_dismantled = tostring(dismantle[item_rarity])
         
         request({
-            Url = webhook_url,
+            Url = webhookURL,
             Method = "POST",
             Body = HttpS:JSONEncode({
                 username = "i <3 swordburst 2",
@@ -1840,10 +1900,10 @@ do
 
     Stats:AddTextbox({
         Name = "Item Drop Webhook URL",
-        Default = "",
+        Default = settings.WebhookURL,
         TextDisappear = true,
         Callback = function(url)
-            webhook_url = url:gsub(" ", "")
+            settings.WebhookURL = url:gsub(" ", "")
         end
     })
     
