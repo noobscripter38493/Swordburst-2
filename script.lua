@@ -275,14 +275,10 @@ elseif not isfile("SB2 Script/Settings.json") then
     writefile("SB2 Script/Settings.json", HttpS:JSONEncode(settings))
 end
 
-local saved_settings = setmetatable({}, {
-    __newindex = function(self, i, v)
-
-    end,
-
-    __index = HttpS:JSONDecode(readfile("SB2/Settings.json"))
-})
-
+local saved_settings = HttpS:JSONDecode(readfile("SB2 Script/Settings.json"))
+for i, v in next, saved_settings do
+    settings[i] = v    
+end
 ]]
 
 local parts = {}
