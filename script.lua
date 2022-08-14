@@ -1200,7 +1200,7 @@ end
 
 do
     local farm_tab3 = window:MakeTab({
-        Name = "Mob Exclusion",
+        Name = "Autofarm Exclusion",
         Icon = "",
         PremiumOnly = false
     })
