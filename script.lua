@@ -1205,7 +1205,15 @@ do
         PremiumOnly = false
     })
 
-    local all_on_floor = {unpack(bosses_on_floor[placeid]), unpack(mobs_on_floor[placeid])}
+    local all_on_floor = {}
+    for i, v in next, bosses_on_floor[placeid] do
+        all_on_floor[i] = v
+    end
+
+    for _, v in next, mobs_on_floor[placeid] do
+        all_on_floor[#all_on_floor + 1] = v
+    end
+
     for _, mob_name in next, all_on_floor do
         farm_tab3:AddToggle({
             Name = mob_name,
