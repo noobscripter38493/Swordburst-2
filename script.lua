@@ -542,45 +542,59 @@ do
         floatPart.CFrame = hrp.CFrame * CFrame.new(0, height, 0)
     end)
     floatPart.Parent = workspace
-    
-    local function playerHealthChecks()
+
+    local function DoStuff()
         local to
-        local minPercentage = settings.Autofarm_Idle_Min
-        local maxPercantage = settings.Autofarm_Idle_Max
-
-        if playerHealth > maxPercantage / 100 * maxPlayerHealth then
-            if settings.Farm_Only_Bosses then
-                to = searchForAnyBoss(bosses_on_floor[placeid])
-                to = to and to:FindFirstChild("HumanoidRootPart")
-                to = to or floatPart
-
-                shouldFloat = to == floatPart
-                return to
-            end
-
-            local boss = settings.Prioritized_Boss
-            local mob = settings.Prioritized_Mob
-            if settings.Boss_Priority and boss then
-                to = searchForBoss(boss)
-            end
-
-            if not to and settings.Mob_Priority and mob then
-                to = searchForMob(mob)
-            end
-
-            if not to then
-                to = searchForAnyEnemy()
-            end
-
+        if settings.Farm_Only_Bosses then
+            to = searchForAnyBoss(bosses_on_floor[placeid])
             to = to and to:FindFirstChild("HumanoidRootPart")
+            to = to or floatPart
+
+            shouldFloat = to == floatPart
+            return to
         end
-        
-        if not to or playerHealth < minPercentage / 100 * maxPlayerHealth then
-            to = floatPart
+
+        local boss = settings.Prioritized_Boss
+        local mob = settings.Prioritized_Mob
+        if settings.Boss_Priority and boss then
+            to = searchForBoss(boss)
         end
+
+        if not to and settings.Mob_Priority and mob then
+            to = searchForMob(mob)
+        end
+
+        if not to then
+            to = searchForAnyEnemy()
+        end
+
+        to = to and to:FindFirstChild("HumanoidRootPart") or floatPart
 
         shouldFloat = to == floatPart
         return to
+    end
+    
+    local IsWaitingFromHealthFloat = false
+    local function playerHealthChecks()
+        local minPercentage = settings.Autofarm_Idle_Min / 100
+        local maxPercantage = settings.Autofarm_Idle_Max / 100
+
+        if not IsWaitingFromHealthFloat and playerHealth < minPercentage * maxPlayerHealth then
+            IsWaitingFromHealthFloat = true
+            shouldFloat = true
+            return floatPart
+        end
+
+        if IsWaitingFromHealthFloat and playerHealth > maxPercantage * maxPlayerHealth then
+            IsWaitingFromHealthFloat = false
+        end
+
+        if not IsWaitingFromHealthFloat then
+            return DoStuff()
+        end
+        
+        shouldFloat = true
+        return floatPart
     end
     
     local function TweenF(to)
@@ -682,7 +696,7 @@ do
                     continue
                 end
                 
-                if settings.Boss_Priority and settings.Prioritized_Boss ~= nil then
+                if settings.Boss_Priority and settings.Prioritized_Boss then
                     local boss = searchForBoss(settings.Prioritized_Boss)
                     local boss_hrp = boss and boss:FindFirstChild("HumanoidRootPart")
                         
@@ -693,7 +707,7 @@ do
                     end
                 end
 
-                if settings.Mob_Priority and settings.Prioritized_Mob ~= nil then
+                if settings.Mob_Priority and settings.Prioritized_Mob then
                     local mob = searchForMob(settings.Prioritized_Mob)
                     local mob_hrp = mob and mob:FindFirstChild("HumanoidRootPart")
                         
@@ -808,7 +822,7 @@ do
     })
 
     farm_tab:AddSlider({
-        Name = "Resume Float when over % health",
+        Name = "Resume Farm when over % health",
         Min = 0,
         Max = 100,
         Default = 70,
