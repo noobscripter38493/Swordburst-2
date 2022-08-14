@@ -447,7 +447,7 @@ do
             if distanceCheck(mob) then
                 local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
                 if not mob_hrp then continue end
-
+                
                 local mob_health = getMobHealth(mob)
                 if mob_health and mob_health.Value > 0 then
                     local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
@@ -534,7 +534,21 @@ do
         if shouldFloat then
             if playerHealth > maxPercantage / 100 * maxPlayerHealth then
                 shouldFloat = false
-                to = searchForAnyEnemy()
+
+                local boss = settings.Prioritized_Boss
+                local mob = settings.Prioritized_Mob
+                if settings.Boss_Priority and boss then
+                    to = searchForBoss(boss)
+                end
+
+                if not to then
+                    if settings.Mob_Priority and mob then
+                        to = searchForMob(mob)
+                    else
+                        to = searchForAnyEnemy()
+                    end
+                end
+
                 to = to and to:FindFirstChild("HumanoidRootPart")
             else
                 to = floatPart
@@ -1058,7 +1072,7 @@ do
     local rf = Rs.Function
     local event = Rs.Event
     
-    local data = Rs.Database.Items
+    local data = Rs.Database.Items:GetChildren()
     local function AutoEquip()
         if not settings.AutoEquip then return end
         task.wait(1)
@@ -1069,37 +1083,37 @@ do
         local highest_armor
 
         for _, item in next, inventory:GetChildren() do
-            local itemdata = inv_utility.GetItemData(item)
+            local item_data = inv_utility.GetItemData(item)
 
-            local class = itemdata.Type
+            local class = item_data.Type
             if class ~= "Weapon" and class ~= "Clothing" then continue end
             
-            for _, v2 in next, data:GetChildren() do
-                if v2.Name == item.Name then
-                    local stats = getStats(v2)
-                    local base
-                    for _, v3 in next, stats do
-                        if v3[1] == "Damage" or v3[1] == "Defense" then
-                            base = tonumber(v3[2])
-                            break
-                        end
+            local i = table.find(data, item.Name)
+            local v2 = data[i]
+            if v2.Name == item.Name then
+                local stats = getStats(v2)
+                local base
+                for _, v3 in next, stats do
+                    if v3[1] == "Damage" or v3[1] == "Defense" then
+                        base = tonumber(v3[2])
+                        break
                     end
-                    
-                    local upgrades = getUpgrade(item)
-                    local rarity = getRarity(v2)
-                    local stat = math.floor(base + (base * rates[rarity] * upgrades))
-                    
-                    if class == "Weapon" then
-                        if stat > highest_damage then
-                            highest_damage = stat
-                            highest_weapon = item
-                        end
+                end
+                
+                local upgrades = getUpgrade(item)
+                local rarity = getRarity(v2)
+                local stat = math.floor(base + (base * rates[rarity] * upgrades))
+                
+                if class == "Weapon" then
+                    if stat > highest_damage then
+                        highest_damage = stat
+                        highest_weapon = item
+                    end
 
-                    elseif class == "Clothing" then
-                        if stat > highest_defense then
-                            highest_defense = stat
-                            highest_armor = item
-                        end
+                elseif class == "Clothing" then
+                    if stat > highest_defense then
+                        highest_defense = stat
+                        highest_armor = item
                     end
                 end
             end
@@ -1131,14 +1145,14 @@ do
         local class = rawget(itemdata, "Type")
         if class ~= "Weapon" and class ~= "Clothing" then return end
 
-        local v = data[item.Name]
-        local rarity = getRarity(v)
-        
+        local i = table.find(data, item.Name)
+        local rarity = getRarity(data[i])
+            
         if dismantle[rarity] then
             event:FireServer("Equipment", {"Dismantle", {item}})
         end
     end
-
+    
     local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
     local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
 
@@ -1631,7 +1645,7 @@ do
     local time_label = Stats:AddLabel("Elapsed Time")
     coroutine.wrap(function()
         local floor = math.floor
-        while true do task.wait(1) -- this is the last time i rewrite this
+        while true do task.wait(1)
             local seconds = floor(time())
             local minutes = floor(seconds / 60)
             seconds = seconds - (60 * minutes)
@@ -1669,11 +1683,10 @@ do
         Common = 10
     }
     local database = Rs.Database
-    local Items = database.Items
     local itemDatas = setmetatable({}, {
-        __index = function(self, i)
-            local item = Items[i]
-            local info = setmetatable(item_info(item), {
+        __newindex = function(self, i, v)
+            local item = item_info(v)
+            local info = setmetatable(item, {
                 __index = function(self2, i2)
                     if rawget(self2, "finding") then 
                         return 
@@ -1711,18 +1724,17 @@ do
             local rarity = info.rarity
             local upgrades = upgrade_amount[rarity]
             info.potential = math.floor(base + (base * rates[rarity] * upgrades))
-            self[i] = info
+            rawset(self, i, info)
         end
     })
     
     for _, v in next, database.Items:GetChildren() do
-        local _ = itemDatas[v.Name]
+        itemDatas[v.Name] = v
     end
 
     local webhook_url = ""
 
     local HttpS = game:GetService("HttpService")
-    local plr = game.Players.LocalPlayer
     local profile = Rs.Profiles[plr.Name]
     local inventory = profile.Inventory
 
@@ -1812,7 +1824,7 @@ do
             webhook_url = url:gsub(" ", "")
         end
     })
-
+    
     local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
     local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
     for i, v in next, names do
@@ -1965,18 +1977,6 @@ do
     Players.PlayerRemoving:Connect(function()
         refresh_inventoryViewer_list()
     end)
-
-    local item_info
-    for _, v in next, getreg() do
-        if typeof(v) == "table" then
-            item_info = rawget(v, "GetItemData")
-            if item_info then
-                break
-            end
-        end
-    end 
-
-    
     
     local fps = getfpscap and getfpscap() or 60
     Misc_tab:AddSlider({
@@ -2090,7 +2090,6 @@ do
     end
 
     local http = game:GetService("HttpService")
-    local request = (syn and syn.request) or (fluxus and fluxus.request) or request
     credits:AddButton({
         Name = "Discord Server (Auto Prompt) join code: eWGZ8rYpxR",
         Callback = function()
