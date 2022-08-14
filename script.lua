@@ -795,7 +795,7 @@ do
     })
 
     farm_tab:AddSlider({
-        Name = "Idle farm when under % health",
+        Name = "Idle Float when under % health",
         Min = 0,
         Max = 100,
         Default = 30,
@@ -808,7 +808,7 @@ do
     })
 
     farm_tab:AddSlider({
-        Name = "Resume farm when over % health",
+        Name = "Resume Float when over % health",
         Min = 0,
         Max = 100,
         Default = 70,
