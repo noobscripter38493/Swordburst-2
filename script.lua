@@ -509,7 +509,7 @@ do
 
         for _, boss in next, mobs_table do
             if excludedMobs[boss.Name] then continue end
-            
+
             for _, bossName in next, bosses do
                 if boss.Name == bossName and distanceCheck(boss) then
                     local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
@@ -1205,7 +1205,7 @@ do
         PremiumOnly = false
     })
 
-    local all_on_floor = {unpack(bosses_on_floor[placeid], unpack(mobs_on_floor[placeid])}
+    local all_on_floor = {unpack(bosses_on_floor[placeid]), unpack(mobs_on_floor[placeid])}
     for _, mob_name in next, all_on_floor do
         farm_tab3:AddToggle({
             Name = mob_name,
