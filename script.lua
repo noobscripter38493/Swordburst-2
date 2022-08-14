@@ -265,10 +265,30 @@ local settings = {
     Autofarm_Idle_Max = 70
 }
 
+local HttpS = game:GetService("HttpService")
+--[[
+if not isfolder("SB2 Script") then
+    makefolder("SB2 Script")
+    writefile("SB2 Script/Settings.json", HttpS:JSONEncode(settings))
+
+elseif not isfile("SB2 Script/Settings.json") then
+    writefile("SB2 Script/Settings.json", HttpS:JSONEncode(settings))
+end
+
+local saved_settings = setmetatable({}, {
+    __newindex = function(self, i, v)
+
+    end,
+
+    __index = HttpS:JSONDecode(readfile("SB2/Settings.json"))
+})
+
+]]
+
 local parts = {}
 local function setNoClipParts()
     table.clear(parts)
-
+    
     while #parts ~= 3 do
         for _, part in next, char:GetDescendants() do
             if part:IsA("BasePart") and part.CanCollide then
@@ -555,12 +575,7 @@ do
             end
         end
 
-        if playerHealth < minPercentage / 100 * maxPlayerHealth then
-            shouldFloat = true
-            to = floatPart
-        end
-
-        if settings.Farm_Only_Bosses then -- kind of messy but it works
+        if settings.Farm_Only_Bosses and playerHealth > maxPercantage / 100 * maxPlayerHealth then
             to = searchForAnyBoss(bosses_on_floor[placeid])
             if to then
                 to = to:FindFirstChild("HumanoidRootPart")
@@ -573,7 +588,17 @@ do
                 to = floatPart
             end
         end
-            
+
+        if not to and playerHealth > maxPercantage / 100 * maxPlayerHealth then
+            to = searchForAnyEnemy()
+            to = to and to:FindFirstChild("HumanoidRootPart")
+        end
+
+        if not to or playerHealth < minPercentage / 100 * maxPlayerHealth then
+            shouldFloat = true
+            to = floatPart
+        end
+        
         return to
     end
     
@@ -1072,7 +1097,12 @@ do
     local rf = Rs.Function
     local event = Rs.Event
     
-    local data = Rs.Database.Items:GetChildren()
+    local data = Rs.Database.Items
+    local data2 = {}
+    for _, v in next, data:GetChildren() do
+        data2[v.Name] = v
+    end
+
     local function AutoEquip()
         if not settings.AutoEquip then return end
         task.wait(1)
@@ -1088,8 +1118,7 @@ do
             local class = item_data.Type
             if class ~= "Weapon" and class ~= "Clothing" then continue end
             
-            local i = table.find(data, item.Name)
-            local v2 = data[i]
+            local v2 = data2[item.Name]
             if v2.Name == item.Name then
                 local stats = getStats(v2)
                 local base
@@ -1144,7 +1173,7 @@ do
         local itemdata = inv_utility.GetItemData(item)
         local class = rawget(itemdata, "Type")
         if class ~= "Weapon" and class ~= "Clothing" then return end
-
+        
         local i = table.find(data, item.Name)
         local rarity = getRarity(data[i])
             
@@ -1152,7 +1181,7 @@ do
             event:FireServer("Equipment", {"Dismantle", {item}})
         end
     end
-    
+
     local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
     local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
 
@@ -1734,7 +1763,6 @@ do
 
     local webhook_url = ""
 
-    local HttpS = game:GetService("HttpService")
     local profile = Rs.Profiles[plr.Name]
     local inventory = profile.Inventory
 
@@ -2060,7 +2088,7 @@ do
     updates:AddParagraph("6/5/22", "Made All Floors show actual TP locations")
     updates:AddParagraph("6/4/22", "Made Some Floors show actual TP locations (wip)")
     updates:AddParagraph("6/3/22", "Autofarm Added (improving)")
-    updates:AddParagraph("6/2/22", "M1s are stopped when Kill Aura is enabled")
+    updates:AddParagraph("6/2/22", "M1s are stopped when Kill Aura is enabled") 
 end
 
 do
