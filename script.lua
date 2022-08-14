@@ -266,20 +266,6 @@ local settings = {
 }
 
 local HttpS = game:GetService("HttpService")
---[[
-if not isfolder("SB2 Script") then
-    makefolder("SB2 Script")
-    writefile("SB2 Script/Settings.json", HttpS:JSONEncode(settings))
-
-elseif not isfile("SB2 Script/Settings.json") then
-    writefile("SB2 Script/Settings.json", HttpS:JSONEncode(settings))
-end
-
-local saved_settings = HttpS:JSONDecode(readfile("SB2 Script/Settings.json"))
-for i, v in next, saved_settings do
-    settings[i] = v
-end
-]]
 
 local parts = {}
 local function setNoClipParts()
@@ -360,11 +346,9 @@ while true do
 end
 
 -- disable M1s when killaura is enabled
-local find = table.find
 for _, v in next, getreg() do
     if typeof(v) == "function" and islclosure(v) then
-        local consts = getconstants(v)
-        if find(consts, "MouseButton1") then
+        if getconstants(v)[3] == "MouseButton1" and getinfo(v).source:find("Input") then
             local noMouseClick; noMouseClick = hookfunc(v, function(user_input, game_processed)
                 if user_input.UserInputType == Enum.UserInputType.MouseButton1 then
                     if settings.KA then
@@ -374,6 +358,8 @@ for _, v in next, getreg() do
                 
                 return noMouseClick(user_input, game_processed)
             end)
+
+            break
         end
     end
 end
@@ -397,7 +383,7 @@ local protected = gethui and gethui() or CoreGui
 local orion = protected:WaitForChild("Orion")
 
 local window = lib:MakeWindow({
-    Name = "SB2 Script | OneTaPuXd on v3rm | .gg/eWGZ8rYpxR",
+    Name = "SB2 Script | OneTaPuXd on v3rm | gg/eWGZ8rYpxR",
     HidePremium = false,
     SaveConfig = false,
     ConfigFolder = false
@@ -588,7 +574,7 @@ do
             shouldFloat = true
             return floatPart
         end
-
+        
         if IsWaitingFromHealthFloat and playerHealth > maxPercantage * maxPlayerHealth then
             IsWaitingFromHealthFloat = false
         end
