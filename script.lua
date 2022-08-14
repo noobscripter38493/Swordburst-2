@@ -552,9 +552,10 @@ do
             if settings.Farm_Only_Bosses then
                 to = searchForAnyBoss(bosses_on_floor[placeid])
                 to = to and to:FindFirstChild("HumanoidRootPart")
+                to = to or floatPart
 
                 shouldFloat = to == floatPart
-                return to or floatPart
+                return to
             end
 
             local boss = settings.Prioritized_Boss
