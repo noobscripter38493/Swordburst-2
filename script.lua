@@ -1010,7 +1010,9 @@ do
             if not firesignal then
                 return lib:MakeNotification({
                     Name = "Your Exploit Does not Support this",
-                    Content = "Missing function 'firesignal', use krnl, fluxus or anything else"
+                    Content = "Missing function 'firesignal', use krnl, fluxus or anything else",
+                    Image = "",
+                    Time = 5
                 })
             end
             if ka_button then
