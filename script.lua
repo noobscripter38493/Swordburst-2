@@ -624,9 +624,9 @@ do
         return floatPart
     end
     
-    local function TweenF(to)
-        local enemy = to.Parent
-        to = playerHealthChecks()
+    local function TweenF()
+        local to = playerHealthChecks()
+        local enemy = to ~= floatPart and to.Parent
         
         local mob_health
         if not shouldFloat then
@@ -656,12 +656,8 @@ do
 
             task.wait()
         end
-        
-        pcall(function()
-            mobs_table[enemy] = nil
-        end)
     end
-
+    
     RunS.RenderStepped:Connect(function() -- smooth tween
         if not settings.Autofarm then return end
         hrp.Velocity = Vector3.zero
@@ -707,49 +703,9 @@ do
                 return
             end
 
-            while true do task.wait()
-                if not settings.Autofarm then break end
-                
-                if settings.Farm_Only_Bosses then
-                    local boss = searchForAnyBoss(bosses_on_floor[placeid])
-                    local boss_hrp = boss and boss:FindFirstChild("HumanoidRootPart")
-
-                    if boss_hrp then
-                        TweenF(boss_hrp)
-                    else
-                        TweenF(floatPart)
-                    end
-                    
-                    continue
-                end
-                
-                if settings.Boss_Priority and settings.Prioritized_Boss then
-                    local boss = searchForBoss(settings.Prioritized_Boss)
-                    local boss_hrp = boss and boss:FindFirstChild("HumanoidRootPart")
-                        
-                    if boss_hrp then
-                        TweenF(boss_hrp)
-                        
-                        continue
-                    end
-                end
-
-                if settings.Mob_Priority and settings.Prioritized_Mob then
-                    local mob = searchForMob(settings.Prioritized_Mob)
-                    local mob_hrp = mob and mob:FindFirstChild("HumanoidRootPart")
-                        
-                    if mob_hrp then
-                        TweenF(mob_hrp)
-                        
-                        continue
-                    end
-                end
-                
-                local mob = searchForAnyEnemy()
-                local mob_hrp = mob and mob:FindFirstChild("HumanoidRootPart")
-                if mob_hrp then
-                    TweenF(mob_hrp)
-                end
+            while settings.Autofarm do
+                TweenF()
+                task.wait()
             end
         end
     })
@@ -1219,8 +1175,7 @@ do
         local class = rawget(itemdata, "Type")
         if class ~= "Weapon" and class ~= "Clothing" then return end
         
-        local i = table.find(data, item.Name)
-        local rarity = getRarity(data[i])
+        local rarity = getRarity(data2[item.Name])
             
         if dismantle[rarity] then
             event:FireServer("Equipment", {"Dismantle", {item}})
