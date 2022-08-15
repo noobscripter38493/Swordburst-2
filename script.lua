@@ -1000,13 +1000,19 @@ do
             end
         end
     end
-
+    
     local ka_button = getkabutton()
     local ka_bind = combat:AddBind({
         Name = "Kill Aura Keybind",
         Default = Enum.KeyCode[settings.KA_Keybind],
         Hold = false,
         Callback = function()
+            if not firesignal then
+                return lib:MakeNotification({
+                    Name = "Your Exploit Does not Support this",
+                    Content = "Missing function 'firesignal', use krnl, fluxus or anything else"
+                })
+            end
             if ka_button then
                 firesignal(ka_button.MouseButton1Down)
                 firesignal(ka_button.MouseButton1Up) 
