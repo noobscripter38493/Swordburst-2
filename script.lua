@@ -402,7 +402,7 @@ for _, v in next, getreg() do
 end
 
 local request = (syn and syn.request) or (fluxus and fluxus.request) or request
-local identify = identityexecutor
+local identify = identifyexecutor
 if typeof(request) ~= "function" then
     local err_message = ("%s Executor is not compatible with this script. Join discord: discord.gg/eWGZ8rYpxR"):format(identify and "The " .. identify() or "Your")
     return plr:Kick(err_message)
