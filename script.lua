@@ -277,6 +277,12 @@ if not isfile("SB2 Script/Settings.json") then
     writefile("SB2 Script/Settings.json", HttpS:JSONEncode(settings))
 end
 
+xpcall(function() 
+    HttpS:JSONDecode(readfile("SB2 Script/Settings.json"))
+end, function()
+    writefile("SB2 Script/Settings.json", HttpS:JSONEncode(settings))
+end)
+
 local saved_settings = HttpS:JSONDecode(readfile("SB2 Script/Settings.json"))
 for i, v in next, saved_settings do
     if not doLoad[i] then 
@@ -299,8 +305,6 @@ local function setNoClipParts()
     
     for _, part in next, char:GetDescendants() do
         if part:IsA("BasePart") and part.CanCollide then
-            if table.find(parts, part) then continue end
-
             parts[#parts + 1] = part
         end
     end
@@ -404,12 +408,7 @@ local lib = loadstring(response.Body)()
 repeat task.wait() until lib
 
 local protected = gethui and gethui() or CoreGui
-local orion = protected:FindFirstChild("Orion")
-while not orion do
-    print(orion, protected)
-    orion = protected:FindFirstChild("Orion")
-    task.wait(1)
-end
+local orion = protected:WaitFirstChild("Orion")
 
 local window = lib:MakeWindow({
     Name = "SB2 Script | OneTaPuXd on v3rm | .gg/eWGZ8rYpxR",
@@ -697,7 +696,7 @@ do
             end
 
             if count > 0 and settings.Autofarm and tick() - t > 5 and settings.KA then
-                settings.ForceLower = true
+                settings.ForceLower = 0
                 task.wait(1)
                 settings.ForceLower = nil
             end
