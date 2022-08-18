@@ -417,7 +417,12 @@ local lib = loadstring(response.Body)()
 repeat task.wait() until lib
 
 local protected = gethui and gethui() or CoreGui
-local orion = protected:WaitForChild("Orion")
+local orion = protected:FindFirstChild("Orion")
+while not orion do
+    print(orion, protected)
+    orion = protected:FindFirstChild("Orion")
+    task.wait(1)
+end
 
 local window = lib:MakeWindow({
     Name = "SB2 Script | OneTaPuXd on v3rm | .gg/eWGZ8rYpxR",
@@ -582,11 +587,11 @@ do
         end
 
         local boss = settings.Prioritized_Boss
-        local mob = settings.Prioritized_Mob
         if settings.Boss_Priority and boss then
             to = searchForBoss(boss)
         end
 
+        local mob = settings.Prioritized_Mob
         if not to and settings.Mob_Priority and mob then
             to = searchForMob(mob)
         end
@@ -623,23 +628,64 @@ do
         shouldFloat = true
         return floatPart
     end
-    
+
+    local marked = {}
+    local t = tick()
+    local cons = {}
     local function TweenF()
         local to = playerHealthChecks()
         local enemy = to ~= floatPart and to.Parent
-        
+
         local mob_health
         if not shouldFloat then
             mob_health = getMobHealth(enemy)
         end
         while mob_health and mob_health.Value > 0 or shouldFloat do
+            task.wait()
+
             coroutine.wrap(function()
                 to = playerHealthChecks()
+                enemy = to ~= floatPart and to.Parent
 
                 local distance = (hrp.Position - to.Position).Magnitude
-                local seconds = distance / settings.Tween_Speed
+                if distance < 100 and not marked[enemy] then
+                    local oldto = to
+                    local oldenemy = enemy
+                    marked[oldenemy] = true
+                    
+                    mob_health = getMobHealth(oldenemy)
+                    if not mob_health then return end
+                    
+                    cons[oldenemy] = mob_health:GetPropertyChangedSignal("Value"):Connect(function()
+                        t = tick()
+                    end)
 
-                local y_offset = shouldFloat and 0 or settings.Autofarm_Y_Offset
+                    coroutine.wrap(function()
+                        while true do 
+                            local success = pcall(function()
+                                distance = (hrp.Position - oldto.Position).Magnitude
+                            end)
+                            
+                            if not success or distance > 100 then
+                                marked[oldenemy] = nil
+                                if cons[oldenemy] then
+                                    cons[oldenemy]:Disconnect()
+                                end
+
+                                break
+                            end
+                            
+                            task.wait(1)
+                        end
+                    end)()
+                end
+
+                if not shouldFloat then
+                    mob_health = getMobHealth(enemy)
+                end
+
+                local seconds = distance / settings.Tween_Speed
+                local y_offset = shouldFloat and 0 or settings.ForceLower or settings.Autofarm_Y_Offset
                 local cframe = to.CFrame * CFrame.new(0, y_offset, 0)
 
                 local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
@@ -653,17 +699,31 @@ do
             if not settings.Autofarm or not to.Parent then
                 break 
             end
-
-            task.wait()
         end
     end
+
+    coroutine.wrap(function()
+        while true do
+            local count = 0
+            for _, _ in next, marked do
+                count = count + 1
+            end
+
+            if count > 0 and settings.Autofarm and tick() - t > 5 and settings.KA then
+                settings.ForceLower = true
+                task.wait(1)
+                settings.ForceLower = nil
+            end
+
+            task.wait(1)
+        end
+    end)()
     
-    RunS.RenderStepped:Connect(function() -- smooth tween
+    RunS.RenderStepped:Connect(function()
         if not settings.Autofarm then return end
         hrp.Velocity = Vector3.zero
     end)
     
-
     local mobs = workspace.Mobs
     mobs.ChildAdded:Connect(function(mob)
         mob:WaitForChild("HumanoidRootPart")
@@ -699,6 +759,17 @@ do
 
                     task.wait()
                 end
+
+                while #cons ~= 0 do
+                    for i, v in next, cons do
+                        v:Disconnect()
+                        cons[i] = nil
+                    end
+
+                    task.wait()
+                end
+
+                table.clear(marked)
                 
                 return
             end
@@ -1006,7 +1077,7 @@ do
         Name = "Kill Aura Keybind",
         Default = Enum.KeyCode[settings.KA_Keybind],
         Hold = false,
-        Callback = function()
+        Callback = function()   
             if not firesignal then
                 return lib:MakeNotification({
                     Name = "Your Exploit Does not Support this",
