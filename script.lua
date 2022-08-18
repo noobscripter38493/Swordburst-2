@@ -269,19 +269,21 @@ local doLoad = {
 }
 
 local HttpS = game:GetService("HttpService")
+local function save_settings()
+    writefile("SB2 Script/Settings.json", HttpS:JSONEncode(settings))
+end
+
 if not isfolder("SB2 Script") then
     makefolder("SB2 Script")
 end
 
 if not isfile("SB2 Script/Settings.json") then
-    writefile("SB2 Script/Settings.json", HttpS:JSONEncode(settings))
+    save_settings()
 end
 
 xpcall(function() 
     HttpS:JSONDecode(readfile("SB2 Script/Settings.json"))
-end, function()
-    writefile("SB2 Script/Settings.json", HttpS:JSONEncode(settings))
-end)
+end, save_settings)
 
 local saved_settings = HttpS:JSONDecode(readfile("SB2 Script/Settings.json"))
 for i, v in next, saved_settings do
@@ -294,7 +296,7 @@ end
 
 coroutine.wrap(function()
     while true do
-        writefile("SB2 Script/Settings.json", HttpS:JSONEncode(settings))
+        save_settings()
         task.wait(5)
     end
 end)()
@@ -408,7 +410,7 @@ local lib = loadstring(response.Body)()
 repeat task.wait() until lib
 
 local protected = gethui and gethui() or CoreGui
-local orion = protected:WaitFirstChild("Orion")
+local orion = protected:WaitForChild("Orion")
 
 local window = lib:MakeWindow({
     Name = "SB2 Script | OneTaPuXd on v3rm | .gg/eWGZ8rYpxR",
