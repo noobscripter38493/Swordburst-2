@@ -204,17 +204,6 @@ getgenv().hookfunc = hookfunction
 
 local placeid = game.PlaceId
 
-local floor_data = require(Rs.Database.Locations)
-
-local floor_ids = {}
-for i, v in next, floor_data.floors do -- probably remove this
-    for i2, v2 in next, v do
-        if i2 == "PlaceId" then
-           floor_ids[i] = v2
-        end
-    end
-end
-
 local function copy_table(t)
     local c = {}
     
@@ -308,17 +297,15 @@ local parts = {}
 local function setNoClipParts()
     table.clear(parts)
     
-    while #parts ~= 3 do
-        for _, part in next, char:GetDescendants() do
-            if part:IsA("BasePart") and part.CanCollide then
-                if table.find(parts, part) then continue end
+    for _, part in next, char:GetDescendants() do
+        if part:IsA("BasePart") and part.CanCollide then
+            if table.find(parts, part) then continue end
 
-                parts[#parts + 1] = part
-            end
+            parts[#parts + 1] = part
         end
-
-        task.wait(1)
     end
+
+    task.wait(1)
 end
 
 setNoClipParts()
