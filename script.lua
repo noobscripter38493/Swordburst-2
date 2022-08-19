@@ -3,7 +3,9 @@
 if SB2Script then return end
 getgenv().SB2Script = true
 
-repeat task.wait() until game:IsLoaded() 
+while not game:IsLoaded() do
+    task.wait()
+end
 
 local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or (syn and syn.queue_on_teleport)
 if teleport_execute then
@@ -196,6 +198,7 @@ local UserInputS = game:GetService("UserInputService")
 local TweenS = game:GetService("TweenService")
 local RunS = game:GetService("RunService")
 local Rs = game:GetService("ReplicatedStorage")
+local Event = Rs:WaitForChild("Event")
 
 getgenv().getupvalue = debug.getupvalue -- not sure if other exploits that aren't synapse have an alias so this is for that i guess
 getgenv().setupvalue = debug.setupvalue
@@ -224,7 +227,9 @@ local char = plr.Character or plr.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
 local humanoid = char:WaitForChild("Humanoid")
 
-repeat task.wait() until getrenv()._G.CalculateCombatStyle
+while not getrenv()._G.CalculateCombatStyle do
+    task.wait()
+end
 
 local settings = { -- defaults
     Autofarm = false,
@@ -375,24 +380,28 @@ while true do
     task.wait(.5)
 end
 
--- disable M1s when killaura is enabled
-for _, v in next, getreg() do
-    if typeof(v) == "function" and islclosure(v) then
-        if getconstants(v)[3] == "MouseButton1" and getinfo(v).source:find("Input") then
-            local noMouseClick; noMouseClick = hookfunc(v, function(user_input, game_processed)
-                if user_input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    if settings.KA then
-                        return
-                    end
-                end
-                
-                return noMouseClick(user_input, game_processed)
-            end)
+local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
+    local ncm = getnamecallmethod()
+    
+    if self == Event and ncm == "FireServer" then
+        local args = {...}
 
-            break
+        if settings.InfSprint and args[1] == "Actions" then
+            if args[2][2] == "Step" then
+                return
+            end
+        end
+
+        -- disable M1s when killaura is enabled
+        if settings.KA and args[1] == "Combat" then
+            if args[3][2] == nil and not checkcaller() then
+                return
+            end
         end
     end
-end
+
+    return nc(self, ...)
+end)
 
 local request = (syn and syn.request) or (fluxus and fluxus.request) or request
 local identify = identifyexecutor
@@ -407,7 +416,9 @@ local response = request({
 })
 local lib = loadstring(response.Body)()
 
-repeat task.wait() until lib
+while not lib do
+    task.wait()
+end
 
 local protected = gethui and gethui() or CoreGui
 local orion = protected:WaitForChild("Orion")
@@ -450,7 +461,7 @@ do
 
         for _, mob in next, mobs_table do
             if excludedMobs[mob.Name] then continue end
-
+            
             if mob.Name == mobName and distanceCheck(mob) then
                 local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
                 if not mob_hrp then continue end
@@ -910,7 +921,6 @@ do
 
     local _combat = require(game_module.Services.Combat)
     local remote_key = getupvalue(_combat.Init, 2)
-    local Event = Rs.Event
 
     local attacking = {}
     local function killaura_function(enemy, player)
@@ -1163,7 +1173,6 @@ do
     local profiles = Rs.Profiles
     local inventory = profiles[plr.Name].Inventory
     local rf = Rs.Function
-    local event = Rs.Event
     
     local data = Rs.Database.Items
     local data2 = {}
@@ -1245,7 +1254,7 @@ do
         local rarity = getRarity(data2[item.Name])
             
         if dismantle[rarity] then
-            event:FireServer("Equipment", {"Dismantle", {item}})
+            Event:FireServer("Equipment", {"Dismantle", {item}})
         end
     end
 
@@ -1504,24 +1513,6 @@ do
         end
     })
 
-    local Event = Rs.Event
-    local infSprint; infSprint = hookmetamethod(game, "__namecall", function(self, ...)
-        local ncm = getnamecallmethod()
-        
-        if settings.InfSprint and ncm == "FireServer"  then
-            if self == Event then
-                local args = {...}
-                if args[1] == "Actions" then
-                    if args[2][2] == "Step" then
-                        return
-                    end
-                end
-            end
-        end
-
-        return infSprint(self, ...)
-    end)
-
     Character_tab:AddToggle({
         Name = "Infinite Jump",
         Default = false,
@@ -1624,7 +1615,6 @@ do
     local dismantler_module = require(ui_module.Dismantle)
     local inv_utility = getupvalue(dismantler_module.Init, 4)
 
-    local event = Rs.Event
     local inventory = Rs.Profiles[plr.Name].Inventory
     local function Dismantle_Rarity(rarity)
         local items = {}
@@ -1642,7 +1632,7 @@ do
             end
 
             if #items > 0 then
-                event:FireServer("Equipment", {"Dismantle", {unpack(items)}})
+                Event:FireServer("Equipment", {"Dismantle", {unpack(items)}})
             end
         end
     end
@@ -2073,7 +2063,9 @@ do
     end
     
     Players.PlayerAdded:Connect(function(player)
-        repeat task.wait() until Rs.Profiles:FindFirstChild(player.Name) ~= nil
+        while not Rs.Profiles:FindFirstChild(player.Name) do
+             task.wait()
+        end
         
         refresh_inventoryViewer_list()
     end)
@@ -2087,7 +2079,7 @@ do
         Name = "Set FPS Cap (Requires executor FPS unlocker on)",
         Min = 0,
         Max = 500,
-        Default = fps, -- synapse does not have getfpscap (bad0)
+        Default = fps,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
         ValueName = "FPS",
@@ -2119,55 +2111,6 @@ do
 end
 
 do
-    local updates = window:MakeTab({
-        Name = "Updates",
-        Icon = "",
-        PremiumOnly = false
-    }) 
-    
-    updates:AddParagraph("8/9/22", "Added Autofarm Radius Slider")
-    updates:AddParagraph("8/9/22", "further improved teleports on f11")
-    updates:AddParagraph("8/4/22", "Fixed auto equip & auto dismantle")
-    updates:AddParagraph("8/4/22", "session time shows the correct time now")
-    updates:AddParagraph("8/4/22", "Added support for more exploits")
-    updates:AddParagraph("8/3/22", "Added teleport support for floor 11 dungeon")
-    updates:AddParagraph("8/2/22", "Added KillAura Keybind")
-    updates:AddParagraph("7/30/22", "Added Infinite Jump (avoid game making u fall through map on teleport)")
-    updates:AddParagraph("7/29/22", "Added Killaura & Autofarm support for floor 11 dungeon")
-    updates:AddParagraph("7/9/22", "removed esp (crashes)")
-    updates:AddParagraph("7/8/22", "Attack animation now plays after death")
-    updates:AddParagraph("7/7/22", "Fixed ESP crash (i think)?")
-    updates:AddParagraph("7/7/22", "Added player ESP (mob soon)")
-    updates:AddParagraph("7/3/22", "killaura animations works for players now")
-    updates:AddParagraph("7/3/22", "Killaura now looks 'legit' (plays attack animation)")
-    updates:AddParagraph("7/3/22", "Mute Swings now mutes others swings")
-    updates:AddParagraph("7/3/22", "Added Auto Dismantle")
-    updates:AddParagraph("7/2/22", "Added Mob Exclusion to Autofarm")
-    updates:AddParagraph("7/2/22", "Killaura now supports chests (mostly useless (lol))")
-    updates:AddParagraph("7/1/22", "Added Auto Equip Best Weapon")
-    updates:AddParagraph("7/1/22", "Added Tween Speed")
-    updates:AddParagraph("7/1/22", "Added Performance Boosters")
-    updates:AddParagraph("6/28/22", "Killaura now works for baal & grim")
-    updates:AddParagraph("6/27/22", "Moved dismantle confirm to an external popup box")
-    updates:AddParagraph("6/15/22", "Added Upgrade Equipped Weapons (armors later)")
-    updates:AddParagraph("6/15/22", "Added a confirm to dismantle all (there is a bug when u dismantle an equipped item)")
-    updates:AddParagraph("6/15/22", "Added dismantle all of a certain rarity")
-    updates:AddParagraph("6/13/22", "Included Crystal Forge to the smithing tab")
-    updates:AddParagraph("6/13/22", "Fixed farm only bosses making your velocity 0")
-    updates:AddParagraph("6/13/22", "Fixed farm only bosses not working")
-    updates:AddParagraph("6/13/22", "Fixed A bug where changing Y offset would activate autofarm")
-    updates:AddParagraph("6/13/22", "Skills Now Work with Animations")
-    updates:AddParagraph("6/13/22", "Fixed Attack Players not toggling off")
-    updates:AddParagraph("6/13/22", "Removed a Useless Animation Feature")
-    updates:AddParagraph("6/12/22", "Made Autofarm Tweening Smooth")
-    updates:AddParagraph("6/12/22", "Fixed an Autofarm Bug (Teleport after death)")
-    updates:AddParagraph("6/5/22", "Made All Floors show actual TP locations")
-    updates:AddParagraph("6/4/22", "Made Some Floors show actual TP locations (wip)")
-    updates:AddParagraph("6/3/22", "Autofarm Added (improving)")
-    updates:AddParagraph("6/2/22", "M1s are stopped when Kill Aura is enabled") 
-end
-
-do
     local credits = window:MakeTab({
         Name = "Credits",
         Icon = "",
@@ -2193,7 +2136,6 @@ do
         credits:AddParagraph("v3rm url", "https://v3rmillion.net/member.php?action=profile&uid=1229592")
     end
 
-    local http = game:GetService("HttpService")
     credits:AddButton({
         Name = "Discord Server (Auto Prompt) code: eWGZ8rYpxR",
         Callback = function()
@@ -2204,12 +2146,12 @@ do
                     ["Content-Type"] = "application/json",
                     ["Origin"] = "https://discord.com"
                 },
-                Body = http:JSONEncode({
+                Body = HttpS:JSONEncode({
                     cmd = "INVITE_BROWSER",
                     args = {
                         code = "eWGZ8rYpxR"
                     },
-                    nonce = http:GenerateGUID()
+                    nonce = HttpS:GenerateGUID()
                 })
             })
         end
