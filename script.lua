@@ -198,7 +198,7 @@ local UserInputS = game:GetService("UserInputService")
 local TweenS = game:GetService("TweenService")
 local RunS = game:GetService("RunService")
 local Rs = game:GetService("ReplicatedStorage")
-local Event = Rs:WaitForChild("Event")
+local Event = Rs.Event
 
 getgenv().getupvalue = debug.getupvalue -- not sure if other exploits that aren't synapse have an alias so this is for that i guess
 getgenv().setupvalue = debug.setupvalue
@@ -258,7 +258,8 @@ local settings = { -- defaults
     Height = 30,
     Autofarm_Idle_Min = 30,
     Autofarm_Idle_Max = 70,
-    WebhookURL = ""
+    WebhookURL = "",
+    SkillCount = 0
 }
 
 local doLoad = {
@@ -461,7 +462,7 @@ do
 
         for _, mob in next, mobs_table do
             if excludedMobs[mob.Name] then continue end
-            
+
             if mob.Name == mobName and distanceCheck(mob) then
                 local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
                 if not mob_hrp then continue end
@@ -1049,6 +1050,50 @@ do
         ValueName = "Range",
         Callback = function(v)
             settings.KA_Range = v
+        end
+    })
+
+    local skillHandlers 
+    for _, v in next, getgc(true) do
+        if typeof(v) == "table" then
+            skillHandlers = rawget(v, "skillHandlers")
+            if skillHandlers then
+                break
+            end
+        end
+    end
+
+    local passive = {
+        Heal = true,
+        ["Summon Tree"] = true,
+        Block = true,
+        Roll = true,
+    }
+
+    for i, old in next, skillHandlers do
+        if passive[i] then continue end
+        
+        skillHandlers[i] = function(...)
+            task.spawn(function(...)
+                for _ = 1, settings.SkillCount - 1 do
+                    task.spawn(old, ...)
+                end
+            end, ...)
+            
+            return old(...)
+        end
+    end
+
+    combat:AddSlider({
+        Name = "Skill Multiplier",
+        Min = 0,
+        Max = 5,
+        Default = 0,
+        Color = Color3.new(255, 255, 255),
+        Increment = 1,
+        ValueName = "Skills",
+        Callback = function(v)
+            settings.SkillCount = v
         end
     })
 
