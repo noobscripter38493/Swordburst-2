@@ -179,7 +179,7 @@ local bosses_on_floor = {
 
     [2659143505] = { -- floor 10
         "Baal, The Tormentor",
-        "Grim, the Overseer"
+        "Grim, The Overseer"
     },
 
     [5287433115] = { -- floor 11
