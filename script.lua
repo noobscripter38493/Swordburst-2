@@ -709,7 +709,7 @@ do
                 count = count + 1
             end
 
-            if count > 0 and settings.Autofarm and tick() - t > 5 and settings.KA then
+            if count > 0 and settings.Autofarm and tick() - t > 5 and settings.KA and not shouldFloat then
                 settings.ForceLower = 0
                 task.wait(1)
                 settings.ForceLower = nil
