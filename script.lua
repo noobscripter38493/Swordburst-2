@@ -223,6 +223,17 @@ for _, v in next, getconnections(plr.Idled) do
     v:Disable() 
 end
 
+local vim = game:GetService("VirtualInputManager")
+
+coroutine.wrap(function()
+    while true do
+        vim:SendKeyEvent(true, Enum.KeyCode.Home, false, game)
+        task.wait(1)
+        vim:SendKeyEvent(false, Enum.KeyCode.Home, false, game)
+        task.wait(60 * 15)
+    end
+end)()
+
 local char = plr.Character or plr.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
 local humanoid = char:WaitForChild("Humanoid")
