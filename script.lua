@@ -1074,13 +1074,13 @@ do
         if passive[i] then continue end
         
         skillHandlers[i] = function(...)
-            task.spawn(function(...)
-                for _ = 1, settings.SkillCount - 1 do
-                    task.spawn(old, ...)
-                end
-            end, ...)
+            if settings.SkillCount == 0 then
+                return old(...)
+            end
             
-            return old(...)
+            for _ = 1, settings.SkillCount do
+                task.spawn(old, ...)
+            end
         end
     end
 
