@@ -178,8 +178,8 @@ local bosses_on_floor = {
     },
 
     [2659143505] = { -- floor 10
-        "Baal The Tormentor",
-        "Grim the Overseer"
+        "Baal, The Tormentor",
+        "Grim, the Overseer"
     },
 
     [5287433115] = { -- floor 11
@@ -714,7 +714,7 @@ do
                 task.wait(1)
                 settings.ForceLower = nil
             end
-
+            
             task.wait(1)
         end
     end)()
@@ -736,10 +736,10 @@ do
         end)
     end)
     
-    for _, v in next, mobs:GetChildren() do
+    for _, mob in next, mobs:GetChildren() do
         coroutine.wrap(function()
-            v:WaitForChild("HumanoidRootPart")
-            mobs_table[v] = v
+            mob:WaitForChild("HumanoidRootPart")
+            mobs_table[mob] = mob
         end)()
     end
     
@@ -1482,7 +1482,7 @@ do
         local DaRaKa = CFrame.new(4846.48242, 1639.76953, 2090.85107)
         local duality_reaper = CFrame.new(5899.98291, 852.757568, -4255.58643)
         local neon_chest = CFrame.new(4834.57959, 2543.39868, 5274.56055)
-        local sauraus = CFrame.new(5208.86279, 2349.82617, 5985.12402)
+        local sauraus = CFrame.new(5208.86279, 2345.82617, 5985.12402)
 
         makespecialtpbutton("Duality Reaper", duality_reaper)
         makespecialtpbutton("Da, Ra, Ka", DaRaKa)
