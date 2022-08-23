@@ -1074,16 +1074,16 @@ do
         if passive[i] then continue end
         
         skillHandlers[i] = function(...)
-            if settings.SkillCount == 0 then
-                return old(...)
-            end
-            
-            for _ = 1, settings.SkillCount do
-                task.spawn(old, ...)
-            end
+            task.spawn(function(...)
+                for _ = 0, settings.SkillCount - 1 do
+                    task.spawn(old, ...)
+                end
+            end, ...)
+
+            return old(...)
         end
     end
-
+    
     combat:AddSlider({
         Name = "Skill Multiplier",
         Min = 0,
