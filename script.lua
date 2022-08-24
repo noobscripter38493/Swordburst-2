@@ -205,6 +205,7 @@ getgenv().getupvalue = debug.getupvalue -- not sure if other exploits that aren'
 getgenv().setupvalue = debug.setupvalue
 getgenv().getinfo = debug.getinfo
 getgenv().hookfunc = hookfunction
+getgenv().setreadonly = setreadonly or makereadonly or makewritable
 
 local placeid = game.PlaceId
 
@@ -1072,27 +1073,34 @@ do
         Roll = true
     }
 
-    local nc2; nc2 = hookmetamethod(game, "__namecall", function(self, ...)
-        local ncm = getnamecallmethod()
-
-        if self == Event and ncm == "FireServer" then
-            local args = {...}
-            task.spawn(function()
-                if args[1] == "Skills" and not passive[args[2][2]] then
-                    for _ = 0, settings.SkillCount - 1 do
-                        self.FireServer(self, unpack(args))
-                    end
-                end 
-            end)
+    local skillHandlers
+    for _, v in next, getgc(true) do
+        if typeof(v) == "table" and rawget(v, "skillHandlers") then
+            skillHandlers = v.skillHandlers
+            break
         end
-        
-        return nc2(self, ...)
-    end)
+    end
+
+    for i, old in next, skillHandlers do
+        if passive[i] then
+            continue
+        end
+
+        skillHandlers[i] = function(...)
+            task.spawn(function(...)
+                for _ = 0, settings.SkillCount - 1 do
+                    task.spawn(old, ...)
+                end
+            end, ...)
+
+            return old(...)
+        end
+    end
     
     combat:AddSlider({
         Name = "Skill Multiplier",
         Min = 0,
-        Max = 5,
+        Max = 3,
         Default = 0,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
@@ -1101,6 +1109,70 @@ do
             settings.SkillCount = v
         end
     })
+
+    local skillSilentAim
+    combat:AddToggle({
+        Name = "Skill Silent Aim",
+        Default = false,
+        Callback = function(bool)
+            skillSilentAim = bool
+        end
+    })
+
+    local mobs = workspace.Mobs
+    local function GetClosestMob()
+        local closest_magnitude = math.huge
+        local closest_hrp
+        
+        for _, mob in next, mobs:GetChildren() do
+            local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
+            if not mob_hrp then 
+                continue 
+            end
+
+            local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
+            if magnitude < closest_magnitude then
+                closest_hrp = mob_hrp
+                closest_magnitude = magnitude
+            end
+        end
+        
+        return closest_hrp
+    end
+
+    local myCframe
+    local index; index = hookmetamethod(game, "__index", function(self, i)
+        if self == hrp and i == "CFrame" then
+            local consts
+            local success = pcall(function()
+                consts = getconstants(3)
+            end)
+            if success and table.find(consts, "lookVector") then
+                myCframe = index(self, i)
+                return myCframe
+            end
+        end
+
+        return index(self, i)
+    end)
+
+    local mt = getrawmetatable(CFrame.new())
+    setreadonly(mt, false)
+
+    local old = mt.__index
+    mt.__index = newcclosure(function(self, i)
+        if skillSilentAim and rawequal(self, myCframe) and i == "lookVector" then
+            local mob = GetClosestMob()
+            if mob then
+                local cf = CFrame.new(hrp.Position, mob.Position)
+                return old(cf, "lookVector")
+            end
+        end
+
+        return old(self, i)
+    end)
+
+    setreadonly(mt, true)
 
     local function getkabutton()
         for _, v in next, orion:GetDescendants() do
