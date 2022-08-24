@@ -1065,36 +1065,32 @@ do
         end
     })
 
-    local skillHandlers 
-    for _, v in next, getgc(true) do
-        if typeof(v) == "table" then
-            skillHandlers = rawget(v, "skillHandlers")
-            if skillHandlers then
-                break
-            end
-        end
-    end
-
     local passive = {
         Heal = true,
         ["Summon Tree"] = true,
         Block = true,
-        Roll = true,
+        Roll = true
     }
 
-    for i, old in next, skillHandlers do
-        if passive[i] then continue end
-        
-        skillHandlers[i] = function(...)
-            task.spawn(function(...)
-                for _ = 0, settings.SkillCount - 1 do
-                    task.spawn(old, ...)
-                end
-            end, ...)
+    local nc2; nc2 = hookmetamethod(game, "__namecall", function(self, ...)
+        local ncm = getnamecallmethod()
 
-            return old(...)
+        if self == Event and ncm == "FireServer" then
+            local args = {...}
+            task.spawn(function()
+                if args[1] == "Skills" and typeof(args[2]) == "table" then
+                    local isPassive = passive[args[2][2]]
+                    if not isPassive then
+                        for _ = 0, settings.SkillCount - 1 do
+                            self.FireServer(self, unpack(args))
+                        end
+                    end
+                end
+            end)
         end
-    end
+        
+        return nc2(self, ...)
+    end)
     
     combat:AddSlider({
         Name = "Skill Multiplier",
