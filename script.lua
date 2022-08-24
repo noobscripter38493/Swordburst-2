@@ -136,7 +136,8 @@ local bosses_on_floor = {
     
     [542351431] = { -- floor 1
         "Dire Wolf",
-        "Rahjin the Thief King"
+        "Rahjin the Thief King",
+        "Ruined Kobold Lord"
     },
 
     [548231754] = { -- floor 2
