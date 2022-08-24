@@ -1078,14 +1078,11 @@ do
         if self == Event and ncm == "FireServer" then
             local args = {...}
             task.spawn(function()
-                if args[1] == "Skills" and typeof(args[2]) == "table" then
-                    local isPassive = passive[args[2][2]]
-                    if not isPassive then
-                        for _ = 0, settings.SkillCount - 1 do
-                            self.FireServer(self, unpack(args))
-                        end
+                if args[1] == "Skills" and not passive[args[2][2]] then
+                    for _ = 0, settings.SkillCount - 1 do
+                        self.FireServer(self, unpack(args))
                     end
-                end
+                end 
             end)
         end
         
