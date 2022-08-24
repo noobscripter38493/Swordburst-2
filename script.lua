@@ -1530,6 +1530,15 @@ do
         end
     end 
 
+    local shouldAnimate
+    Character_tab:AddToggle({
+        Name = "Weapon Animation",
+        Default = false,
+        Callback = function(bool)
+            shouldAnimate = bool
+        end
+    })
+
     Character_tab:AddDropdown({
         Name = "Weapon Animations",
         Default = settings.Animation,
@@ -1542,7 +1551,7 @@ do
     local combat = require(game_module.Services.Combat)
     
     local hook; hook = hookfunc(combat.CalculateCombatStyle, function(bool, ...)
-        if bool ~= nil and not bool then
+        if not shouldAnimate or bool ~= nil and not bool then
             return hook(bool, ...)    
         end
         
