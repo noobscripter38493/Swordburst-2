@@ -663,7 +663,6 @@ do
 
     local marked = {}
     local t = tick()
-    local cons = {}
     local function TweenF()
         local to = playerHealthChecks()
         local enemy = to ~= floatPart and to.Parent
@@ -683,12 +682,11 @@ do
                 if distance < 100 and not marked[enemy] then
                     local oldto = to
                     local oldenemy = enemy
-                    marked[oldenemy] = true
                     
                     mob_health = getMobHealth(oldenemy)
                     if not mob_health then return end
                     
-                    cons[oldenemy] = mob_health:GetPropertyChangedSignal("Value"):Connect(function()
+                    marked[oldenemy] = mob_health:GetPropertyChangedSignal("Value"):Connect(function()
                         t = tick()
                     end)
 
@@ -699,10 +697,12 @@ do
                             end)
                             
                             if not success or distance > 100 then
-                                marked[oldenemy] = nil
-                                if cons[oldenemy] then
-                                    cons[oldenemy]:Disconnect()
+                                local con = marked[oldenemy]
+                                if con.Connected then
+                                    marked[oldenemy]:Disconnect()
                                 end
+
+                                marked[oldenemy] = nil
 
                                 break
                             end
@@ -736,17 +736,19 @@ do
 
     coroutine.wrap(function()
         while true do
-            local count = 0
-            for _, _ in next, marked do
-                count = count + 1
+            if settings.Autofarm and not shouldFloat and settings.KA then
+                local count = 0
+                for _, _ in next, marked do
+                    count = count + 1
+                end
+
+                if count > 0 and tick() - t > 10 then
+                    settings.ForceLower = 0
+                    task.wait(1)
+                    settings.ForceLower = nil
+                end
             end
 
-            if count > 0 and settings.Autofarm and tick() - t > 5 and settings.KA and not shouldFloat then
-                settings.ForceLower = 0
-                task.wait(1)
-                settings.ForceLower = nil
-            end
-            
             task.wait(1)
         end
     end)()
@@ -792,16 +794,14 @@ do
                     task.wait()
                 end
 
-                while #cons ~= 0 do
-                    for i, v in next, cons do
+                while #marked ~= 0 do
+                    for i, v in next, marked do
                         v:Disconnect()
-                        cons[i] = nil
+                        marked[i] = nil
                     end
 
                     task.wait()
                 end
-
-                table.clear(marked)
                 
                 return
             end
@@ -1666,7 +1666,7 @@ do
     plr.CharacterAdded:Connect(goinvisible)
 
     Character_tab:AddToggle({
-        Name = "Invisibility (Client Sided Character)", 
+        Name = "Invisibility (only u can see u)", 
         Default = false, 
         Callback = function(bool)
             invisibility = bool
