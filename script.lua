@@ -26,6 +26,7 @@ local mobs_on_floor = {
         "Bear",
         "Ruin Knight",
         "Draconite",
+        "Canyon Knight",
         "Ruin Kobold Knight",
         "Ruined Kobold Knight"
     },
