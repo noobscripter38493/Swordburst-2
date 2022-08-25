@@ -191,7 +191,8 @@ local bosses_on_floor = {
         "Ka, the Mischief",
         "Za, the Eldest",
         "Duality Reaper",
-        "Saurus, the All-Seeing"
+        "Saurus, the All-Seeing",
+        "Neon Chest"
     }
 }
 
@@ -305,9 +306,10 @@ if not isfile("SB2 Script/Settings.json") then
     save_settings()
 end
 
-xpcall(function() 
+local s = xpcall(function() 
     HttpS:JSONDecode(readfile("SB2 Script/Settings.json"))
 end, save_settings)
+print(s)
 
 local saved_settings = HttpS:JSONDecode(readfile("SB2 Script/Settings.json"))
 for i, v in next, saved_settings do
@@ -1114,14 +1116,6 @@ do
         Default = Enum.KeyCode[settings.KA_Keybind],
         Hold = false,
         Callback = function()   
-            if not firesignal then
-                return lib:MakeNotification({
-                    Name = "Your Exploit Does not Support this",
-                    Content = "Missing function 'firesignal', use krnl, fluxus or anything else",
-                    Image = "",
-                    Time = 5
-                })
-            end
             if ka_button then
                 firesignal(ka_button.MouseButton1Down)
                 firesignal(ka_button.MouseButton1Up) 
@@ -1134,28 +1128,31 @@ do
             end
         end
     })
-
-    combat:AddTextbox({
-        Name = "Change Killaura Keybind (config)",
-        Default = settings.KA_Keybind,
-        TextDisappear = false,
-        Callback = function(key)
-            if key:len() ~= 1 then 
-                return 
-            end
-
-            local success, key_code = pcall(function()
-                return Enum.KeyCode[key:upper()]
+    
+    local inputbegan
+    for i, v in next, orion:GetDescendants() do
+        if v:IsA("TextLabel") and v.Text == "Kill Aura Keybind" then
+            v.Parent.TextButton.MouseButton1Down:Connect(function()
+                if inputbegan and inputbegan.Connected then
+                    return
+                end
+                
+                inputbegan = UserInputS.InputBegan:Connect(function(inputobj)
+                    if inputobj.UserInputType == Enum.UserInputType.Keyboard then
+                        inputbegan:Disconnect()
+                        
+                        local key = inputobj.KeyCode
+                        local key2 = tostring(key)
+                        settings.KA_Keybind = key2:split("Code.")[2]
+                        task.wait(.5)
+                        ka_bind:Set(key)
+                    end
+                end)
             end)
-
-            if not success then
-                return
-            end
-
-            settings.KA_Keybind = key:upper()
-            ka_bind:Set(key_code)
+            
+            break
         end
-    })
+    end
     
     local skillsData = game.ReplicatedStorage.Database.Skills
     local skill_classes = {}
@@ -1181,7 +1178,7 @@ do
             if health2 and health2.Value > 0 then
                 style = GetCombatStyle()
                 local skill = skill_classes[style]
-                if GetCooldown(skill) and skill then
+                if skill and GetCooldown(skill) then
                     pauseKillAura = true
                     UseSkill(skill)
                     
