@@ -1096,7 +1096,7 @@ do
             return old(...)
         end
     end
-    
+
     combat:AddSlider({
         Name = "Skill Multiplier",
         Min = 0,
@@ -1250,7 +1250,7 @@ local rates = setmetatable({Legendary = .05}, {
         return .04 
     end
 })
-do
+do 
     local farm_tab2 = window:MakeTab({
         Name = "Farm Tab (util)",
         Icon = "",
@@ -1432,27 +1432,34 @@ do
         PremiumOnly = false
     })
 
-    local function getTouchPart()
+    local function GetClosestPartFromVector(v3)
+        local closest_magnitude = math.huge
+        local closest_part
+
         for _, v in next, workspace:GetDescendants() do
             if v.Parent.Name == "TeleportSystem" and v.Name == "Part" then
-                return v
+                local distance = (v3.Position - v.Position).Magnitude
+                if distance < closest_magnitude then
+                    closest_magnitude = distance
+                    closest_part = v
+                end
             end
         end
+
+        return closest_part
     end
 
-    local function makespecialtpbutton(name, pos) -- floors 3 and 11
+    local function makespecialtpbutton(name, pos)
         teleports_tab:AddButton({
-            Name = name .. " | may have to press twice",
+            Name = name,
             Callback = function()
-                local totouch = getTouchPart()
+                plr:RequestStreamAroundAsync(pos)
+
+                local totouch = GetClosestPartFromVector(pos)
                 firetouchinterest(hrp, totouch, 0)
+
                 task.wait(.1)
-
-                for _ = 1, 100 do
-                    hrp.CFrame = pos
-                    task.wait()
-                end
-
+                
                 firetouchinterest(hrp, totouch, 1)
             end
         })
@@ -1887,7 +1894,7 @@ do
             local o3 = minutes == 1 and "Minute" or "Minutes"
             local o4 = seconds == 1 and "Second" or "Seconds"
 
-            local displayed = ("%s %s | %s %s | %s %s | %s %s"):format(days, o1, hours, o2, minutes, o3, seconds, o4) -- wtf
+            local displayed = ("%s %s | %s %s | %s %s | %s %s"):format(days, o1, hours, o2, minutes, o3, seconds, o4)   
             time_label:Set("Time Elapsed: " .. displayed)
         end
     end)()
