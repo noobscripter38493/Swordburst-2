@@ -394,6 +394,17 @@ while true do
     task.wait(.5)
 end
 
+local actions = require(game_module.Services.Actions)
+
+local old = actions.StartSwing
+actions.StartSwing = function(...)
+    if settings.KA then
+        return
+    end
+
+    return old(...)
+end
+
 local inventory_module = require(game_module.Services.UI.Inventory)
 local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
     local ncm = getnamecallmethod()
@@ -403,13 +414,6 @@ local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
 
         if settings.InfSprint and args[1] == "Actions" then
             if args[2][2] == "Step" then
-                return
-            end
-        end
-
-        -- disable M1s when killaura is enabled
-        if settings.KA and args[1] == "Combat" then
-            if args[3][2] == nil and not checkcaller() then
                 return
             end
         end
