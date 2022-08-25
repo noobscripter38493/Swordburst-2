@@ -1463,7 +1463,7 @@ do
                 if not totouch then
                     plr:RequestStreamAroundAsync(pos)
                     task.wait(1)
-                    
+
                     streamed[pos] = GetClosestPartFromVector(pos)
                     totouch = streamed[pos]
                 end
@@ -2171,7 +2171,7 @@ do
     local function refresh_inventoryViewer_list(player)
         table.clear(players_names)
 
-        for _, v in Players:GetPlayers() do
+        for _, v in next, Players:GetPlayers() do
             if not player or v.Name ~= player.Name then
                 table.insert(players_names, v.Name)
             end
