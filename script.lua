@@ -2182,6 +2182,8 @@ do
                 table.insert(players_names, v.Name)
             end
         end
+
+        task.wait(1)
         
         inventory_viewer:Refresh(players_names, true)
     end
