@@ -274,7 +274,9 @@ local settings = { -- defaults
     Autofarm_Idle_Min = 30,
     Autofarm_Idle_Max = 70,
     WebhookURL = "",
-    SkillCount = 0
+    SkillCount = 0,
+    skillSilentAim = false,
+    SkillCount = false
 }
 
 local doLoad = {
@@ -286,7 +288,9 @@ local doLoad = {
     KA_Range = true,
     Autofarm_Y_Offset = true,
     WebhookURL = true,
-    Tween_Speed = true
+    Tween_Speed = true,
+    skillSilentAim = true,
+    SkillCount = true
 }
 
 local HttpS = game:GetService("HttpService")
@@ -458,17 +462,17 @@ local window = lib:MakeWindow({
     ConfigFolder = false
 })
 
+local function getMobHealth(mob)
+    local entity = mob and mob:FindFirstChild("Entity")
+    return entity and entity:FindFirstChild("Health")
+end
+
 do
     local farm_tab = window:MakeTab({
         Name = "Autofarm",
         Icon = "",
         PremiumOnly = false
     })
-    
-    local function getMobHealth(mob)
-        local entity = mob and mob:FindFirstChild("Entity")
-        return entity and entity:FindFirstChild("Health")
-    end
 
     farm_tab:AddParagraph("Warning", "SB2 Mods are extremely active and autofarm will likely get you banned")
     local mobs_table = {}
@@ -935,22 +939,37 @@ do
         Icon = "",
         PremiumOnly = false
     })
-
+    
     local range = Instance.new("Part")
     range.Size = Vector3.new(25, 25, 25)
     range.CanCollide = false
     range.Transparency = 1
-
+    
     RunS.RenderStepped:Connect(function()
         range.CFrame = char:GetPivot()
     end)
     
     range.Parent = workspace
 
-    local _combat = require(game_module.Services.Combat)
+    local _combat = require(game_module.Services.Combat)    
+    local GetCombatStyle = getrenv()._G.CalculateCombatStyle
     local remote_key = getupvalue(_combat.Init, 2)
 
+    local skillService = require(game_module.Services.Skills)
+    local UseSkill = skillService.UseSkill
+    local GetCooldown = skillService.GetCooldown
+
+    local style = GetCombatStyle()
+    coroutine.wrap(function()
+        while true do
+            style = GetCombatStyle()
+
+            task.wait(1)
+        end
+    end)()
+
     local attacking = {}
+    local pauseKillAura = false
     local function killaura_function(enemy, player)
         while true do
             local i = table.find(attacking, enemy)
@@ -973,8 +992,10 @@ do
                 table.remove(attacking, i)
                 break
             end
-            
-            Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy}) -- nil = skill (i think)
+
+            if not pauseKillAura then
+                Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy})
+            end
             
             task.wait(.3) 
         end
@@ -1080,114 +1101,6 @@ do
         end
     })
 
-    local passive = {
-        Heal = true,
-        ["Summon Tree"] = true,
-        Block = true,
-        Roll = true
-    }
-
-    local skillHandlers
-    for _, v in next, getgc(true) do
-        if typeof(v) == "table" and rawget(v, "skillHandlers") then
-            skillHandlers = v.skillHandlers
-            break
-        end
-    end
-
-    for i, old in next, skillHandlers do
-        if passive[i] then
-            continue
-        end
-
-        skillHandlers[i] = function(...)
-            task.spawn(function(...)
-                for _ = 0, settings.SkillCount - 1 do
-                    task.spawn(old, ...)
-                end
-            end, ...)
-
-            return old(...)
-        end
-    end
-
-    combat:AddSlider({
-        Name = "Skill Multiplier",
-        Min = 0,
-        Max = 3,
-        Default = 0,
-        Color = Color3.new(255, 255, 255),
-        Increment = 1,
-        ValueName = "Skills",
-        Callback = function(v)
-            settings.SkillCount = v
-        end
-    })
-
-    local skillSilentAim
-    combat:AddToggle({
-        Name = "Skill Silent Aim",
-        Default = false,
-        Callback = function(bool)
-            skillSilentAim = bool
-        end
-    })
-
-    local mobs = workspace.Mobs
-    local function GetClosestMob()
-        local closest_magnitude = math.huge
-        local closest_hrp
-        
-        for _, mob in next, mobs:GetChildren() do
-            local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
-            if not mob_hrp then 
-                continue 
-            end
-
-            local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
-            if magnitude < closest_magnitude then
-                closest_hrp = mob_hrp
-                closest_magnitude = magnitude
-            end
-        end
-        
-        return closest_hrp
-    end
-
-    local myCframe
-    local index; index = hookmetamethod(game, "__index", function(self, i)
-        if self == hrp and i == "CFrame" then
-            local consts
-            local success = pcall(function()
-                consts = getconstants(3)
-            end)
-            if success and table.find(consts, "lookVector") then
-                myCframe = index(self, i)
-                return myCframe
-            end
-        end
-
-        return index(self, i)
-    end)
-
-    local mt = getrawmetatable(CFrame.new())
-    setreadonly(mt, false)
-
-    local old = mt.__index
-    mt.__index = newcclosure(function(self, i)
-        if skillSilentAim and rawequal(self, myCframe) and i == "lookVector" then
-            local mob = GetClosestMob()
-            if mob then
-                local cf = CFrame.new(hrp.Position, mob.Position)
-                return old(cf, "lookVector")
-            end
-        end
-
-        return old(self, i)
-    end)
-
-    setreadonly(mt, true)
-
     local function getkabutton()
         for _, v in next, orion:GetDescendants() do
             if v:IsA("TextLabel") and v.Text == "Kill Aura" then
@@ -1254,7 +1167,151 @@ do
             ka_bind:Set(key_code)
         end
     })
+    
+    local skillsData = game.ReplicatedStorage.Database.Skills
+    local skill_classes = {}
+    for i, v in next, skillsData:GetChildren() do
+        if v:FindFirstChild("Class") then
+            skill_classes[v.Class.Value] = v.Name
+        end
+    end
 
+    range.Touched:Connect(function(touching)
+        if settings.SkillAura and touching.Parent ~= char and touching.Name == "HumanoidRootPart" then
+            local enemy = touching.Parent
+            local mob = table.find(mobs_on_floor[placeid], enemy.Name)
+            local boss = table.find(bosses_on_floor[placeid], enemy.Name)
+
+            if not boss and not mob then
+                return
+            end
+
+            local health = getMobHealth(enemy)
+            if health and health.Value > 0 then
+                local skill = skill_classes[style]
+                if GetCooldown(skill) and skill then
+                    pauseKillAura = true
+                    UseSkill(skill)
+                    
+                    task.wait(1)
+                    pauseKillAura = false
+                end
+            end
+        end
+    end)
+    
+    combat:AddToggle({
+        Name = "Skill Aura",
+        Default = false,
+        Callback = function(bool)
+            settings.SkillAura = bool
+        end
+    })
+
+    local passive = {
+        Heal = true,
+        ["Summon Tree"] = true,
+        Block = true,
+        Roll = true
+    }
+
+    local skillHandlers
+    for _, v in next, getgc(true) do
+        if typeof(v) == "table" and rawget(v, "skillHandlers") then
+            skillHandlers = v.skillHandlers
+            break
+        end
+    end
+
+    for i, old in next, skillHandlers do
+        if passive[i] then
+            continue
+        end
+
+        skillHandlers[i] = function(...)
+            for _ = 0, settings.SkillCount - 1 do
+                task.spawn(old, ...)
+            end
+            
+            return old(...)
+        end
+    end
+
+    combat:AddSlider({
+        Name = "Skill Multiplier",
+        Min = 0,
+        Max = 3,
+        Default = settings.SkillCount,
+        Color = Color3.new(255, 255, 255),
+        Increment = 1,
+        ValueName = "Skills",
+        Callback = function(v)
+            settings.SkillCount = v
+        end
+    })
+
+    combat:AddToggle({
+        Name = "Skill Silent Aim",
+        Default = false,
+        Callback = function(bool)
+            settings.skillSilentAim = bool
+        end
+    })
+
+    local mobs = workspace.Mobs
+    local function GetClosestMob()
+        local closest_magnitude = math.huge
+        local closest_hrp
+        
+        for _, mob in next, mobs:GetChildren() do
+            local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
+            if not mob_hrp then 
+                continue 
+            end
+
+            local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
+            if magnitude < closest_magnitude then
+                closest_hrp = mob_hrp
+                closest_magnitude = magnitude
+            end
+        end
+        
+        return closest_hrp
+    end
+
+    local myCframe
+    local index; index = hookmetamethod(game, "__index", function(self, i)
+        if self == hrp and i == "CFrame" then
+            local consts
+            local success = pcall(function()
+                consts = getconstants(3)
+            end)
+            if success and table.find(consts, "lookVector") then
+                myCframe = index(self, i)
+                return myCframe
+            end
+        end
+
+        return index(self, i)
+    end)
+
+    local mt = getrawmetatable(CFrame.new())
+    setreadonly(mt, false)
+
+    local old = mt.__index
+    mt.__index = newcclosure(function(self, i)
+        if settings.skillSilentAim and rawequal(self, myCframe) and i == "lookVector" then
+            local mob = GetClosestMob()
+            if mob then
+                local cf = CFrame.new(hrp.Position, mob.Position)
+                return old(cf, "lookVector")
+            end
+        end
+
+        return old(self, i)
+    end)
+
+    setreadonly(mt, true)
 end
 
 local dismantle = {}
@@ -1497,6 +1554,11 @@ do
         for _, v in next, workspace:GetChildren() do
             if v.Name == "TeleportSystem" then
                 for _, v2 in next, v:GetChildren() do
+                    if v2.Name ~= "Part" then
+                        task.wait(.1)
+                        continue
+                    end
+                    
                     local posX = floor(v2.Position.X)
                     local posY = floor(v2.Position.Y)
                     local posZ = floor(v2.Position.Z)
@@ -1523,8 +1585,8 @@ do
     end
 
     if placeid == 542351431 then
-        local dungeon_entrance = Vector3.new(-1181.50537109375, 70.00093078613281, 308.64825439453125)
-        local boss = Vector3.new(-2942.510986328125, -125.63832092285156, 336.9950866699219)
+        local dungeon_entrance = Vector3.new(-1181, 70, 308)
+        local boss = Vector3.new(-2942, -125, 336)
 
         loop_workspace(dungeon_entrance, boss)
     end
@@ -1538,7 +1600,7 @@ do
     
     if placeid == 555980327 then -- floor 3
         local dungeon_entrance = Vector3.new(1179, 6737, 1675)
-        local boss = Vector3.new(448.331146, 4279.3374, -385.050385)
+        local boss = Vector3.new(448, 4279, -385)
 
         makespecialtpbutton("Boss Room", boss)
         loop_workspace(dungeon_entrance)
@@ -1559,8 +1621,8 @@ do
     end
 
     if placeid == 582198062 then -- floor 7
-        local dungeon_entrance = Vector3.new(1219.2188720703125, 1083.6990966796875, -274.0682678222656)
-        local boss = Vector3.new(3347.78955078125, 800.0438842773438, -804.3104248046875)
+        local dungeon_entrance = Vector3.new(1219, 1083, -274)
+        local boss = Vector3.new(3347, 800, -804)
 
         makespecialtpbutton("Dungeon Entrance", dungeon_entrance)
         makespecialtpbutton("Boss", boss)
@@ -1594,11 +1656,11 @@ do
     end
     
     if placeid == 5287433115 then -- floor 11
-        local DaRaKa = Vector3.new(4846.48242, 1639.76953, 2090.85107)
-        local Za = Vector3.new(4001.55908203125, 421.5150146484375, -3794.197265625)
-        local duality_reaper = Vector3.new(5899.98291, 852.757568, -4255.58643)
-        local neon_chest = Vector3.new(4834.57959, 2543.39868, 5274.56055)
-        local sauraus = Vector3.new(5208.86279, 2345.82617, 5985.12402)
+        local DaRaKa = Vector3.new(4846, 1639, 2090)
+        local Za = Vector3.new(4001, 421, -3794)
+        local duality_reaper = Vector3.new(5899, 852, -4255)
+        local neon_chest = Vector3.new(4834, 2543, 5274)
+        local sauraus = Vector3.new(5208, 2345, 5985)
 
         makespecialtpbutton("Duality Reaper", duality_reaper)
         makespecialtpbutton("Da, Ra, Ka", DaRaKa)
