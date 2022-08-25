@@ -2183,7 +2183,6 @@ do
             end
         end
 
-        table.foreach(names, print)
         inventory_viewer:Refresh(names, true)
     end
     
