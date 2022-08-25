@@ -2177,7 +2177,7 @@ do
     local function update_inventoryViewer_list(player, leaving)
         players_names[player] = leaving and nil or player 
         task.wait(1)
-        inventory_viewer:Refresh(players_names)
+        inventory_viewer:Refresh(players_names, true)
     end
     
     Players.PlayerAdded:Connect(function(player)
