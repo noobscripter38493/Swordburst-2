@@ -722,7 +722,7 @@ do
 
                 local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
                 local tween = TweenS:Create(hrp, tween_info, {CFrame = cframe})
-                tweens[#tweens + 1] = tween
+                table.insert(tweens, tween)
                 
                 tween:Play()
                 tween.Completed:Wait()
