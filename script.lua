@@ -26,7 +26,8 @@ local mobs_on_floor = {
         "Bear",
         "Ruin Knight",
         "Draconite",
-        "Ruin Kobold Knight"
+        "Ruin Kobold Knight",
+        "Ruined Kobold Knight"
     },
 
     [548231754] = { -- floor 2
@@ -1518,6 +1519,11 @@ do
                 end
             end
         end
+    end
+
+    if placeid == 5 then
+        local dungeon_entrance = Vector3.new(-1181.50537109375, 70.00093078613281, 308.64825439453125)
+        loop_workspace(dungeon_entrance, boss)
     end
 
     if placeid == 548231754 then -- floor 2
