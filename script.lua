@@ -409,10 +409,9 @@ local rf = Rs.Function
 local inventory_module = require(game_module.Services.UI.Inventory)
 local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
     local ncm = getnamecallmethod()
+    local args = {...}
     
     if self == Event and ncm == "FireServer" then
-        local args = {...}
-
         if settings.InfSprint and args[1] == "Actions" then 
             if args[2][2] == "Step" then
                 return
@@ -1050,7 +1049,7 @@ do
 
             elseif settings.AttackPlayers then
                 attacking[#attacking + 1] = enemy
-                killaura_function(enemy, true)
+                killaura_function(enemy, true)  
             end
         end
     end)
