@@ -1522,8 +1522,10 @@ do
         end
     end
 
-    if placeid == 5 then
+    if placeid == 542351431 then
         local dungeon_entrance = Vector3.new(-1181.50537109375, 70.00093078613281, 308.64825439453125)
+        local boss = Vector3.new(-2942.510986328125, -125.63832092285156, 336.9950866699219)
+
         loop_workspace(dungeon_entrance, boss)
     end
 
