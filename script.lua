@@ -1449,17 +1449,21 @@ do
         return closest_part
     end
 
+    local streamed = {}
     local function makespecialtpbutton(name, pos)
         teleports_tab:AddButton({
             Name = name,
             Callback = function()
-                plr:RequestStreamAroundAsync(pos)
+                local totouch = streamed[pos]
+                if not totouch then
+                    plr:RequestStreamAroundAsync(pos)
+                    streamed[pos] = GetClosestPartFromVector(pos)
+                end
 
-                local totouch = GetClosestPartFromVector(pos)
                 firetouchinterest(hrp, totouch, 0)
 
                 task.wait(.1)
-                
+
                 firetouchinterest(hrp, totouch, 1)
             end
         })
