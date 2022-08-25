@@ -1458,6 +1458,7 @@ do
                 if not totouch then
                     plr:RequestStreamAroundAsync(pos)
                     streamed[pos] = GetClosestPartFromVector(pos)
+                    totouch = streamed[pos]
                 end
 
                 firetouchinterest(hrp, totouch, 0)
