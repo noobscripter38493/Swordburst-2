@@ -405,6 +405,7 @@ actions.StartSwing = function(...)
     return old(...)
 end
 
+local rf = Rs.Function
 local inventory_module = require(game_module.Services.UI.Inventory)
 local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
     local ncm = getnamecallmethod()
@@ -412,12 +413,19 @@ local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
     if self == Event and ncm == "FireServer" then
         local args = {...}
 
-        if settings.InfSprint and args[1] == "Actions" then
+        if settings.InfSprint and args[1] == "Actions" then 
             if args[2][2] == "Step" then
                 return
             end
         end
 
+        if not checkcaller() and args[1] == "Equipment" then
+            if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
+                return
+            end
+        end
+
+    elseif self == rf and ncm == "InvokeServer" then
         if not checkcaller() and args[1] == "Equipment" then
             if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
                 return
@@ -1305,7 +1313,6 @@ do
 
     local profiles = Rs.Profiles
     local inventory = profiles[plr.Name].Inventory
-    local rf = Rs.Function
     
     local data = Rs.Database.Items
     local function AutoEquip()
@@ -1578,12 +1585,14 @@ do
     
     if placeid == 5287433115 then -- floor 11
         local DaRaKa = Vector3.new(4846.48242, 1639.76953, 2090.85107)
+        local Za = Vector3.new(4001.55908203125, 421.5150146484375, -3794.197265625)
         local duality_reaper = Vector3.new(5899.98291, 852.757568, -4255.58643)
         local neon_chest = Vector3.new(4834.57959, 2543.39868, 5274.56055)
         local sauraus = Vector3.new(5208.86279, 2345.82617, 5985.12402)
 
         makespecialtpbutton("Duality Reaper", duality_reaper)
         makespecialtpbutton("Da, Ra, Ka", DaRaKa)
+        makespecialtpbutton("Za", Za)
         makespecialtpbutton("Neon Chest", neon_chest)
         makespecialtpbutton("Boss Room", sauraus)
     end
