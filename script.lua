@@ -1557,6 +1557,14 @@ do
         
         loop_workspace(dungeon_entrance, boss)
     end
+
+    if placeid == 582198062 then -- floor 7
+        local dungeon_entrance = Vector3.new(1219.2188720703125, 1083.6990966796875, -274.0682678222656)
+        local boss = Vector3.new(3347.78955078125, 800.0438842773438, -804.3104248046875)
+
+        makespecialtpbutton("Dungeon Entrance", dungeon_entrance)
+        makespecialtpbutton("Boss", boss)
+    end
     
     if placeid == 548878321 then -- floor 8
         local dungeon_entrance = Vector3.new(-6679, 7801, 10006)
