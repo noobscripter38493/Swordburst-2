@@ -274,9 +274,8 @@ local settings = { -- defaults
     Autofarm_Idle_Min = 30,
     Autofarm_Idle_Max = 70,
     WebhookURL = "",
-    SkillCount = 0,
     skillSilentAim = false,
-    SkillCount = false
+    SkillCount = 0
 }
 
 local doLoad = {
@@ -951,22 +950,12 @@ do
     
     range.Parent = workspace
 
-    local _combat = require(game_module.Services.Combat)    
-    local GetCombatStyle = getrenv()._G.CalculateCombatStyle
+    local _combat = require(game_module.Services.Combat)
     local remote_key = getupvalue(_combat.Init, 2)
 
     local skillService = require(game_module.Services.Skills)
     local UseSkill = skillService.UseSkill
     local GetCooldown = skillService.GetCooldown
-
-    local style = GetCombatStyle()
-    coroutine.wrap(function()
-        while true do
-            style = GetCombatStyle()
-
-            task.wait(1)
-        end
-    end)()
 
     local attacking = {}
     local pauseKillAura = false
@@ -1176,6 +1165,8 @@ do
         end
     end
 
+    local GetCombatStyle = getrenv()._G.CalculateCombatStyle
+    local style
     range.Touched:Connect(function(touching)
         if settings.SkillAura and touching.Parent ~= char and touching.Name == "HumanoidRootPart" then
             local enemy = touching.Parent
@@ -1186,8 +1177,9 @@ do
                 return
             end
 
-            local health = getMobHealth(enemy)
-            if health and health.Value > 0 then
+            local health2 = getMobHealth(enemy)
+            if health2 and health2.Value > 0 then
+                style = GetCombatStyle()
                 local skill = skill_classes[style]
                 if GetCooldown(skill) and skill then
                     pauseKillAura = true
@@ -1321,6 +1313,7 @@ local rates = setmetatable({Legendary = .05}, {
         return .04 
     end
 })
+
 do 
     local farm_tab2 = window:MakeTab({
         Name = "Farm Tab (util)",
@@ -1549,38 +1542,26 @@ do
         })
     end
     
-    local floor = math.floor
     local function loop_workspace(entrance, boss, miniboss, shop)
-        for _, v in next, workspace:GetChildren() do
-            if v.Name == "TeleportSystem" then
-                for _, v2 in next, v:GetChildren() do
-                    if v2.Name ~= "Part" then
-                        task.wait(.1)
-                        continue
-                    end
-                    
-                    local posX = floor(v2.Position.X)
-                    local posY = floor(v2.Position.Y)
-                    local posZ = floor(v2.Position.Z)
-                    local pos = Vector3.new(posX, posY, posZ)
+        local totouch1 = entrance and GetClosestPartFromVector(entrance)
+        local totouch2 = boss and GetClosestPartFromVector(boss)
+        local totouch3 = miniboss and GetClosestPartFromVector(boss)
+        local totouch4 = shop and GetClosestPartFromVector(shop)
 
-                    if pos == entrance then
-                        makeTPbutton("Dungeon Entrance", v2)
-                    end
+        if totouch1 then
+            makeTPbutton("Dungeon Entrance", totouch1)
+        end
 
-                    if pos == boss then
-                        makeTPbutton("Boss Room", v2)
-                    end
+        if totouch2 then
+            makeTPbutton("Boss Room", totouch2)
+        end
 
-                    if pos == miniboss then
-                        makeTPbutton("Mini Boss", v2)
-                    end
+        if totouch3 then
+            makeTPbutton("Mini Boss", totouch3)
+        end
 
-                    if pos == shop then -- floor 10
-                        makeTPbutton("Shop", v2)
-                    end
-                end
-            end
+        if totouch4 then -- floor 10
+            makeTPbutton("Shop", totouch4)
         end
     end
 
@@ -1717,9 +1698,9 @@ do
 
     local combat = require(game_module.Services.Combat)
     
-    local hook; hook = hookfunc(combat.CalculateCombatStyle, function(bool, ...)
-        if not shouldAnimate or bool ~= nil and not bool then
-            return hook(bool, ...)    
+    local old5; old5 = hookfunc(combat.CalculateCombatStyle, function(bool, ...)
+        if checkcaller() or not shouldAnimate or bool ~= nil and not bool then
+            return old5(bool, ...)    
         end
         
         return settings.Weapon_Animation
