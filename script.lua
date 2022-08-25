@@ -394,6 +394,7 @@ while true do
     task.wait(.5)
 end
 
+local inventory_module = require(game_module.Services.UI.Inventory)
 local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
     local ncm = getnamecallmethod()
     
@@ -409,6 +410,12 @@ local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
         -- disable M1s when killaura is enabled
         if settings.KA and args[1] == "Combat" then
             if args[3][2] == nil and not checkcaller() then
+                return
+            end
+        end
+
+        if not checkcaller() and args[1] == "Equipment" then
+            if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
                 return
             end
         end
@@ -1297,13 +1304,11 @@ do
     local rf = Rs.Function
     
     local data = Rs.Database.Items
-    local data2 = {}
-    for _, v in next, data:GetChildren() do
-        data2[v.Name] = v
-    end
-
     local function AutoEquip()
-        if not settings.AutoEquip then return end
+        if not settings.AutoEquip then 
+            return 
+        end
+
         task.wait(1)
 
         local highest_damage = 0
@@ -1315,34 +1320,34 @@ do
             local item_data = inv_utility.GetItemData(item)
 
             local class = item_data.Type
-            if class ~= "Weapon" and class ~= "Clothing" then continue end
+            if class ~= "Weapon" and class ~= "Clothing" then 
+                continue 
+            end
             
-            local v2 = data2[item.Name]
-            if v2.Name == item.Name then
-                local stats = getStats(v2)
-                local base
-                for _, v3 in next, stats do
-                    if v3[1] == "Damage" or v3[1] == "Defense" then
-                        base = tonumber(v3[2])
-                        break
-                    end
+            local v2 = data[item.Name]
+            local stats = getStats(v2)
+            local base
+            for _, v3 in next, stats do
+                if v3[1] == "Damage" or v3[1] == "Defense" then
+                    base = tonumber(v3[2])
+                    break
                 end
-                
-                local upgrades = getUpgrade(item)
-                local rarity = getRarity(v2)
-                local stat = math.floor(base + (base * rates[rarity] * upgrades))
-                
-                if class == "Weapon" then
-                    if stat > highest_damage then
-                        highest_damage = stat
-                        highest_weapon = item
-                    end
+            end
+            
+            local upgrades = getUpgrade(item)
+            local rarity = getRarity(v2)
+            local stat = math.floor(base + (base * rates[rarity] * upgrades))
+            
+            if class == "Weapon" then
+                if stat > highest_damage then
+                    highest_damage = stat
+                    highest_weapon = item
+                end
 
-                elseif class == "Clothing" then
-                    if stat > highest_defense then
-                        highest_defense = stat
-                        highest_armor = item
-                    end
+            elseif class == "Clothing" then
+                if stat > highest_defense then
+                    highest_defense = stat
+                    highest_armor = item
                 end
             end
         end
@@ -1373,7 +1378,7 @@ do
         local class = rawget(itemdata, "Type")
         if class ~= "Weapon" and class ~= "Clothing" then return end
         
-        local rarity = getRarity(data2[item.Name])
+        local rarity = getRarity(data[item.Name])
             
         if dismantle[rarity] then
             Event:FireServer("Equipment", {"Dismantle", {item}})
@@ -1438,7 +1443,7 @@ do
 
         for _, v in next, workspace:GetDescendants() do
             if v.Parent.Name == "TeleportSystem" and v.Name == "Part" then
-                local distance = (v3.Position - v.Position).Magnitude
+                local distance = (v3 - v.Position).Magnitude
                 if distance < closest_magnitude then
                     closest_magnitude = distance
                     closest_part = v
@@ -1457,14 +1462,14 @@ do
                 local totouch = streamed[pos]
                 if not totouch then
                     plr:RequestStreamAroundAsync(pos)
+                    task.wait(1)
+                    
                     streamed[pos] = GetClosestPartFromVector(pos)
                     totouch = streamed[pos]
                 end
 
                 firetouchinterest(hrp, totouch, 0)
-
                 task.wait(.1)
-
                 firetouchinterest(hrp, totouch, 1)
             end
         })
@@ -1520,7 +1525,7 @@ do
     
     if placeid == 555980327 then -- floor 3
         local dungeon_entrance = Vector3.new(1179, 6737, 1675)
-        local boss = CFrame.new(448.331146, 4279.3374, -385.050385)
+        local boss = Vector3.new(448.331146, 4279.3374, -385.050385)
 
         makespecialtpbutton("Boss Room", boss)
         loop_workspace(dungeon_entrance)
@@ -1568,10 +1573,10 @@ do
     end
     
     if placeid == 5287433115 then -- floor 11
-        local DaRaKa = CFrame.new(4846.48242, 1639.76953, 2090.85107)
-        local duality_reaper = CFrame.new(5899.98291, 852.757568, -4255.58643)
-        local neon_chest = CFrame.new(4834.57959, 2543.39868, 5274.56055)
-        local sauraus = CFrame.new(5208.86279, 2345.82617, 5985.12402)
+        local DaRaKa = Vector3.new(4846.48242, 1639.76953, 2090.85107)
+        local duality_reaper = Vector3.new(5899.98291, 852.757568, -4255.58643)
+        local neon_chest = Vector3.new(4834.57959, 2543.39868, 5274.56055)
+        local sauraus = Vector3.new(5208.86279, 2345.82617, 5985.12402)
 
         makespecialtpbutton("Duality Reaper", duality_reaper)
         makespecialtpbutton("Da, Ra, Ka", DaRaKa)
@@ -1775,15 +1780,13 @@ do
             end
 
             if #items > 0 then
-                Event:FireServer("Equipment", {"Dismantle", {unpack(items)}})
+                Event:FireServer("Equipment", {"Dismantle", items})
             end
         end
     end
     
+    local screen = Instance.new("ScreenGui", CoreGui)
     local function create_confirm()
-        local oldscreen = CoreGui:FindFirstChild("ScreenGui")
-        local screen = oldscreen or Instance.new("ScreenGui", CoreGui)
-        
         local popup = CoreGui.RobloxGui.PopupFrame
         local new = popup:Clone()
         
@@ -1828,49 +1831,22 @@ do
         end
     })
 
-    Smithing:AddButton({
-        Name = "Dismantle All Commons",
-        Callback = function()
-            local confirm = create_confirm()
+    local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
+    local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
 
-            if confirm then
-                Dismantle_Rarity("Common")
+    for i, v in next, names do
+        Smithing:AddButton({
+            Name = "Dismantle All " .. v,
+            Callback = function()
+                local confirm = create_confirm()
+
+                if confirm then
+                    local rarity = rarities[i]
+                    Dismantle_Rarity(rarity)
+                end
             end
-        end
-    })
-
-    Smithing:AddButton({
-        Name = "Dismantle All Uncommons",
-        Callback = function()
-            local confirm = create_confirm()
-
-            if confirm then
-                Dismantle_Rarity("Uncommon")
-            end
-        end
-    })
-
-    Smithing:AddButton({
-        Name = "Dismantle All Rares",
-        Callback = function()
-            local confirm = create_confirm()
-
-            if confirm then
-                Dismantle_Rarity("Rare")
-            end
-        end
-    })
-
-    Smithing:AddButton({
-        Name = "Dismantle All Legendaries",
-        Callback = function()
-            local confirm = create_confirm()
-
-            if confirm then
-                Dismantle_Rarity("Legendary")
-            end
-        end
-    })
+        })
+    end
 end
 
 do
@@ -2179,27 +2155,26 @@ do
     })
     
     local players_names = {}
-    
     for _, v in next, Players:GetPlayers() do
         table.insert(players_names, v.Name) 
     end
-    
-    local inventory = require(game_module.Services.UI.Inventory)
+
     local inventory_viewer = Misc_tab:AddDropdown({
         Name = "Inventory Viewer (Open Inventory)",
         Default = plr.Name,
         Options = players_names,
         Callback = function(player)
-            setupvalue(inventory.GetInventoryData, 1, Rs.Profiles[player]) -- trick the game into getting the inventory data of the selected player instead of your own data
+            setupvalue(inventory_module.GetInventoryData, 1, Rs.Profiles[player])
         end
     })
 
-    local function refresh_inventoryViewer_list() 
-        local players_instances = Players:GetPlayers()
-        local players_names = {}
-        
-        for _, v in next, players_instances do
-            table.insert(players_names, v.Name)
+    local function refresh_inventoryViewer_list(player)
+        table.clear(players_names)
+
+        for _, v in Players:GetPlayers() do
+            if not player or v.Name ~= player.Name then
+                table.insert(players_names, v.Name)
+            end
         end
         
         inventory_viewer:Refresh(players_names, true)
@@ -2207,15 +2182,13 @@ do
     
     Players.PlayerAdded:Connect(function(player)
         while not Rs.Profiles:FindFirstChild(player.Name) do
-             task.wait()
+             task.wait(1)
         end
         
         refresh_inventoryViewer_list()
     end)
     
-    Players.PlayerRemoving:Connect(function()
-        refresh_inventoryViewer_list()
-    end)
+    Players.PlayerRemoving:Connect(refresh_inventoryViewer_list)
     
     local fps = getfpscap and getfpscap() or 60
     Misc_tab:AddSlider({
