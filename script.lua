@@ -1545,7 +1545,7 @@ do
     local function loop_workspace(entrance, boss, miniboss, shop)
         local totouch1 = entrance and GetClosestPartFromVector(entrance)
         local totouch2 = boss and GetClosestPartFromVector(boss)
-        local totouch3 = miniboss and GetClosestPartFromVector(boss)
+        local totouch3 = miniboss and GetClosestPartFromVector(miniboss)
         local totouch4 = shop and GetClosestPartFromVector(shop)
 
         if totouch1 then
