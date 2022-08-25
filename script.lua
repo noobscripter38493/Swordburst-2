@@ -2174,10 +2174,17 @@ do
         end
     })
 
-    local function update_inventoryViewer_list(player, leaving)
-        players_names[player] = leaving and nil or player 
-        task.wait(1)
-        inventory_viewer:Refresh(players_names, true)
+    local function update_inventoryViewer_list(player)  
+        local names = {}
+
+        for _, v in next, Players:GetPlayers() do
+            if not player or player.Name ~= v.Name then
+                table.insert(names, v.Name)
+            end
+        end
+
+        table.foreach(names, print)
+        inventory_viewer:Refresh(names, true)
     end
     
     Players.PlayerAdded:Connect(function(player)
@@ -2185,12 +2192,10 @@ do
              task.wait(1)
         end
         
-        update_inventoryViewer_list(player.Name)
+        update_inventoryViewer_list()
     end)
     
-    Players.PlayerRemoving:Connect(function(player)
-        update_inventoryViewer_list(player.Name, true)
-    end)
+    Players.PlayerRemoving:Connect(update_inventoryViewer_list)
     
     local fps = getfpscap and getfpscap() or 60
     Misc_tab:AddSlider({
