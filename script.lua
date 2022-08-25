@@ -418,12 +418,6 @@ local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
             end
         end
 
-        if not checkcaller() and args[1] == "Equipment" then
-            if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
-                return
-            end
-        end
-
     elseif self == rf and ncm == "InvokeServer" then
         if not checkcaller() and args[1] == "Equipment" then
             if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
