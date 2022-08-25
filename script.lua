@@ -1189,10 +1189,22 @@ do
         end
     end)
     
+    -- true
+    local level = plr:WaitForChild("PlayerGui"):WaitForChild("CardinalUI"):WaitForChild("PlayerUI"):WaitForChild("HUD"):WaitForChild("LevelBar"):WaitForChild("Level")
     combat:AddToggle({
         Name = "Skill Aura",
         Default = false,
         Callback = function(bool)
+            local n = string.match(level.Text, "%d+")
+            if tonumber(n) < 22 then
+                return lib:MakeNotification({
+                    Name = "Your Level is Not High Enough",
+                    Content = "Reach Level 22 Before Using Skill Aura",
+                    Image = "",
+                    Time = 5
+                })
+            end
+            
             settings.SkillAura = bool
         end
     })
