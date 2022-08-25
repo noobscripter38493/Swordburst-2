@@ -1027,7 +1027,7 @@ do
         while true do
             if #attacking == 0 then task.wait(.1) continue end
             
-            local animation_style = animations[combat_style()]
+            local animation_style = animations[combat_style(nil, true)]
             for _, v in next, animation_style do
                 if v.Name:find("Swing") then
                     local length = v.Length
@@ -1130,7 +1130,7 @@ do
     })
     
     local inputbegan
-    for i, v in next, orion:GetDescendants() do
+    for _, v in next, orion:GetDescendants() do
         if v:IsA("TextLabel") and v.Text == "Kill Aura Keybind" then
             v.Parent.TextButton.MouseButton1Down:Connect(function()
                 if inputbegan and inputbegan.Connected then
@@ -1182,7 +1182,7 @@ do
                     pauseKillAura = true
                     UseSkill(skill)
                     
-                    task.wait(1)
+                    task.wait(2)
                     pauseKillAura = false
                 end
             end
@@ -1230,9 +1230,11 @@ do
         end
 
         skillHandlers[i] = function(...)
-            for _ = 0, settings.SkillCount - 1 do
-                task.spawn(old, ...)
-            end
+            task.spawn(function(...)
+                for _ = 0, settings.SkillCount - 1 do
+                    task.spawn(old, ...)
+                end
+            end, ...)
             
             return old(...)
         end
@@ -1708,6 +1710,11 @@ do
     local combat = require(game_module.Services.Combat)
     
     local old5; old5 = hookfunc(combat.CalculateCombatStyle, function(bool, ...)
+        local args = {...}
+        if checkcaller() and args[2] then
+            return settings.Weapon_Animation    
+        end
+
         if checkcaller() or not shouldAnimate or bool ~= nil and not bool then
             return old5(bool, ...)    
         end
