@@ -1115,7 +1115,7 @@ do
         Name = "Kill Aura Keybind",
         Default = Enum.KeyCode[settings.KA_Keybind],
         Hold = false,
-        Callback = function()   
+        Callback = function()
             if ka_button then
                 firesignal(ka_button.MouseButton1Down)
                 firesignal(ka_button.MouseButton1Up) 
@@ -1231,7 +1231,7 @@ do
 
         skillHandlers[i] = function(...)
             task.spawn(function(...)
-                for _ = 0, settings.SkillCount - 1 do
+                for _ = 1, settings.SkillCount do
                     task.spawn(old, ...)
                 end
             end, ...)
@@ -1243,7 +1243,7 @@ do
     combat:AddSlider({
         Name = "Skill Multiplier",
         Min = 0,
-        Max = 3,
+        Max = 5,
         Default = settings.SkillCount,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
@@ -1521,25 +1521,21 @@ do
         return closest_part
     end
 
-    local streamed = {}
     local function makespecialtpbutton(name, pos)
-        teleports_tab:AddButton({
-            Name = name,
-            Callback = function()
-                local totouch = streamed[pos]
-                if not totouch then
-                    plr:RequestStreamAroundAsync(pos)
-                    task.wait(1)
+        task.spawn(function()
+            plr:RequestStreamAroundAsync(pos)
+            task.wait(1)
 
-                    streamed[pos] = GetClosestPartFromVector(pos)
-                    totouch = streamed[pos]
+            local totouch = GetClosestPartFromVector(pos)
+            teleports_tab:AddButton({
+                Name = name,
+                Callback = function()
+                    firetouchinterest(hrp, totouch, 0)
+                    task.wait(.1)
+                    firetouchinterest(hrp, totouch, 1)
                 end
-
-                firetouchinterest(hrp, totouch, 0)
-                task.wait(.1)
-                firetouchinterest(hrp, totouch, 1)
-            end
-        })
+            })
+        end)
     end
 
     local function makeTPbutton(name, part)
@@ -1709,14 +1705,13 @@ do
 
     local combat = require(game_module.Services.Combat)
     
-    local old5; old5 = hookfunc(combat.CalculateCombatStyle, function(bool, ...)
-        local args = {...}
-        if checkcaller() and args[2] then
-            return settings.Weapon_Animation    
+    local old5; old5 = hookfunc(combat.CalculateCombatStyle, function(bool, brah, ...)
+        if checkcaller() and brah then
+            return settings.Weapon_Animation
         end
 
         if checkcaller() or not shouldAnimate or bool ~= nil and not bool then
-            return old5(bool, ...)    
+            return old5(bool, brah, ...)    
         end
         
         return settings.Weapon_Animation
@@ -1884,8 +1879,8 @@ do
         end)
         
         new.PopupText.Text = "Confirm Dismantle? (CANNOT BE UNDONE)"
-        new.Parent = screen
         new.Visible = true
+        new.Parent = screen
         
         return coroutine.yield()
     end
@@ -1961,7 +1956,7 @@ do
             time_label:Set("Time Elapsed: " .. displayed)
         end
     end)()
-
+    
     local item_info
     for _, v in next, getreg() do
         if typeof(v) == "table" then
