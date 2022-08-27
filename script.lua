@@ -306,10 +306,9 @@ if not isfile("SB2 Script/Settings.json") then
     save_settings()
 end
 
-local s = xpcall(function() 
+xpcall(function() 
     HttpS:JSONDecode(readfile("SB2 Script/Settings.json"))
 end, save_settings)
-print(s)
 
 local saved_settings = HttpS:JSONDecode(readfile("SB2 Script/Settings.json"))
 for i, v in next, saved_settings do
@@ -645,7 +644,7 @@ do
 
         if not IsWaitingFromHealthFloat and playerHealth < minPercentage * maxPlayerHealth then
             IsWaitingFromHealthFloat = true
-            shouldFloat = true
+            shouldFloat = true  
             return floatPart
         end
 
@@ -679,7 +678,7 @@ do
                 enemy = to ~= floatPart and to.Parent
 
                 local distance = (hrp.Position - to.Position).Magnitude
-                if distance < 100 and not marked[enemy] then
+                if enemy and distance < 100 and not marked[enemy] then
                     local oldto = to
                     local oldenemy = enemy
                     
@@ -988,7 +987,7 @@ do
                 Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy})
             end
             
-            task.wait(.3) 
+            task.wait(.3)
         end
     end
 
@@ -1243,7 +1242,7 @@ do
     combat:AddSlider({
         Name = "Skill Multiplier",
         Min = 0,
-        Max = 5,
+        Max = 3,
         Default = settings.SkillCount,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
@@ -1644,11 +1643,11 @@ do
     end
     
     if placeid == 5287433115 then -- floor 11
-        local DaRaKa = Vector3.new(4846, 1639, 2090)
+        local DaRaKa = Vector3.new(4801, 1646, 2083)
         local Za = Vector3.new(4001, 421, -3794)
-        local duality_reaper = Vector3.new(5899, 852, -4255)
-        local neon_chest = Vector3.new(4834, 2543, 5274)
-        local sauraus = Vector3.new(5208, 2345, 5985)
+        local duality_reaper = Vector3.new(4763, 501, -4344)
+        local neon_chest = Vector3.new(5204, 2294, 5778)
+        local sauraus = Vector3.new(5333, 3230, 5589)
 
         makespecialtpbutton("Duality Reaper", duality_reaper)
         makespecialtpbutton("Da, Ra, Ka", DaRaKa)
@@ -1705,13 +1704,17 @@ do
 
     local combat = require(game_module.Services.Combat)
     
-    local old5; old5 = hookfunc(combat.CalculateCombatStyle, function(bool, brah, ...)
+    local old5; old5 = hookfunc(combat.CalculateCombatStyle, function(bool, brah)
         if checkcaller() and brah then
             return settings.Weapon_Animation
         end
 
-        if checkcaller() or not shouldAnimate or bool ~= nil and not bool then
-            return old5(bool, brah, ...)    
+        if checkcaller() then
+            return old5(bool)
+        end
+
+        if not shouldAnimate or bool == false then
+            return old5(bool)    
         end
         
         return settings.Weapon_Animation
