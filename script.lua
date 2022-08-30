@@ -683,7 +683,9 @@ do
                     local oldenemy = enemy
                     
                     mob_health = getMobHealth(oldenemy)
-                    if not mob_health then return end
+                    if not mob_health then 
+                        return
+                    end
                     
                     marked[oldenemy] = mob_health:GetPropertyChangedSignal("Value"):Connect(function()
                         t = tick()
@@ -1163,6 +1165,14 @@ do
 
     local GetCombatStyle = getrenv()._G.CalculateCombatStyle
     local style
+    local hotkeys = Rs.Profiles[plr.Name].Hotkeys
+    local SummonPistol = hotkeys:FindFirstChild("Summon Pistol") and "Summon Pistol"
+    if not SummonPistol then
+        task.spawn(function()
+            SummonPistol = hotkeys:WaitForChild("Summon Pistol") and "Summon Pistol"
+        end)
+    end
+    
     range.Touched:Connect(function(touching)
         if settings.SkillAura and touching.Parent ~= char and touching.Name == "HumanoidRootPart" then
             local enemy = touching.Parent
@@ -1176,7 +1186,7 @@ do
             local health2 = getMobHealth(enemy)
             if health2 and health2.Value > 0 then
                 style = GetCombatStyle()
-                local skill = skill_classes[style]
+                local skill = SummonPistol or skill_classes[style]
                 if skill and GetCooldown(skill) then
                     pauseKillAura = true
                     UseSkill(skill)
@@ -1211,6 +1221,7 @@ do
     local passive = {
         Heal = true,
         ["Summon Tree"] = true,
+        ["Summon Pistol"] = true
         Block = true,
         Roll = true
     }
@@ -1222,7 +1233,21 @@ do
             break
         end
     end
-
+    --[[
+    local nc5; nc5 = hookmetamethod(game, "__namecall", function(self, ...)
+        if self == Event and getnamecallmethod() == "FireServer" then
+            local args = {...}
+            local t = args[2]
+            if args[1] == "Skills" and t[1] == "UseSkill" and t[2] == "Summon Pistol" then
+                print('edited')
+                t[3].Direction = t[3].Direction + Vector3.new(0, .1, 0) 
+                return nc(self, unpack(args))
+            end
+        end
+        
+        return nc5(self, ...) 
+    end)
+    ]]
     for i, old in next, skillHandlers do
         if passive[i] then
             continue
@@ -1571,11 +1596,12 @@ do
         end
     end
 
-    if placeid == 542351431 then
+    if placeid == 542351431 then -- floor 1
         local dungeon_entrance = Vector3.new(-1181, 70, 308)
+        local miniboss = Vector3.new(139, 225, -132)
         local boss = Vector3.new(-2942, -125, 336)
 
-        loop_workspace(dungeon_entrance, boss)
+        loop_workspace(dungeon_entrance, boss, miniboss)
     end
 
     if placeid == 548231754 then -- floor 2
