@@ -1240,8 +1240,8 @@ do
             local args = {...}
             local t = args[2]
             if args[1] == "Skills" and t[1] == "UseSkill" and t[2] == "Summon Pistol" then
-                local rand = math.random()
-                t[3].Direction = t[3].Direction + Vector3.new(rand, rand, rand) 
+                local rand = math.random() / 10000
+                t[3].Direction = t[3].Direction + Vector3.new(rand, rand, rand)
                 return nc5(self, unpack(args))
             end
         end
@@ -1249,6 +1249,7 @@ do
         return nc5(self, ...) 
     end)
     ]]
+
     for i, old in next, skillHandlers do
         if passive[i] then
             continue
