@@ -1166,13 +1166,12 @@ do
     local GetCombatStyle = getrenv()._G.CalculateCombatStyle
     local style
     local hotkeys = Rs.Profiles[plr.Name].Hotkeys
-    local SummonPistol = hotkeys:FindFirstChild("Summon Pistol") and "Summon Pistol"
-    if not SummonPistol then
-        task.spawn(function()
-            SummonPistol = hotkeys:WaitForChild("Summon Pistol") and "Summon Pistol"
-        end)
-    end
-    
+
+    local SummonPistol
+    task.spawn(function()
+        SummonPistol = hotkeys:WaitForChild("Summon Pistol").Name
+    end)
+
     range.Touched:Connect(function(touching)
         if settings.SkillAura and touching.Parent ~= char and touching.Name == "HumanoidRootPart" then
             local enemy = touching.Parent
@@ -1191,7 +1190,7 @@ do
                     pauseKillAura = true
                     UseSkill(skill)
                     
-                    task.wait(2)
+                    task.wait(.5)
                     pauseKillAura = false
                 end
             end
@@ -1242,7 +1241,7 @@ do
             if args[1] == "Skills" and t[1] == "UseSkill" and t[2] == "Summon Pistol" then
                 local rand = math.random() / 10000
                 t[3].Direction = t[3].Direction + Vector3.new(rand, rand, rand)
-                return nc5(self, unpack(args))
+                return  nc5(self, unpack(args))
             end
         end
         
@@ -1250,7 +1249,7 @@ do
     end)
     ]]
 
-    for i, old in next, skillHandlers do
+    for i, old2 in next, skillHandlers do
         if passive[i] then
             continue
         end
@@ -1258,7 +1257,7 @@ do
         skillHandlers[i] = function(...)
             task.spawn(function(...)
                 for _ = 1, settings.SkillCount do
-                    task.spawn(old, ...)
+                    task.spawn(old2, ...)
                 end
             end, ...)
             
