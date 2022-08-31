@@ -296,23 +296,25 @@ local doLoad = {
 }
 
 local HttpS = game:GetService("HttpService")
-local function save_settings()
-    writefile("SB2 Script/Settings.json", HttpS:JSONEncode(settings))
-end
 
 if not isfolder("SB2 Script") then
     makefolder("SB2 Script")
 end
 
-if not isfile("SB2 Script/Settings.json") then
+local fileName = ("SB2 Script/%s Settings.json"):format(plr.UserId)
+local function save_settings()
+    writefile(fileName, HttpS:JSONEncode(settings))
+end
+
+if not isfile(fileName) then
     save_settings()
 end
 
-xpcall(function() 
-    HttpS:JSONDecode(readfile("SB2 Script/Settings.json"))
+xpcall(function()
+    HttpS:JSONDecode(readfile(fileName))
 end, save_settings)
 
-local saved_settings = HttpS:JSONDecode(readfile("SB2 Script/Settings.json"))
+local saved_settings = HttpS:JSONDecode(readfile(fileName))
 for i, v in next, saved_settings do
     if not doLoad[i] then 
         continue
@@ -1211,7 +1213,7 @@ do
             if health2 and health2.Value > 0 then
                 style = GetCombatStyle()
 
-                local skill = settings.WeaponSkill == "Summon Pistol" and "Summon Pistol" or skill_classes[style] 
+                local skill = settings.WeaponSkill == "Weapon Class Skill" and skill_classes[style] or "Summon Pistol"
                 if skill and GetCooldown(skill) then
                     pauseKillAura = true
                     UseSkill(skill)
