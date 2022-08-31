@@ -276,7 +276,8 @@ local settings = { -- defaults
     Autofarm_Idle_Max = 70,
     WebhookURL = "",
     skillSilentAim = false,
-    SkillCount = 0
+    SkillCount = 0,
+    WeaponSkill = "Weapon Class Skill"
 }
 
 local doLoad = {
@@ -290,7 +291,8 @@ local doLoad = {
     WebhookURL = true,
     Tween_Speed = true,
     skillSilentAim = true,
-    SkillCount = true
+    SkillCount = true,
+    WeaponSkill = true
 }
 
 local HttpS = game:GetService("HttpService")
@@ -325,6 +327,23 @@ coroutine.wrap(function()
         task.wait(5)
     end
 end)()
+
+local function WaitForDescendant(parent, descendant_name)
+    local already = parent:FindFirstChild(descendant_name, true)
+    if already then
+        return already 
+    end
+    
+    local thread = coroutine.running()
+    local con; con = parent.DescendantAdded:Connect(function(c)
+        if c.Name == descendant_name then
+            con:Disconnect()
+            coroutine.resume(thread, c)
+        end
+    end)
+    
+    return coroutine.yield()
+end
 
 local parts = {}
 local function setNoClipParts()
@@ -1167,9 +1186,15 @@ do
     local style
     local hotkeys = Rs.Profiles[plr.Name].Hotkeys
 
-    local SummonPistol
+    local selectSkill
     task.spawn(function()
-        SummonPistol = hotkeys:WaitForChild("Summon Pistol").Name
+        hotkeys:WaitForChild("Summon Pistol")
+
+        while not selectSkill do
+            task.wait(1)
+        end
+
+        selectSkill:Refresh({"Summon Pistol"})
     end)
 
     range.Touched:Connect(function(touching)
@@ -1185,7 +1210,8 @@ do
             local health2 = getMobHealth(enemy)
             if health2 and health2.Value > 0 then
                 style = GetCombatStyle()
-                local skill = SummonPistol or skill_classes[style]
+
+                local skill = settings.WeaponSkill == "Summon Pistol" and "Summon Pistol" or skill_classes[style] 
                 if skill and GetCooldown(skill) then
                     pauseKillAura = true
                     UseSkill(skill)
@@ -1196,9 +1222,8 @@ do
             end
         end
     end)
-    
-    -- true
-    local level = plr:WaitForChild("PlayerGui"):WaitForChild("CardinalUI"):WaitForChild("PlayerUI"):WaitForChild("HUD"):WaitForChild("LevelBar"):WaitForChild("Level")
+
+    local level = WaitForDescendant(plr, "Level")
     combat:AddToggle({
         Name = "Skill Aura",
         Default = false,
@@ -1264,6 +1289,15 @@ do
             return old(...)
         end
     end
+
+    selectSkill = combat:AddDropdown({
+        Name = "Select Skill to Use",
+        Default = settings.WeaponSkill,
+        Options = {"Weapon Class Skill"},
+        Callback = function(skill)
+            settings.WeaponSkill = skill
+        end
+    })
 
     combat:AddSlider({
         Name = "Skill Multiplier",
