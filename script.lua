@@ -310,7 +310,7 @@ if not isfile(fileName) then
     save_settings()
 end
 
-xpcall(function()
+xpcall(function() 
     HttpS:JSONDecode(readfile(fileName))
 end, save_settings)
 
@@ -1213,12 +1213,18 @@ do
             if health2 and health2.Value > 0 then
                 style = GetCombatStyle()
 
-                local skill = settings.WeaponSkill == "Weapon Class Skill" and skill_classes[style] or "Summon Pistol"
+                local skill
+                if settings.WeaponSkill == "Weapon Class Skill" then
+                    skill = skill_classes[style]
+                else
+                    skill = "Summon Pistol"
+                end
+               
                 if skill and GetCooldown(skill) then
                     pauseKillAura = true
                     UseSkill(skill)
                     
-                    task.wait(.5)
+                    task.wait(1)
                     pauseKillAura = false
                 end
             end
@@ -1275,7 +1281,7 @@ do
         return nc5(self, ...) 
     end)
     ]]
-
+    
     for i, old2 in next, skillHandlers do
         if passive[i] then
             continue
@@ -1288,7 +1294,7 @@ do
                 end
             end, ...)
             
-            return old(...)
+            return old2(...)
         end
     end
 
