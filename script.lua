@@ -127,7 +127,8 @@ local mobs_on_floor = {
         "Armageddon Eagle",
         "Sentry",
         "Watcher",
-        "Cybold"
+        "Cybold",
+        "Wa, the Curious",
     }
 }
 
@@ -1281,7 +1282,7 @@ do
         return nc5(self, ...) 
     end)
     ]]
-    
+
     for i, old2 in next, skillHandlers do
         if passive[i] then
             continue
@@ -1774,11 +1775,11 @@ do
     local combat = require(game_module.Services.Combat)
     
     local old5; old5 = hookfunc(combat.CalculateCombatStyle, function(bool, brah)
-        if checkcaller() and brah then
-            return settings.Weapon_Animation
-        end
-
         if checkcaller() then
+            if brah then
+                return settings.Weapon_Animation
+            end
+
             return old5(bool)
         end
 
