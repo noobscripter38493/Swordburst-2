@@ -1200,6 +1200,7 @@ do
         selectSkill:Refresh({"Summon Pistol"})
     end)
 
+    local waitTimes = {.33, .66, .99}
     range.Touched:Connect(function(touching)
         if settings.SkillAura and touching.Parent ~= char and touching.Name == "HumanoidRootPart" then
             local enemy = touching.Parent
@@ -1223,9 +1224,13 @@ do
                
                 if skill and GetCooldown(skill) then
                     pauseKillAura = true
-                    UseSkill(skill)
-                    
+
+                    local skillcount = settings.SkillCount
+                    local waitTime = waitTimes[skillcount]
                     task.wait(1)
+                    UseSkill(skill)
+                    task.wait(waitTime)
+
                     pauseKillAura = false
                 end
             end
