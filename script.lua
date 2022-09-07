@@ -1011,7 +1011,7 @@ do
                 Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy})
             end
             
-            task.wait(.3)
+            task.wait(.33)
         end
     end
 
