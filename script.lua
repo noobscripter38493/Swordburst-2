@@ -1,17 +1,44 @@
 -- loadfile('Scriptz/sb2 script.lua')()
 -- loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()
-if SB2Script then return end
+if getgenv().SB2Script then
+    return
+end
+
 getgenv().SB2Script = true
 
 while not game:IsLoaded() do
-    task.wait()
+    task.wait(1)
 end
+
+local Players = game:GetService("Players")
+local plr = Players.LocalPlayer
+
+local getconstants = getconstants
+local info = debug.info
+local islclosure = islclosure or function(f)
+    return info(f, "s") ~= "[C]"
+end
+local iscclosure = iscclosure or function(f)
+    return info(f, "s") == "[C]"
+end
+local getupvalue = getupvalue or debug.getupvalue
+local setupvalue = setupvalue or debug.setupvalue
+local getrawMT = getrawmetatable or debug.getmetatable or debug.getrawmetatable
+local setrawMT = setrawmetatable or debug.setmetatable or debug.getrawmetatable
+local setreadonly = setreadonly or makereadonly or makewritable
+local firetouchinterest = firetouchinterest
+local setclipboard = setclipboard or writeclipboard or write_clipboard
+local getconnections = getconnections
+local firesignal = firesignal or getconnections and function(signal, args)
+    for _, v in next, getconnections(signal) do
+        v:Fire(args)
+    end
+end
+local request = (syn and syn.request) or (fluxus and fluxus.request) or request
 
 local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or (syn and syn.queue_on_teleport)
 if teleport_execute then
     teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
-else
-    warn"failed to find execute on teleport function"
 end
 
 local mobs_on_floor = {
@@ -81,7 +108,7 @@ local mobs_on_floor = {
         "Blightmouth",
         "Snapper"
     },
-    
+
     [548878321] = { -- floor 8
         "Giant Praying Mantis",
         "Petal Knight",
@@ -136,7 +163,7 @@ local bosses_on_floor = {
     [540240728] = {}, -- arcadia -- floor 1
     [737272595] = {}, -- battle arena floor 1
     [566212942] = {}, -- floor 6 helmfrith
-    
+
     [542351431] = { -- floor 1
         "Dire Wolf",
         "Rahjin the Thief King",
@@ -164,7 +191,7 @@ local bosses_on_floor = {
         "Fire Scorpion",
         "Sa'jun the Centurian Chieftain"
     },
-    
+
     [582198062] = { -- floor 7
         "Frogazoid",
         "Smashroom"
@@ -197,41 +224,22 @@ local bosses_on_floor = {
     }
 }
 
-local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local UserInputS = game:GetService("UserInputService")
 local TweenS = game:GetService("TweenService")
 local RunS = game:GetService("RunService")
 local Rs = game:GetService("ReplicatedStorage")
-local Event = Rs.Event
-
-getgenv().getupvalue = debug.getupvalue -- not sure if other exploits that aren't synapse have an alias so this is for that i guess
-getgenv().setupvalue = debug.setupvalue
-getgenv().getinfo = debug.getinfo
-getgenv().hookfunc = hookfunction
-getgenv().setreadonly = setreadonly or makereadonly or makewritable
+local Event = Rs:WaitForChild("Event")
+local rf = Rs:WaitForChild("Function")
 
 local placeid = game.PlaceId
 
-local function copy_table(t)
-    local c = {}
-    
-    for i, v in next, t do
-        c[i] = v
-    end
-    
-    return c
-end
-
-local plr = Players.LocalPlayer
-
 for _, v in next, getconnections(plr.Idled) do
-    v:Disable() 
+    v:Disable()
 end
-
-local vim = game:GetService("VirtualInputManager")
 
 coroutine.wrap(function()
+    local vim = game:GetService("VirtualInputManager")
     while true do
         vim:SendKeyEvent(true, Enum.KeyCode.Home, false, game)
         task.wait(1)
@@ -244,9 +252,20 @@ local char = plr.Character or plr.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
 local humanoid = char:WaitForChild("Humanoid")
 
-while not getrenv()._G.CalculateCombatStyle do
-    task.wait()
+local Services
+while not Services do
+    for _, v in next, (getloadedmodules or getnilinstances)() do
+        if v.Name == "MainModule" then
+            Services = v.Services
+            break
+        end
+    end
+
+    task.wait(1)
 end
+
+local combat_module = require(Services.Combat)
+local CalculateCombatStyle = combat_module.CalculateCombatStyle
 
 local settings = { -- defaults
     Autofarm = false,
@@ -265,11 +284,9 @@ local settings = { -- defaults
     AutoEquip = false,
     InfSprint = false,
     InfJump = false,
-    RemoveDeathEffects = false,
     KA_Keybind = "R",
-    RemoveDamageNumbers = false,
     AttackPlayers = false,
-    Animation = getrenv()._G.CalculateCombatStyle(),
+    Animation = CalculateCombatStyle(),
     MaxAutofarmDistance = 5000,
     excludedMobs = {},
     Height = 30,
@@ -277,6 +294,8 @@ local settings = { -- defaults
     Autofarm_Idle_Max = 70,
     WebhookURL = "",
     skillSilentAim = false,
+    Inline = false,
+    NoClip = false,
     SkillCount = 0,
     WeaponSkill = "Weapon Class Skill"
 }
@@ -298,45 +317,44 @@ local doLoad = {
 
 local HttpS = game:GetService("HttpService")
 
-if not isfolder("SB2 Script") then
-    makefolder("SB2 Script")
-end
-
-local fileName = ("SB2 Script/%s Settings.json"):format(plr.UserId)
-local function save_settings()
-    writefile(fileName, HttpS:JSONEncode(settings))
-end
-
-if not isfile(fileName) then
-    save_settings()
-end
-
-xpcall(function() 
-    HttpS:JSONDecode(readfile(fileName))
-end, save_settings)
-
-local saved_settings = HttpS:JSONDecode(readfile(fileName))
-for i, v in next, saved_settings do
-    if not doLoad[i] then 
-        continue
+local hasfilefunctions = isfolder and makefolder and writefile and readfile
+if hasfilefunctions then
+    if not isfolder("SB2 Script") then
+        makefolder("SB2 Script")
     end
-    
-    settings[i] = v
-end
 
-coroutine.wrap(function()
-    while true do
-        save_settings()
-        task.wait(5)
+    local fileName = ("SB2 Script/%s Settings.json"):format(plr.UserId)
+    local function save_settings()
+        writefile(fileName, HttpS:JSONEncode(settings))
     end
-end)()
+
+    xpcall(function()
+        HttpS:JSONDecode(readfile(fileName))
+    end, save_settings)
+
+    local saved_settings = HttpS:JSONDecode(readfile(fileName))
+    for i, v in next, saved_settings do
+        if not doLoad[i] then
+            continue
+        end
+
+        settings[i] = v
+    end
+
+    coroutine.wrap(function()
+        while true do
+            save_settings()
+            task.wait(5)
+        end
+    end)()
+end
 
 local function WaitForDescendant(parent, descendant_name)
     local already = parent:FindFirstChild(descendant_name, true)
     if already then
-        return already 
+        return already
     end
-    
+
     local thread = coroutine.running()
     local con; con = parent.DescendantAdded:Connect(function(c)
         if c.Name == descendant_name then
@@ -344,17 +362,17 @@ local function WaitForDescendant(parent, descendant_name)
             coroutine.resume(thread, c)
         end
     end)
-    
+
     return coroutine.yield()
 end
 
 local parts = {}
 local function setNoClipParts()
     table.clear(parts)
-    
+
     for _, part in next, char:GetDescendants() do
         if part:IsA("BasePart") and part.CanCollide then
-            parts[#parts + 1] = part
+            table.insert(parts, part)
         end
     end
 
@@ -364,8 +382,10 @@ end
 setNoClipParts()
 
 local function noclip()
-    if not settings.Autofarm then return end
-    
+    if not settings.Autofarm and not settings.NoClip then
+        return
+    end
+
     for _, v in next, parts do
         v.CanCollide = false -- thx infinite yield
     end
@@ -375,7 +395,8 @@ RunS.Stepped:Connect(noclip)
 
 local playerHealth
 local maxPlayerHealth
-local function setUpPlayerHealthValues(health)
+local health = char:WaitForChild("Entity"):WaitForChild("Health")
+local function setUpPlayerHealthValues()
     local currentHealthSignal = health:GetPropertyChangedSignal("Value"):Connect(function()
         playerHealth = health.Value
     end)
@@ -393,8 +414,7 @@ local function setUpPlayerHealthValues(health)
     end)
 end
 
-local health = char:WaitForChild("Entity"):WaitForChild("Health")
-setUpPlayerHealthValues(health)
+setUpPlayerHealthValues()
 
 plr.CharacterAdded:Connect(function(new)
     char = new
@@ -402,30 +422,15 @@ plr.CharacterAdded:Connect(function(new)
     humanoid = char:WaitForChild("Humanoid")
 
     health = new:WaitForChild("Entity"):WaitForChild("Health")
-    setUpPlayerHealthValues(health)
+    setUpPlayerHealthValues()
 
     setNoClipParts()
 end)
 
-local game_module
-while true do
-    for _, v in next, getnilinstances() do
-        if v.Name == "MainModule" then
-            game_module = v
-            break
-        end
-    end 
+local Actions = require(Services.Actions)
 
-    game_module = game_module or plr.PlayerScripts.CardinalClient:FindFirstChild("MainModule")
-    if game_module then break end
-
-    task.wait(.5)
-end
-
-local actions = require(game_module.Services.Actions)
-
-local old = actions.StartSwing
-actions.StartSwing = function(...)
+local old = Actions.StartSwing
+Actions.StartSwing = function(...)
     if settings.KA then
         return
     end
@@ -433,46 +438,82 @@ actions.StartSwing = function(...)
     return old(...)
 end
 
-local rf = Rs.Function
-local inventory_module = require(game_module.Services.UI.Inventory)
-local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
-    local ncm = getnamecallmethod()
-    local args = {...}
-    
-    if self == Event and ncm == "FireServer" then
-        if settings.InfSprint and args[1] == "Actions" then 
-            if args[2][2] == "Step" then
-                return
+local inventory_module = require(Services.UI.Inventory)
+
+local walkspeed = humanoid.WalkSpeed
+local game_ws = humanoid.WalkSpeed
+
+local hookmetamethod = hookmetamethod or function(t, metamethod, hook)
+    local mt = getrawMT(t)
+    setreadonly(mt, false)
+
+    local oldfunc = mt[metamethod]
+    mt[metamethod] = hook
+
+    setreadonly(mt, true)
+    return oldfunc
+end
+
+local Profiles = Rs:WaitForChild("Profiles")
+local Profile = Profiles:WaitForChild(plr.Name)
+local Inventory = Profile:WaitForChild("Inventory")
+
+local myCframe
+if iscclosure(hookmetamethod) or setreadonly and getrawMT then
+    local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
+        local ncm = getnamecallmethod()
+        local args = {...}
+
+        if self == Event and ncm == "FireServer" then
+            if settings.InfSprint and args[1] == "Actions" then
+                if args[2][2] == "Step" then
+                    return
+                end
+            end
+
+        elseif self == rf and ncm == "InvokeServer" then
+            if not checkcaller() and args[1] == "Equipment" and getupvalue then
+                if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
+                    return
+                end
             end
         end
 
-    elseif self == rf and ncm == "InvokeServer" then
-        if not checkcaller() and args[1] == "Equipment" then
-            if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
-                return
+        return nc(self, ...)
+    end)
+
+    local index; index = hookmetamethod(game, "__index", function(self, i)
+        if self == humanoid and i == "WalkSpeed" and not checkcaller() then
+            return game_ws
+
+        elseif self == hrp and i == "CFrame" and getconstants then
+            local consts
+            local success = pcall(function()
+                consts = getconstants(3)
+            end)
+            if success and table.find(consts, "lookVector") then
+                myCframe = index(self, i)
+                return myCframe
             end
         end
-    end
 
-    return nc(self, ...)
-end)
+        return index(self, i)
+    end)
 
-local request = (syn and syn.request) or (fluxus and fluxus.request) or request
-local identify = identifyexecutor
-if typeof(request) ~= "function" then
-    local err_message = ("%s Executor is not compatible with this script. Join discord: discord.gg/eWGZ8rYpxR"):format(identify and "The " .. identify() or "Your")
-    return plr:Kick(err_message)
+    local newindex; newindex = hookmetamethod(game, "__newindex", function(self, i, v)
+        if self == humanoid and i == "WalkSpeed" and not checkcaller() and typeof(v) == "number" then
+            if settings.speed then
+                v = walkspeed
+            end
+
+            game_ws = v
+        end
+
+        return newindex(self, i, v)
+    end)
 end
 
-local response = request({
-    Url = "https://raw.githubusercontent.com/shlexware/Orion/main/source",
-    Method = "GET"
-})
-local lib = loadstring(response.Body)()
-
-while not lib do
-    task.wait()
-end
+local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
 
 local protected = gethui and gethui() or CoreGui
 local orion = protected:WaitForChild("Orion")
@@ -489,6 +530,8 @@ local function getMobHealth(mob)
     return entity and entity:FindFirstChild("Health")
 end
 
+local split = string.split
+local match = string.match
 do
     local farm_tab = window:MakeTab({
         Name = "Autofarm",
@@ -499,7 +542,7 @@ do
     farm_tab:AddParagraph("Warning", "SB2 Mods are extremely active and autofarm will likely get you banned")
     local mobs_table = {}
 
-    local function distanceCheck(enemy) 
+    local function distanceCheck(enemy)
         local enemy_hrp = enemy:FindFirstChild("HumanoidRootPart")
         if not enemy_hrp then return end
 
@@ -507,14 +550,21 @@ do
         local maxdistance = settings.MaxAutofarmDistance
         return distance < maxdistance
     end
-    
+
+    local function isChest(mob_name)
+        return match(mob_name, "Chest") and not match(mob_name, "Neon") and "Chests"
+    end
+
     local excludedMobs = settings.excludedMobs
     local function searchForMob(mobName)
         local closest_magnitude = math.huge
         local closest_mob
 
         for _, mob in next, mobs_table do
-            if excludedMobs[mob.Name] then continue end
+            local name = isChest(mob.Name)
+            if excludedMobs[name or mob.Name] then
+                continue
+            end
 
             if mob.Name == mobName and distanceCheck(mob) then
                 local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
@@ -537,14 +587,19 @@ do
     local function searchForAnyEnemy()
         local closest_magnitude = math.huge
         local closest_mob
-        
+
         for _, mob in next, mobs_table do
-            if excludedMobs[mob.Name] then continue end
+            local name = isChest(mob.Name)
+            if excludedMobs[name or mob.Name] then
+                continue
+            end
 
             if distanceCheck(mob) then
                 local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
-                if not mob_hrp then continue end
-                
+                if not mob_hrp then
+                    continue
+                end
+
                 local mob_health = getMobHealth(mob)
                 if mob_health and mob_health.Value > 0 then
                     local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
@@ -558,13 +613,16 @@ do
 
         return closest_mob
     end
-    
+
     local function searchForBoss(bossName)
         local closest_magnitude = math.huge
         local closest_boss
 
         for _, boss in next, mobs_table do
-            if excludedMobs[boss.Name] then continue end
+            local name = isChest(boss.Name)
+            if excludedMobs[name or boss.Name] then
+                continue
+            end
 
             if boss.Name == bossName and distanceCheck(boss) then
                 local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
@@ -583,13 +641,16 @@ do
 
         return closest_boss
     end
-    
+
     local function searchForAnyBoss(bosses)
         local closest_magnitude = math.huge
         local closest_boss
 
         for _, boss in next, mobs_table do
-            if excludedMobs[boss.Name] then continue end
+            local name = isChest(boss.Name)
+            if excludedMobs[name or boss.Name] then
+                continue
+            end
 
             for _, bossName in next, bosses do
                 if boss.Name == bossName and distanceCheck(boss) then
@@ -658,7 +719,7 @@ do
         shouldFloat = to == floatPart
         return to
     end
-    
+
     local IsWaitingFromHealthFloat = false
     local function playerHealthChecks()
         local minPercentage = settings.Autofarm_Idle_Min / 100
@@ -666,7 +727,7 @@ do
 
         if not IsWaitingFromHealthFloat and playerHealth < minPercentage * maxPlayerHealth then
             IsWaitingFromHealthFloat = true
-            shouldFloat = true  
+            shouldFloat = true
             return floatPart
         end
 
@@ -677,7 +738,7 @@ do
         if not IsWaitingFromHealthFloat then
             return DoStuff()
         end
-            
+
         shouldFloat = true
         return floatPart
     end
@@ -703,33 +764,30 @@ do
                 if enemy and distance < 100 and not marked[enemy] then
                     local oldto = to
                     local oldenemy = enemy
-                    
+
                     mob_health = getMobHealth(oldenemy)
-                    if not mob_health then 
+                    if not mob_health then
                         return
                     end
-                    
+
                     marked[oldenemy] = mob_health:GetPropertyChangedSignal("Value"):Connect(function()
                         t = tick()
                     end)
 
                     coroutine.wrap(function()
-                        while true do 
+                        while true do
                             local success = pcall(function()
                                 distance = (hrp.Position - oldto.Position).Magnitude
                             end)
-                            
+
                             if not success or distance > 100 then
                                 local con = marked[oldenemy]
-                                if con.Connected then
-                                    marked[oldenemy]:Disconnect()
-                                end
-
+                                con:Disconnect()
                                 marked[oldenemy] = nil
 
                                 break
                             end
-                            
+
                             task.wait(1)
                         end
                     end)()
@@ -746,13 +804,13 @@ do
                 local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
                 local tween = TweenS:Create(hrp, tween_info, {CFrame = cframe})
                 table.insert(tweens, tween)
-                
+
                 tween:Play()
                 tween.Completed:Wait()
             end)()
-            
+
             if not settings.Autofarm or not to.Parent then
-                break 
+                break
             end
         end
     end
@@ -763,6 +821,7 @@ do
                 local count = 0
                 for _, _ in next, marked do
                     count = count + 1
+                    break
                 end
 
                 if count > 0 and tick() - t > 10 then
@@ -775,31 +834,31 @@ do
             task.wait(1)
         end
     end)()
-    
+
     RunS.RenderStepped:Connect(function()
         if not settings.Autofarm then return end
         hrp.Velocity = Vector3.zero
     end)
-    
+
     local mobs = workspace.Mobs
     mobs.ChildAdded:Connect(function(mob)
         mob:WaitForChild("HumanoidRootPart")
         mobs_table[mob] = mob
     end)
-    
+
     mobs.ChildRemoved:Connect(function(mob)
         pcall(function()
             mobs_table[mob] = nil
         end)
     end)
-    
+
     for _, mob in next, mobs:GetChildren() do
         coroutine.wrap(function()
             mob:WaitForChild("HumanoidRootPart")
             mobs_table[mob] = mob
         end)()
     end
-    
+
     farm_tab:AddToggle({
         Name = "Autofarm (HIGH BAN RISK)",
         Default = false,
@@ -825,7 +884,7 @@ do
 
                     task.wait()
                 end
-                
+
                 return
             end
 
@@ -835,7 +894,7 @@ do
             end
         end
     })
-    
+
     farm_tab:AddToggle({
         Name = "Farm Only Bosses",
         Default = false,
@@ -845,7 +904,7 @@ do
     })
 
     farm_tab:AddToggle({
-        Name = "Boss Priority", 
+        Name = "Boss Priority",
         Default = false,
         Callback = function(bool)
             settings.Boss_Priority = bool
@@ -862,7 +921,7 @@ do
     })
 
     farm_tab:AddToggle({
-        Name = "Mob Priority", 
+        Name = "Mob Priority",
         Default = false,
         Callback = function(bool)
             settings.Mob_Priority = bool
@@ -871,7 +930,7 @@ do
 
     farm_tab:AddDropdown({
         Name = "Prioritized Mob",
-        Default = nil,  
+        Default = nil,
         Options = mobs_on_floor[placeid],
         Callback = function(mob)
             settings.Prioritized_Mob = mob
@@ -890,7 +949,7 @@ do
             settings.MaxAutofarmDistance = v
         end
     })
-    
+
     farm_tab:AddSlider({
         Name = "Autofarm Y Offset",
         Min = 0,
@@ -945,7 +1004,7 @@ do
 
     farm_tab:AddSlider({
         Name = "Tween Speed",
-        Min = 0, 
+        Min = 0,
         Max = 100,
         Default = settings.Tween_Speed,
         Color = Color3.new(255, 255, 255),
@@ -963,22 +1022,21 @@ do
         Icon = "",
         PremiumOnly = false
     })
-    
+
     local range = Instance.new("Part")
     range.Size = Vector3.new(25, 25, 25)
     range.CanCollide = false
     range.Transparency = 1
-    
+
     RunS.RenderStepped:Connect(function()
         range.CFrame = char:GetPivot()
     end)
-    
+
     range.Parent = workspace
 
-    local _combat = require(game_module.Services.Combat)
-    local remote_key = getupvalue(_combat.Init, 2)
+    local remote_key = getupvalue(combat_module.Init, 2)
 
-    local skillService = require(game_module.Services.Skills)
+    local skillService = require(Services.Skills)
     local UseSkill = skillService.UseSkill
     local GetCooldown = skillService.GetCooldown
 
@@ -987,11 +1045,11 @@ do
     local function killaura_function(enemy, player)
         while true do
             local i = table.find(attacking, enemy)
-            local success, shouldFarm = pcall(function()
+            local success, shouldAttack = pcall(function()
                 return enemy.Entity.Health.Value > 0
             end)
 
-            if not success or not shouldFarm or not settings.KA then
+            if not success or not shouldAttack or not settings.KA then
                 table.remove(attacking, i)
                 return
             end
@@ -999,7 +1057,7 @@ do
             local enemy_hrp = enemy:FindFirstChild("HumanoidRootPart")
             if not enemy_hrp or enemy:FindFirstChild("Immortal") or (hrp.Position - enemy_hrp.Position).Magnitude > settings.KA_Range then
                 table.remove(attacking, i)
-                break 
+                break
             end
 
             if player and not settings.AttackPlayers then
@@ -1010,47 +1068,34 @@ do
             if not pauseKillAura then
                 Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy})
             end
-            
+
             task.wait(.33)
         end
     end
 
-    local combat_style
-    local animations
-    for _, v in next, getgc(true) do
-        if typeof(v) == "table" then
-            local Initanis = rawget(v, "InitAnimations")
-            if Initanis then
-                local o = copy_table(v)
-                setrawmetatable(v, {
-                    __index = o, 
-                    __newindex = function(self, i2, v2)
-                        rawset(o, i2, v2)
+    local oldActions = table.clone(Actions)
+    local animations = oldActions.animations
+    setmetatable(Actions, {
+        __index = oldActions,
+        __newindex = function(self, i, v)
+            oldActions[i] = v
 
-                        if i2 == "animations" then
-                            animations = v2
-                        end
-                    end
-                })
-                
-                animations = o.animations
-                table.clear(v)
-            end
-            
-            local calculate = rawget(v, "CalculateCombatStyle")
-            if calculate then
-                combat_style = calculate
+            if i == "animations" then
+                animations = v
             end
         end
-        
-        if combat_style and animations then break end
-    end
+    })
+
+    table.clear(Actions)
 
     coroutine.wrap(function()
         while true do
-            if #attacking == 0 then task.wait(.1) continue end
-            
-            local animation_style = animations[combat_style(nil, true)]
+            if #attacking == 0 then
+                task.wait(1)
+                continue
+            end
+
+            local animation_style = animations[CalculateCombatStyle(nil, true)]
             for _, v in next, animation_style do
                 if v.Name:find("Swing") then
                     local length = v.Length
@@ -1063,24 +1108,24 @@ do
         end
     end)()
 
-    range.Touched:Connect(function(touching)  
-        if not settings.KA or touching.Parent == char or touching.Name ~= "HumanoidRootPart" then 
+    range.Touched:Connect(function(touching)
+        if not settings.KA or touching.Parent == char or touching.Name ~= "HumanoidRootPart" then
             return
         end
-        
+
         local enemy = touching.Parent
-        if not table.find(attacking, enemy) then 
+        if not table.find(attacking, enemy) then
             local mob = table.find(mobs_on_floor[placeid], enemy.Name)
             local boss = table.find(bosses_on_floor[placeid], enemy.Name)
-            local chest = enemy.Name:match("Chest")
+            local chest = match(enemy.Name, "Chest")
 
             if mob or boss or chest then
-                attacking[#attacking + 1] = enemy
+                table.insert(attacking, enemy)
                 killaura_function(enemy)
 
             elseif settings.AttackPlayers then
-                attacking[#attacking + 1] = enemy
-                killaura_function(enemy, true)  
+                table.insert(attacking, enemy)
+                killaura_function(enemy, true)
             end
         end
     end)
@@ -1101,7 +1146,7 @@ do
             settings.AttackPlayers = bool
         end
     })
-    
+
     combat:AddSlider({
         Name = "Kill Aura Range",
         Min = 0,
@@ -1115,79 +1160,69 @@ do
         end
     })
 
-    local function getkabutton()
+    if firesignal then
+        local function getkabutton()
+            for _, v in next, orion:GetDescendants() do
+                if v:IsA("TextLabel") and v.Text == "Kill Aura" then
+                    return v.Parent:FindFirstChild("TextButton")
+                end
+            end
+        end
+
+        local ka_button = getkabutton()
+        local ka_bind = combat:AddBind({
+            Name = "Kill Aura Keybind",
+            Default = Enum.KeyCode[settings.KA_Keybind],
+            Hold = false,
+            Callback = function()
+                if ka_button then
+                    firesignal(ka_button.MouseButton1Down)
+                    firesignal(ka_button.MouseButton1Up)
+                else
+                    ka_button = getkabutton()
+
+                    firesignal(ka_button.MouseButton1Down)
+                    firesignal(ka_button.MouseButton1Up)
+                end
+            end
+        })
+
+        local inputbegan
         for _, v in next, orion:GetDescendants() do
-            if v:IsA("TextLabel") and v.Text == "Kill Aura" then
-                local o = v.Parent:FindFirstChild("TextButton")
-                if o then
-                    return o
-                end
-
-                lib:MakeNotification({
-                    Name = "KA Keybind Error",
-                    Content = "Failed to find button",
-                    Image = "",
-                    Time = 5
-                })
-            end
-        end
-    end
-    
-    local ka_button = getkabutton()
-    local ka_bind = combat:AddBind({
-        Name = "Kill Aura Keybind",
-        Default = Enum.KeyCode[settings.KA_Keybind],
-        Hold = false,
-        Callback = function()
-            if ka_button then
-                firesignal(ka_button.MouseButton1Down)
-                firesignal(ka_button.MouseButton1Up) 
-            else
-                ka_button = getkabutton()
-                if not ka_button then return end
-
-                firesignal(ka_button.MouseButton1Down)
-                firesignal(ka_button.MouseButton1Up)
-            end
-        end
-    })
-    
-    local inputbegan
-    for _, v in next, orion:GetDescendants() do
-        if v:IsA("TextLabel") and v.Text == "Kill Aura Keybind" then
-            v.Parent.TextButton.MouseButton1Down:Connect(function()
-                if inputbegan and inputbegan.Connected then
-                    return
-                end
-                
-                inputbegan = UserInputS.InputBegan:Connect(function(inputobj)
-                    if inputobj.UserInputType == Enum.UserInputType.Keyboard then
-                        inputbegan:Disconnect()
-                        
-                        local key = inputobj.KeyCode
-                        local key2 = tostring(key)
-                        settings.KA_Keybind = key2:split("Code.")[2]
-                        task.wait(.5)
-                        ka_bind:Set(key)
+            if v:IsA("TextLabel") and v.Text == "Kill Aura Keybind" then
+                v.Parent.TextButton.MouseButton1Down:Connect(function()
+                    if inputbegan and inputbegan.Connected then
+                        return
                     end
+
+                    inputbegan = UserInputS.InputBegan:Connect(function(inputobj)
+                        if inputobj.UserInputType == Enum.UserInputType.Keyboard then
+                            inputbegan:Disconnect()
+
+                            local key = inputobj.KeyCode
+                            local key2 = tostring(key)
+                            settings.KA_Keybind = split(key2, "Code.")[2]
+                            task.wait(.5)
+                            ka_bind:Set(key)
+                        end
+                    end)
                 end)
-            end)
-            
-            break
+
+                break
+            end
         end
     end
-    
-    local skillsData = game.ReplicatedStorage.Database.Skills
+
+    local skillsData = Rs.Database.Skills
     local skill_classes = {}
-    for i, v in next, skillsData:GetChildren() do
+    for _, v in next, skillsData:GetChildren() do
         if v:FindFirstChild("Class") then
             skill_classes[v.Class.Value] = v.Name
         end
     end
 
-    local GetCombatStyle = getrenv()._G.CalculateCombatStyle
     local style
-    local hotkeys = Rs.Profiles[plr.Name].Hotkeys
+    local hotkeys = Profile.Hotkeys
 
     local selectSkill
     task.spawn(function()
@@ -1213,7 +1248,7 @@ do
 
             local health2 = getMobHealth(enemy)
             if health2 and health2.Value > 0 then
-                style = GetCombatStyle()
+                style = CalculateCombatStyle()
 
                 local skill
                 if settings.WeaponSkill == "Weapon Class Skill" then
@@ -1221,7 +1256,7 @@ do
                 else
                     skill = "Summon Pistol"
                 end
-               
+
                 if skill and GetCooldown(skill) then
                     pauseKillAura = true
 
@@ -1242,7 +1277,7 @@ do
         Name = "Skill Aura",
         Default = false,
         Callback = function(bool)
-            local n = string.match(level.Text, "%d+")
+            local n = match(level.Text, "%d+")
             if tonumber(n) < 22 then
                 return lib:MakeNotification({
                     Name = "Your Level is Not High Enough",
@@ -1251,56 +1286,61 @@ do
                     Time = 5
                 })
             end
-            
+
             settings.SkillAura = bool
         end
     })
 
+    local mobs = workspace.Mobs
+    local function GetClosestMob()
+        local highest_health = 0
+        local closest_magnitude = math.huge
+        local closest_hrp
+
+        for _, mob in next, mobs:GetChildren() do
+            local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
+            if not mob_hrp then
+                continue
+            end
+
+            local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
+            if magnitude < closest_magnitude then
+                closest_magnitude = magnitude
+                closest_hrp = mob_hrp
+            end
+        end
+
+        if closest_magnitude < 100 then
+            return closest_hrp
+        end
+    end
+
     local passive = {
         Heal = true,
         ["Summon Tree"] = true,
-        ["Summon Pistol"] = true,
         Block = true,
         Roll = true
     }
 
-    local skillHandlers
-    for _, v in next, getgc(true) do
-        if typeof(v) == "table" and rawget(v, "skillHandlers") then
-            skillHandlers = v.skillHandlers
-            break
-        end
-    end
-
-    --[[
-    local nc5; nc5 = hookmetamethod(game, "__namecall", function(self, ...)
-        if self == Event and getnamecallmethod() == "FireServer" then
-            local args = {...}
-            local t = args[2]
-            if args[1] == "Skills" and t[1] == "UseSkill" and t[2] == "Summon Pistol" then
-                local rand = math.random() / 10000
-                t[3].Direction = t[3].Direction + Vector3.new(rand, rand, rand)
-                return  nc5(self, unpack(args))
-            end
-        end
-        
-        return nc5(self, ...) 
-    end)
-    ]]
-
+    local skillHandlers = require(Services.Skills).skillHandlers
     for i, old2 in next, skillHandlers do
         if passive[i] then
             continue
         end
 
-        skillHandlers[i] = function(...)
-            task.spawn(function(...)
-                for _ = 1, settings.SkillCount do
-                    task.spawn(old2, ...)
-                end
-            end, ...)
-            
-            return old2(...)
+        skillHandlers[i] = function()
+            local usecount = 1
+            local skillcount = settings.SkillCount
+            for _ = 1, skillcount do
+                task.spawn(function()
+                    old2()
+                    usecount = usecount + 1
+                end)
+            end
+
+            while usecount ~= skillcount do
+                task.wait()
+            end
         end
     end
 
@@ -1315,7 +1355,7 @@ do
 
     combat:AddSlider({
         Name = "Skill Multiplier",
-        Min = 0,
+        Min = 1,
         Max = 3,
         Default = settings.SkillCount,
         Color = Color3.new(255, 255, 255),
@@ -1326,107 +1366,114 @@ do
         end
     })
 
-    combat:AddToggle({
-        Name = "Skill Silent Aim",
-        Default = false,
-        Callback = function(bool)
-            settings.skillSilentAim = bool
-        end
-    })
+    if getconstants and getrawMT and setreadonly then
+        combat:AddToggle({
+            Name = "Skill Silent Aim",
+            Default = false,
+            Callback = function(bool)
+                settings.skillSilentAim = bool
+            end
+        })
 
-    local mobs = workspace.Mobs
-    local function GetClosestMob()
-        local closest_magnitude = math.huge
-        local closest_hrp
-        
-        for _, mob in next, mobs:GetChildren() do
-            local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
-            if not mob_hrp then 
-                continue 
+        local mt = getrawMT(CFrame.new())
+        setreadonly(mt, false)
+
+        local old3 = mt.__index
+        mt.__index = function(self, i)
+            if settings.skillSilentAim and rawequal(self, myCframe) and i == "lookVector" then
+                local mob = GetClosestMob()
+                if mob then
+                    local cf = CFrame.new(hrp.Position, mob.Position)
+                    return old3(cf, "lookVector")
+                end
             end
 
-            local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
-            if magnitude < closest_magnitude then
-                closest_hrp = mob_hrp
-                closest_magnitude = magnitude
-            end
+            return old3(self, i)
         end
-        
-        return closest_hrp
+
+        setreadonly(mt, true)
     end
-
-    local myCframe
-    local index; index = hookmetamethod(game, "__index", function(self, i)
-        if self == hrp and i == "CFrame" then
-            local consts
-            local success = pcall(function()
-                consts = getconstants(3)
-            end)
-            if success and table.find(consts, "lookVector") then
-                myCframe = index(self, i)
-                return myCframe
-            end
-        end
-
-        return index(self, i)
-    end)
-
-    local mt = getrawmetatable(CFrame.new())
-    setreadonly(mt, false)
-
-    local old = mt.__index
-    mt.__index = newcclosure(function(self, i)
-        if settings.skillSilentAim and rawequal(self, myCframe) and i == "lookVector" then
-            local mob = GetClosestMob()
-            if mob then
-                local cf = CFrame.new(hrp.Position, mob.Position)
-                return old(cf, "lookVector")
-            end
-        end
-
-        return old(self, i)
-    end)
-
-    setreadonly(mt, true)
 end
 
 local dismantle = {}
 local rates = setmetatable({Legendary = .05}, {
     __index = function(self, i)
         self[i] = .04
-        return .04 
+        return .04
     end
 })
 
-do 
+local ui_module = Services.UI
+local dismantler_module = require(ui_module.Dismantle)
+local inv_utility = getupvalue(dismantler_module.Init, 4)
+local GetItemData = inv_utility.GetItemData
+
+local upgrade_amount = {
+    Legendary = 20,
+    Rare = 15,
+    Uncommon = 10,
+    Common = 10
+}
+
+local database = Rs.Database
+local ItemDatas = setmetatable({}, {
+    __newindex = function(self, i, v)
+        local ItemData = setmetatable(GetItemData(v), {
+            __index = function(self2, i2)
+                if not request or rawget(self2, "finding") then
+                    return
+                end
+                self2.finding = true
+
+                task.spawn(function()
+                    local response2 = request({
+                        Url = "https://www.roblox.com/library/" .. match(self2.icon, "%d+"),
+                        Method = "GET"
+                    })
+
+                    local s = split(response2.Body, "https://tr.rbxcdn.com/")[2]
+                    local more = split(s, "'")
+                    local url = "https://tr.rbxcdn.com/%s" .. more[1]
+                    self2[i2] = url
+                end)
+            end
+        })
+
+        if ItemData.Type == "Weapon" or ItemData.Type == "Clothing" then
+            local stats = ItemData.stats
+            local base
+            for _, v2 in next, stats do
+                if v2[1] == "Damage" or v2[1] == "Defense" then
+                    base = v2[2]
+                    ItemData.base = base
+                    break
+                end
+            end
+
+            local rarity = ItemData.rarity
+            local upgrades = upgrade_amount[rarity]
+            ItemData.potential = math.floor(base + (base * rates[rarity] * upgrades))
+        end
+
+        rawset(self, i, ItemData)
+    end
+})
+
+for _, v in next, database.Items:GetChildren() do
+    ItemDatas[v.Name] = v
+end
+
+local function getUpgrade(item)
+    local upgrade = item:FindFirstChild("Upgrade")
+    return upgrade and upgrade.Value or 0
+end
+
+do
     local farm_tab2 = window:MakeTab({
         Name = "Farm Tab (util)",
         Icon = "",
         PremiumOnly = false
     })
-
-    local getStats
-    local getUpgrade
-    local function getRarity(item)
-        local rarity = item:FindFirstChild("Rarity")
-        return rarity and rarity.Value
-    end
-
-    for _, v in next, getgc() do
-        if typeof(v) == "function" and islclosure(v) then
-            local info = getinfo(v)
-            
-            if info.name == "getStats" then
-                getStats = v
-            end
-            
-            if info.name == "getUpgrade" then
-                getUpgrade = v 
-            end
-            
-            if getStats and getUpgrade then break end
-        end     
-    end
 
     --[[
     formulas
@@ -1435,18 +1482,10 @@ do
     legends: math.floor(base + (base * 0.05 * upgrade_count))
 
     ]]
-    
-    local ui_module = game_module.Services.UI
-    local dismantler_module = require(ui_module.Dismantle)
-    local inv_utility = getupvalue(dismantler_module.Init, 4)
 
-    local profiles = Rs.Profiles
-    local inventory = profiles[plr.Name].Inventory
-    
-    local data = Rs.Database.Items
     local function AutoEquip()
-        if not settings.AutoEquip then 
-            return 
+        if not settings.AutoEquip then
+            return
         end
 
         task.wait(1)
@@ -1456,28 +1495,19 @@ do
         local highest_weapon
         local highest_armor
 
-        for _, item in next, inventory:GetChildren() do
-            local item_data = inv_utility.GetItemData(item)
+        for _, item in next, Inventory:GetChildren() do
+            local ItemData = ItemDatas[item.Name]
 
-            local class = item_data.Type
-            if class ~= "Weapon" and class ~= "Clothing" then 
-                continue 
+            local class = ItemData.Type
+            if class ~= "Weapon" and class ~= "Clothing" then
+                continue
             end
-            
-            local v2 = data[item.Name]
-            local stats = getStats(v2)
-            local base
-            for _, v3 in next, stats do
-                if v3[1] == "Damage" or v3[1] == "Defense" then
-                    base = tonumber(v3[2])
-                    break
-                end
-            end
-            
+
+            local base = ItemData.base
             local upgrades = getUpgrade(item)
-            local rarity = getRarity(v2)
+            local rarity = ItemData.rarity
             local stat = math.floor(base + (base * rates[rarity] * upgrades))
-            
+
             if class == "Weapon" then
                 if stat > highest_damage then
                     highest_damage = stat
@@ -1491,7 +1521,7 @@ do
                 end
             end
         end
-        
+
         if highest_weapon then
             rf:InvokeServer("Equipment", {"EquipWeapon", highest_weapon, "Right"})
         end
@@ -1501,9 +1531,9 @@ do
         end
     end
 
-    inventory.ChildAdded:Connect(AutoEquip)
+    Inventory.ChildAdded:Connect(AutoEquip)
     farm_tab2:AddToggle({
-        Name = "Auto Equip Best Weapon/Armor",
+        Name = "Auto Equip Best Equipment",
         Default = false,
         Callback = function(bool)
             settings.AutoEquip = bool
@@ -1513,13 +1543,14 @@ do
 
     local function AutoDismantle(item)
         task.wait(1)
-        
-        local itemdata = inv_utility.GetItemData(item)
-        local class = rawget(itemdata, "Type")
-        if class ~= "Weapon" and class ~= "Clothing" then return end
-        
-        local rarity = getRarity(data[item.Name])
-            
+
+        local ItemData = ItemDatas[item.Name]
+        local class = ItemData.Type
+        if class ~= "Weapon" and class ~= "Clothing" then
+            return
+        end
+
+        local rarity = ItemData.rarity
         if dismantle[rarity] then
             Event:FireServer("Equipment", {"Dismantle", {item}})
         end
@@ -1539,29 +1570,30 @@ do
         })
     end
 
-    inventory.ChildAdded:Connect(AutoDismantle)
+    Inventory.ChildAdded:Connect(AutoDismantle)
 end
 
 do
     local farm_tab3 = window:MakeTab({
-        Name = "Autofarm Exclusion",
+        Name = "Farm Exclusion",
         Icon = "",
         PremiumOnly = false
     })
 
-    local all_on_floor = {}
-    for i, v in next, bosses_on_floor[placeid] do
-        all_on_floor[i] = v
+    local all_on_floor = {"Chests"}
+    for _, v in next, bosses_on_floor[placeid] do
+        table.insert(all_on_floor, v)
     end
 
     for _, v in next, mobs_on_floor[placeid] do
-        all_on_floor[#all_on_floor + 1] = v
+        table.insert(all_on_floor, v)
     end
 
     for _, mob_name in next, all_on_floor do
+        local default = mob_name == "Chests"
         farm_tab3:AddToggle({
             Name = mob_name,
-            Default = false,
+            Default = default,
             Callback = function(bool)
                 local excludedMobs = settings.excludedMobs
                 excludedMobs[mob_name] = bool
@@ -1571,164 +1603,166 @@ do
 end
 
 do
-    local teleports_tab = window:MakeTab({
-        Name = 'Teleports',
-        Icon = "",
-        PremiumOnly = false
-    })
+    if firetouchinterest then
+        local teleports_tab = window:MakeTab({
+            Name = 'Teleports',
+            Icon = "",
+            PremiumOnly = false
+        })
 
-    local function GetClosestPartFromVector(v3)
-        local closest_magnitude = math.huge
-        local closest_part
+        local function GetClosestPartFromVector(v3)
+            local closest_magnitude = math.huge
+            local closest_part
 
-        for _, v in next, workspace:GetDescendants() do
-            if v.Parent.Name == "TeleportSystem" and v.Name == "Part" then
-                local distance = (v3 - v.Position).Magnitude
-                if distance < closest_magnitude then
-                    closest_magnitude = distance
-                    closest_part = v
+            for _, v in next, workspace:GetDescendants() do
+                if v.Parent.Name == "TeleportSystem" and v.Name == "Part" then
+                    local distance = (v3 - v.Position).Magnitude
+                    if distance < closest_magnitude then
+                        closest_magnitude = distance
+                        closest_part = v
+                    end
                 end
             end
+
+            return closest_part
         end
 
-        return closest_part
-    end
+        local function makespecialtpbutton(name, pos)
+            task.spawn(function()
+                plr:RequestStreamAroundAsync(pos)
+                task.wait(1)
 
-    local function makespecialtpbutton(name, pos)
-        task.spawn(function()
-            plr:RequestStreamAroundAsync(pos)
-            task.wait(1)
+                local totouch = GetClosestPartFromVector(pos)
+                teleports_tab:AddButton({
+                    Name = name,
+                    Callback = function()
+                        firetouchinterest(hrp, totouch, 0)
+                        task.wait(.1)
+                        firetouchinterest(hrp, totouch, 1)
+                    end
+                })
+            end)
+        end
 
-            local totouch = GetClosestPartFromVector(pos)
+        local function makeTPbutton(name, part)
             teleports_tab:AddButton({
                 Name = name,
                 Callback = function()
-                    firetouchinterest(hrp, totouch, 0)
+                    firetouchinterest(hrp, part, 0)
                     task.wait(.1)
-                    firetouchinterest(hrp, totouch, 1)
+                    firetouchinterest(hrp, part, 1)
                 end
             })
-        end)
-    end
+        end
 
-    local function makeTPbutton(name, part)
-        teleports_tab:AddButton({
-            Name = name,
-            Callback = function()
-                firetouchinterest(hrp, part, 0)
-                task.wait(.1)
-                firetouchinterest(hrp, part, 1)
+        local function loop_workspace(entrance, boss, miniboss, shop)
+            local totouch1 = entrance and GetClosestPartFromVector(entrance)
+            local totouch2 = boss and GetClosestPartFromVector(boss)
+            local totouch3 = miniboss and GetClosestPartFromVector(miniboss)
+            local totouch4 = shop and GetClosestPartFromVector(shop)
+
+            if totouch1 then
+                makeTPbutton("Dungeon Entrance", totouch1)
             end
-        })
-    end
-    
-    local function loop_workspace(entrance, boss, miniboss, shop)
-        local totouch1 = entrance and GetClosestPartFromVector(entrance)
-        local totouch2 = boss and GetClosestPartFromVector(boss)
-        local totouch3 = miniboss and GetClosestPartFromVector(miniboss)
-        local totouch4 = shop and GetClosestPartFromVector(shop)
 
-        if totouch1 then
-            makeTPbutton("Dungeon Entrance", totouch1)
+            if totouch2 then
+                makeTPbutton("Boss Room", totouch2)
+            end
+
+            if totouch3 then
+                makeTPbutton("Mini Boss", totouch3)
+            end
+
+            if totouch4 then -- floor 10
+                makeTPbutton("Shop", totouch4)
+            end
         end
 
-        if totouch2 then
-            makeTPbutton("Boss Room", totouch2)
+        if placeid == 542351431 then -- floor 1
+            local dungeon_entrance = Vector3.new(-1181, 70, 308)
+            local miniboss = Vector3.new(139, 225, -132)
+            local boss = Vector3.new(-2942, -125, 336)
+
+            loop_workspace(dungeon_entrance, boss, miniboss)
         end
 
-        if totouch3 then
-            makeTPbutton("Mini Boss", totouch3)
+        if placeid == 548231754 then -- floor 2
+            local dungeon_entrance = Vector3.new(-2185, 161, -2321)
+            local boss = Vector3.new(-2943, 201, -9805)
+
+            loop_workspace(dungeon_entrance, boss)
         end
 
-        if totouch4 then -- floor 10
-            makeTPbutton("Shop", totouch4)
+        if placeid == 555980327 then -- floor 3
+            local dungeon_entrance = Vector3.new(1179, 6737, 1675)
+            local boss = Vector3.new(448, 4279, -385)
+
+            makespecialtpbutton("Boss Room", boss)
+            loop_workspace(dungeon_entrance)
         end
-    end
 
-    if placeid == 542351431 then -- floor 1
-        local dungeon_entrance = Vector3.new(-1181, 70, 308)
-        local miniboss = Vector3.new(139, 225, -132)
-        local boss = Vector3.new(-2942, -125, 336)
+        if placeid == 572487908 then -- floor 4
+            local dungeon_entrance = Vector3.new(-1946, 5169, -1415)
+            local boss = Vector3.new(-2319, 2280, -515)
 
-        loop_workspace(dungeon_entrance, boss, miniboss)
-    end
+            loop_workspace(dungeon_entrance, boss)
+        end
 
-    if placeid == 548231754 then -- floor 2
-        local dungeon_entrance = Vector3.new(-2185, 161, -2321)
-        local boss = Vector3.new(-2943, 201, -9805)
-        
-        loop_workspace(dungeon_entrance, boss)
-    end
-    
-    if placeid == 555980327 then -- floor 3
-        local dungeon_entrance = Vector3.new(1179, 6737, 1675)
-        local boss = Vector3.new(448, 4279, -385)
+        if placeid == 580239979 then -- floor 5
+            local dungeon_entrance = Vector3.new(-1562, 4040, -868)
+            local boss = Vector3.new(2189, 1308, -122)
 
-        makespecialtpbutton("Boss Room", boss)
-        loop_workspace(dungeon_entrance)
-    end
-    
-    if placeid == 572487908 then -- floor 4
-        local dungeon_entrance = Vector3.new(-1946, 5169, -1415)
-        local boss = Vector3.new(-2319, 2280, -515)
-        
-        loop_workspace(dungeon_entrance, boss)
-    end
-    
-    if placeid == 580239979 then -- floor 5
-        local dungeon_entrance = Vector3.new(-1562, 4040, -868)
-        local boss = Vector3.new(2189, 1308, -122)
-        
-        loop_workspace(dungeon_entrance, boss)
-    end
+            loop_workspace(dungeon_entrance, boss)
+        end
 
-    if placeid == 582198062 then -- floor 7
-        local dungeon_entrance = Vector3.new(1219, 1083, -274)
-        local boss = Vector3.new(3347, 800, -804)
+        if placeid == 582198062 then -- floor 7
+            local dungeon_entrance = Vector3.new(1219, 1083, -274)
+            local boss = Vector3.new(3347, 800, -804)
 
-        makespecialtpbutton("Dungeon Entrance", dungeon_entrance)
-        makespecialtpbutton("Boss", boss)
-    end
-    
-    if placeid == 548878321 then -- floor 8
-        local dungeon_entrance = Vector3.new(-6679, 7801, 10006)
-        local boss = Vector3.new(1848, 4110, 7723)
-        local miniboss = Vector3.new(-808, 3174, -941)
-        
-        loop_workspace(dungeon_entrance, boss, miniboss)
-    end
-    
-    if placeid == 573267292 then -- floor 9
-        local dungeon_entrance = Vector3.new(878, 3452, -11139)
-        local boss = Vector3.new(12241, 461, -3656)
-        local miniboss_gargoyle = Vector3.new(-256, 3077, -4605)
-        local miniboss_poly = Vector3.new(1973, 2986, -4487)
-        
-        loop_workspace(dungeon_entrance, boss, miniboss_gargoyle)
-        loop_workspace(nil, nil, miniboss_poly)
-    end
-    
-    if placeid == 2659143505 then -- floor 10
-        local miniboss = Vector3.new(-895, 467, 6505)
-        local boss = Vector3.new(45, 1003, 25432)
-        local dungeon_entrance = Vector3.new(-606, 697, 9989)
-        local shop = Vector3.new(-252, 504, 6163)
-        
-        loop_workspace(dungeon_entrance, boss, miniboss, shop)
-    end
-    
-    if placeid == 5287433115 then -- floor 11
-        local DaRaKa = Vector3.new(4801, 1646, 2083)
-        local Za = Vector3.new(4001, 421, -3794)
-        local duality_reaper = Vector3.new(4763, 501, -4344)
-        local neon_chest = Vector3.new(5204, 2294, 5778)
-        local sauraus = Vector3.new(5333, 3230, 5589)
+            makespecialtpbutton("Dungeon Entrance", dungeon_entrance)
+            makespecialtpbutton("Boss", boss)
+        end
 
-        makespecialtpbutton("Duality Reaper", duality_reaper)
-        makespecialtpbutton("Da, Ra, Ka", DaRaKa)
-        makespecialtpbutton("Za", Za)
-        makespecialtpbutton("Neon Chest", neon_chest)
-        makespecialtpbutton("Boss Room", sauraus)
+        if placeid == 548878321 then -- floor 8
+            local dungeon_entrance = Vector3.new(-6679, 7801, 10006)
+            local boss = Vector3.new(1848, 4110, 7723)
+            local miniboss = Vector3.new(-808, 3174, -941)
+
+            loop_workspace(dungeon_entrance, boss, miniboss)
+        end
+
+        if placeid == 573267292 then -- floor 9
+            local dungeon_entrance = Vector3.new(878, 3452, -11139)
+            local boss = Vector3.new(12241, 461, -3656)
+            local miniboss_gargoyle = Vector3.new(-256, 3077, -4605)
+            local miniboss_poly = Vector3.new(1973, 2986, -4487)
+
+            loop_workspace(dungeon_entrance, boss, miniboss_gargoyle)
+            loop_workspace(nil, nil, miniboss_poly)
+        end
+
+        if placeid == 2659143505 then -- floor 10
+            local miniboss = Vector3.new(-895, 467, 6505)
+            local boss = Vector3.new(45, 1003, 25432)
+            local dungeon_entrance = Vector3.new(-606, 697, 9989)
+            local shop = Vector3.new(-252, 504, 6163)
+
+            loop_workspace(dungeon_entrance, boss, miniboss, shop)
+        end
+
+        if placeid == 5287433115 then -- floor 11
+            local DaRaKa = Vector3.new(4801, 1646, 2083)
+            local Za = Vector3.new(4001, 421, -3794)
+            local duality_reaper = Vector3.new(4763, 501, -4344)
+            local neon_chest = Vector3.new(5204, 2294, 5778)
+            local sauraus = Vector3.new(5333, 3230, 5589)
+
+            makespecialtpbutton("Duality Reaper", duality_reaper)
+            makespecialtpbutton("Da, Ra, Ka", DaRaKa)
+            makespecialtpbutton("Za", Za)
+            makespecialtpbutton("Neon Chest", neon_chest)
+            makespecialtpbutton("Boss Room", sauraus)
+        end
     end
 end
 
@@ -1738,9 +1772,8 @@ do
         Icon = "",
         PremiumOnly = false
     })
-    
-    local profiles = Rs.Profiles
-    local animSettings = profiles[plr.Name].AnimSettings
+
+    local animSettings = Profile.AnimSettings
 
     local animations = Rs.Database.Animations
     local ANIMATIONS = {}
@@ -1748,16 +1781,16 @@ do
     for _, v in next, animations:GetChildren() do
         if not table.find(blacklisted_animations, v.Name) then
             table.insert(ANIMATIONS, v.Name)
-            
+
             if not animSettings:FindFirstChild(v.Name) then
                 local string_value = Instance.new("StringValue")
-                
+
                 string_value.Name = v.Name
                 string_value.Value = ""
                 string_value.Parent = animSettings
             end
         end
-    end 
+    end
 
     local shouldAnimate
     Character_tab:AddToggle({
@@ -1777,39 +1810,40 @@ do
         end
     })
 
-    local combat = require(game_module.Services.Combat)
-    
-    local old5; old5 = hookfunc(combat.CalculateCombatStyle, function(bool, brah)
+    combat_module.CalculateCombatStyle = function(bool, brah)
         if checkcaller() then
             if brah then
                 return settings.Weapon_Animation
             end
 
-            return old5(bool)
+            return CalculateCombatStyle(bool)
         end
 
         if not shouldAnimate or bool == false then
-            return old5(bool)    
+            return CalculateCombatStyle(bool)
         end
-        
+
         return settings.Weapon_Animation
-    end)
+    end
 
     local invisibility = false
     local function goinvisible(new)
-        if not invisibility then return end
+        if not invisibility then
+            return
+        end
+
         local old_root = new:WaitForChild("LowerTorso"):WaitForChild("Root")
         local new_root = old_root:Clone()
 
         new_root.Parent = old_root.Parent
         old_root:Destroy()
     end
-    
+
     plr.CharacterAdded:Connect(goinvisible)
 
     Character_tab:AddToggle({
-        Name = "Invisibility (only u can see u)", 
-        Default = false, 
+        Name = "Invisibility (only u can see u)",
+        Default = false,
         Callback = function(bool)
             invisibility = bool
             goinvisible(char)
@@ -1825,15 +1859,24 @@ do
     })
 
     UserInputS.InputBegan:Connect(function(key, processed)
-        if processed then return end
-        if not settings.InfJump then return end
-        
+        if processed or not settings.InfJump then
+            return
+        end
+
         if key.KeyCode == Enum.KeyCode.Space then
-            pcall(function() -- dont know if this can error // dont want to find out 
+            pcall(function()
                 humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
             end)
         end
     end)
+
+    Character_tab:AddToggle({
+        Name = "No Clip",
+        Default = false,
+        Callback = function(bool)
+            settings.NoClip = bool
+        end
+    })
 
     Character_tab:AddToggle({
         Name = "Infinite Sprint",
@@ -1843,36 +1886,14 @@ do
         end
     })
 
-    local walkspeed = humanoid.WalkSpeed
-    local game_ws = humanoid.WalkSpeed
-    local index_WS; index_WS = hookmetamethod(game, "__index", function(self, i)
-        if self == humanoid and i == "WalkSpeed" and not checkcaller() then
-            return game_ws
-        end
-        
-        return index_WS(self, i) 
-    end)
-    
-    local newindex_WS; newindex_WS = hookmetamethod(game, "__newindex", function(self, i, v)
-        if self == humanoid and i == "WalkSpeed" and not checkcaller() then 
-            if settings.speed then 
-                v = walkspeed
-            end
-
-            game_ws = v
-        end
-        
-        return newindex_WS(self, i, v)
-    end)
-
     Character_tab:AddToggle({
         Name = "WalkSpeed Toggle",
         Default = false,
         Callback = function(bool)
             settings.speed = bool
-            
+
             if bool then
-                humanoid.WalkSpeed = walkspeed 
+                humanoid.WalkSpeed = walkspeed
             else
                 humanoid.WalkSpeed = game_ws
             end
@@ -1897,40 +1918,25 @@ do
     })
 end
 
-do  
+do
     local Smithing = window:MakeTab({
         Name = "Smithing",
         Icon = "",
         PremiumOnly = false
     })
 
-    local isEquipped
-    for _, v in next, getgc() do
-        if typeof(v) == "function" and islclosure(v) then
-            if getinfo(v).name == "isEquipped" then
-                isEquipped = v
-                break
-            end
-        end
-    end
-
-    local ui_module = game_module.Services.UI
-    local dismantler_module = require(ui_module.Dismantle)
-    local inv_utility = getupvalue(dismantler_module.Init, 4)
-
-    local inventory = Rs.Profiles[plr.Name].Inventory
+    local isEquipped = getfenv(GetItemData).isEquipped
     local function Dismantle_Rarity(rarity)
         local items = {}
-        for _, item in next, inventory:GetChildren() do
-            local data = inv_utility.GetItemData(item)
-            if isEquipped(item) then continue end
+        for _, item in next, Inventory:GetChildren() do
+            local ItemData = ItemDatas[item.Name]
+            if isEquipped(item) then
+                continue
+            end
 
-            if data.rarity == rarity then
-                for _, v2 in next, data do
-                    if v2 == "Weapon" or v2 == "Armor" then
-                        items[#items + 1] = item
-                        break
-                    end
+            if ItemData.rarity == rarity then
+                if ItemData.Type == "Weapon" or ItemData.Type == "Clothing" then
+                    table.insert(items, item)
                 end
             end
 
@@ -1939,27 +1945,27 @@ do
             end
         end
     end
-    
+
     local screen = Instance.new("ScreenGui", CoreGui)
     local function create_confirm()
         local popup = CoreGui.RobloxGui.PopupFrame
         local new = popup:Clone()
-        
+
         local thread = coroutine.running()
         new.PopupAcceptButton.MouseButton1Click:Connect(function()
             new:Destroy()
             coroutine.resume(thread, true)
         end)
-        
+
         new.PopupDeclineButton.MouseButton1Click:Connect(function()
             new:Destroy()
             coroutine.resume(thread, false)
         end)
-        
+
         new.PopupText.Text = "Confirm Dismantle? (CANNOT BE UNDONE)"
         new.Visible = true
         new.Parent = screen
-        
+
         return coroutine.yield()
     end
 
@@ -1978,7 +1984,7 @@ do
             upgrade_module.Open()
         end
     })
-    
+
     Smithing:AddButton({
         Name = "Open Dismantler",
         Callback = function()
@@ -2009,8 +2015,8 @@ do
         Name = "Session Stats",
         Icon = "",
         PremiumOnly = false
-    }) 
-    
+    })
+
     local time_label = Stats:AddLabel("Elapsed Time")
     coroutine.wrap(function()
         local floor = math.floor
@@ -2018,232 +2024,157 @@ do
             local seconds = floor(time())
             local minutes = floor(seconds / 60)
             seconds = seconds - (60 * minutes)
-            
+
             local hours = floor(minutes / 60)
             minutes = minutes - (60 * hours)
-            
+
             local days = floor(hours / 24)
             hours = hours - (24 * days)
-            
+
             local o1 = days == 1 and "Day" or "Days"
             local o2 = hours == 1 and "Hour" or "Hours"
             local o3 = minutes == 1 and "Minute" or "Minutes"
             local o4 = seconds == 1 and "Second" or "Seconds"
 
-            local displayed = ("%s %s | %s %s | %s %s | %s %s"):format(days, o1, hours, o2, minutes, o3, seconds, o4)   
+            local displayed = ("%s %s | %s %s | %s %s | %s %s"):format(days, o1, hours, o2, minutes, o3, seconds, o4)
             time_label:Set("Time Elapsed: " .. displayed)
         end
     end)()
-    
-    local item_info
-    for _, v in next, getreg() do
-        if typeof(v) == "table" then
-            item_info = rawget(v, "GetItemData")
-            if item_info then
-                break
-            end
-        end
-    end
 
-    local upgrade_amount = {
-        Legendary = 20,
-        Rare = 15,
-        Uncommon = 10,
-        Common = 10
-    }
-    local database = Rs.Database
-    local itemDatas = setmetatable({}, {
-        __newindex = function(self, i, v)
-            local item = item_info(v)
-            local info = setmetatable(item, {
-                __index = function(self2, i2)
-                    if rawget(self2, "finding") then 
-                        return 
-                    end
-                    self2.finding = true
-                    
-                    task.spawn(function()
-                        local response2 = request({
-                            Url = "https://www.roblox.com/library/" .. self2.icon:match("%d+"),
-                            Method = "GET"
-                        })
-                        
-                        local s = response2.Body:split("https://tr.rbxcdn.com/")
-                        local more = s[2]:split("'")
-                        local url = ("https://tr.rbxcdn.com/%s"):format(more[1])
-                        self2[i2] = url
-                    end)
-                end
-            })
-            
-            if info.Type ~= "Weapon" and info.Type ~= "Clothing" then 
+    if request then
+        local ignored_rarities = {}
+        local webhook_toggle
+        Inventory.ChildAdded:Connect(function(c)
+            if not webhook_toggle then
                 return
             end
-            
-            local stats = info.stats
-            local base
-            for _, v2 in next, stats do
-                if v2[1] == "Damage" or v2[1] == "Defense" then
-                    base = v2[2]
-                    info.base = base
+
+            local webhookURL = settings.WebhookURL
+            if not webhookURL:find("https://discord.com/api/webhooks/") then
+                return
+            end
+
+            local ItemData = ItemDatas[c.Name]
+            local item_class = ItemData.Type
+            if item_class ~= "Weapon" and item_class ~= "Clothing" then
+                return
+            end
+
+            local item_rarity = ItemData.rarity
+            if ignored_rarities[item_rarity] then
+                return
+            end
+
+            local item_name = ItemData.name
+            local item_image = ItemData.image
+            while not item_image do
+                item_image = ItemData.image
+                if item_image then
                     break
                 end
+
+                task.wait(1)
             end
-            
-            local rarity = info.rarity
-            local upgrades = upgrade_amount[rarity]
-            info.potential = math.floor(base + (base * rates[rarity] * upgrades))
-            rawset(self, i, info)
-        end
-    })
-    
-    for _, v in next, database.Items:GetChildren() do
-        itemDatas[v.Name] = v
-    end
 
-    local profile = Rs.Profiles[plr.Name]
-    local inventory = profile.Inventory
+            local item_potential = tostring(ItemData.potential)
+            local item_base = tostring(ItemData.base)
+            local item_level = tostring(ItemData.level)
+            local was_dismantled = tostring(dismantle[item_rarity])
+            local shouldInline = settings.Inline
 
-    local ignored_rarities = {}
-    local webhook_toggle
-    inventory.ChildAdded:Connect(function(c)
-        if not webhook_toggle then 
-            return 
-        end
+            request({
+                Url = webhookURL,
+                Method = "POST",
+                Body = HttpS:JSONEncode({
+                    username = "i <3 swordburst 2",
+                    embeds = {{
+                        title = ("%s Rarity Item Drop (%s)"):format(item_rarity, item_name),
+                        color = 16711680,
 
-        local webhookURL = settings.WebhookURL
-        if not webhookURL:find("https://discord.com/api/webhooks/") then 
-            return 
-        end
+                        fields = {{
+                            name = "Item Level",
+                            value = item_level,
+                            inline = shouldInline
+                        }, {
+                            name = "Item Class",
+                            value = item_class,
+                            inline = shouldInline
+                        }, {
+                            name = "Item Base",
+                            value = item_base,
+                            inline = shouldInline
+                        }, {
+                            name = "Item Potential",
+                            value = item_potential,
+                            inline = shouldInline
+                        }, {
+                            name = "Item Was Dismantled",
+                            value = was_dismantled,
+                            inline = shouldInline
+                        }},
 
-        local item_data = itemDatas[c.Name]
-        if not item_data then
-            return warn("no item data found for", c.Name)    
-        end
 
-        local item_rarity = item_data.rarity
-        if ignored_rarities[item_rarity] then return end
+                        image = {
+                            url = item_image
+                        }
+                    }}
+                }),
+                Headers = {["Content-Type"] = "application/json"}
+            })
+        end)
 
-        local item_class = item_data.Type
-        local item_name = item_data.name
-        local item_image = item_data.image
-        while not item_image do
-            item_image = item_data.image
-            if item_image then 
-                break
-            end
-            
-            task.wait(1)
-        end
-        
-        local item_potential = tostring(item_data.potential)
-        local item_base = tostring(item_data.base)
-        local item_level = tostring(item_data.level)
-        local was_dismantled = tostring(dismantle[item_rarity])
-        
-        request({
-            Url = webhookURL,
-            Method = "POST",
-            Body = HttpS:JSONEncode({
-                username = "i <3 swordburst 2",
-                embeds = {{
-                    title = ("%s Rarity Item Drop (%s)"):format(item_rarity, item_name),
-                    color = 16711680,
-                    
-                    fields = {{
-                        name = "Item Level",
-                        value = item_level
-                    }, {
-                        name = "Item Class",
-                        value = item_class
-                    }, {
-                        name = "Item Base",
-                        value = item_base
-                    }, {
-                        name = "Item Potential",
-                        value = item_potential
-                    }, {
-                        name = "Item Was Dismantled",
-                        value = was_dismantled
-                    }},
-                    
-                    image = {
-                        url = item_image
-                    }
-                }}
-            }),
-            Headers = {["Content-Type"] = "application/json"}
-        })
-    end)
-
-    Stats:AddToggle({
-        Name = "Webhook Toggle",
-        Default = false,
-        Callback = function(bool)
-            webhook_toggle = bool
-        end
-    })
-
-    Stats:AddTextbox({
-        Name = "Item Drop Webhook URL",
-        Default = settings.WebhookURL,
-        TextDisappear = true,
-        Callback = function(url)
-            settings.WebhookURL = url:gsub(" ", "")
-        end
-    })
-    
-    local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
-    local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
-    for i, v in next, names do
         Stats:AddToggle({
-            Name = "Webhook Ignore Rarity | " .. v,
+            Name = "Webhook Toggle",
             Default = false,
             Callback = function(bool)
-                local rarity = rarities[i]
-                ignored_rarities[rarity] = bool
+                webhook_toggle = bool
             end
         })
+        
+        Stats:AddTextbox({
+            Name = "Item Drop Webhook URL",
+            Default = settings.WebhookURL,
+            TextDisappear = true,
+            Callback = function(url)
+                settings.WebhookURL = url:gsub(" ", "")
+            end
+        })
+
+        Stats:AddToggle({
+            Name = "Inline Webhook Output",
+            Default = settings.Inline,
+            Callback = function(bool)
+                settings.Inline = bool
+            end
+        })
+
+        local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
+        local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
+        for i, v in next, names do
+            Stats:AddToggle({
+                Name = "Webhook Ignore Rarity | " .. v,
+                Default = false,
+                Callback = function(bool)
+                    local rarity = rarities[i]
+                    ignored_rarities[rarity] = bool
+                end
+            })
+        end
     end
 end
 
 do
-    local function removeEffects(func_name)
-        for _, v in next, getgc(true) do
-            local old = typeof(v) == "table" and rawget(v, func_name)
-    
-            if old then
-                v[func_name] = function(...)
-                    if func_name == "Damage Text" then
-                       if settings.RemoveDamageNumbers then return end
-
-                    elseif func_name == "DeathExplosion" then
-                        if settings.RemoveDeathEffects then return end
-                    end
-
-                    return old(...) 
-                end
-            end
-        end
-    end
-
-    removeEffects("Damage Text") -- remove X variables are still false, does nothing until toggled
-    removeEffects("DeathExplosion")
-    
     local Performance_tab = window:MakeTab({
         Name = "Perf Boosters",
         Icon = "",
         PremiumOnly = false
     })
 
-    local hiteffects = workspace:FindFirstChild("HitEffects")
+    local hiteffects = workspace:WaitForChild("HitEffects")
     Performance_tab:AddToggle({
         Name = "Remove Hit Effects",
         Default = false,
         Callback = function(bool)
-            hiteffects = hiteffects or workspace:FindFirstChild("HitEffects")
-            if not hiteffects then return end
-
             if bool then
                 hiteffects.Parent = nil
             else
@@ -2252,21 +2183,29 @@ do
         end
     })
 
-    Performance_tab:AddToggle({
-        Name = "Remove Damage Numbers",
-        Default = false,
-        Callback = function(bool)
-            settings.RemoveDamageNumbers = bool
-        end
-    })
+    if getupvalue then
+        local graphics = require(Services.Graphics)
+        local old5 = graphics.DoEffect
+        local effects = getupvalue(old5, 1)
+        for i, old4 in next, effects do
+            local DisableEffect
+            Performance_tab:AddToggle({
+                Name = "Remove " .. i,
+                Default = false,
+                Callback = function(bool)
+                    DisableEffect = bool
+                end
+            })
 
-    Performance_tab:AddToggle({
-        Name = "Remove Death Effects",
-        Default = false,
-        Callback = function(bool)
-            settings.RemoveDeathEffects = bool
+            effects[i] = function(...)
+                if DisableEffect then
+                    return
+                end
+
+                return old4(...)
+            end
         end
-    })
+    end
 
     local tomute = false
     local sound_names = {"SwordHit", "Unsheath", "SwordSlash"}
@@ -2276,7 +2215,7 @@ do
         if table.find(sound_names, v.Name) then
             sounds[v] = v
         end
-    end 
+    end
 
     local function muteswings(descendant)
         if table.find(sound_names, descendant.Name) then
@@ -2302,63 +2241,66 @@ do
     })
 end
 
-do 
+do
     local Misc_tab = window:MakeTab({
         Name = "Misc",
         Icon = "",
         PremiumOnly = false
     })
-    
-    local players_names = {}
-    for _, v in next, Players:GetPlayers() do
-        table.insert(players_names, v.Name)
-    end
 
-    local inventory_viewer = Misc_tab:AddDropdown({
-        Name = "Inventory Viewer (Open Inventory)",
-        Default = plr.Name,
-        Options = players_names,
-        Callback = function(player)
-            setupvalue(inventory_module.GetInventoryData, 1, Rs.Profiles[player])
-        end
-    })
-
-    local function update_inventoryViewer_list(player)  
-        local names = {}
-
+    if setupvalue and getupvalue then
+        local players_names = {}
         for _, v in next, Players:GetPlayers() do
-            if not player or player.Name ~= v.Name then
-                table.insert(names, v.Name)
-            end
+            table.insert(players_names, v.Name)
         end
 
-        inventory_viewer:Refresh(names, true)
+        local inventory_viewer = Misc_tab:AddDropdown({
+            Name = "Inventory Viewer (Open Inventory)",
+            Default = plr.Name,
+            Options = players_names,
+            Callback = function(player)
+                setupvalue(inventory_module.GetInventoryData, 1, Profiles[player])
+            end
+        })
+
+        local function update_inventoryViewer_list(player)
+            local names = {}
+            for _, v in next, Players:GetPlayers() do
+                if not player or player.Name ~= v.Name then
+                    table.insert(names, v.Name)
+                end
+            end
+
+            inventory_viewer:Refresh(names, true)
+        end
+
+        Players.PlayerAdded:Connect(function(player)
+            while not Profiles:FindFirstChild(player.Name) do
+                task.wait(1)
+            end
+
+            update_inventoryViewer_list()
+        end)
+
+        Players.PlayerRemoving:Connect(update_inventoryViewer_list)
     end
-    
-    Players.PlayerAdded:Connect(function(player)
-        while not Rs.Profiles:FindFirstChild(player.Name) do
-             task.wait(1)
-        end
-        
-        update_inventoryViewer_list()
-    end)
-    
-    Players.PlayerRemoving:Connect(update_inventoryViewer_list)
-    
-    local fps = getfpscap and getfpscap() or 60
-    Misc_tab:AddSlider({
-        Name = "Set FPS Cap (Requires executor FPS unlocker on)",
-        Min = 0,
-        Max = 500,
-        Default = fps,
-        Color = Color3.new(255, 255, 255),
-        Increment = 1,
-        ValueName = "FPS",
-        Callback = function(v)
-            setfpscap(v)
-        end
-    })
-    
+
+    if setfpscap then
+        local fps = getfpscap and getfpscap() or 60
+        Misc_tab:AddSlider({
+            Name = "Set FPS Cap (Requires executor FPS unlocker on)",
+            Min = 0,
+            Max = 500,
+            Default = fps,
+            Color = Color3.new(255, 255, 255),
+            Increment = 1,
+            ValueName = "FPS",
+            Callback = function(v)
+                setfpscap(v)
+            end
+        })
+    end
+
     Misc_tab:AddToggle({
         Name = "Infinite Zoom Distance",
         Default = false,
@@ -2370,7 +2312,7 @@ do
             end
         end
     })
-    
+
     Misc_tab:AddBind({
         Name = "GUI Keybind",
         Default = Enum.KeyCode.RightShift,
@@ -2378,7 +2320,7 @@ do
         Callback = function()
             orion.Enabled = not orion.Enabled
         end
-    })  
+    })
 end
 
 do
@@ -2407,26 +2349,28 @@ do
         credits:AddParagraph("v3rm url", "https://v3rmillion.net/member.php?action=profile&uid=1229592")
     end
 
-    credits:AddButton({
-        Name = "Discord Server (Auto Prompt) code: eWGZ8rYpxR",
-        Callback = function()
-            request({
-                Url = "http://127.0.0.1:6463/rpc?v=1",
-                Method = "POST",
-                Headers = {
-                    ["Content-Type"] = "application/json",
-                    ["Origin"] = "https://discord.com"
-                },
-                Body = HttpS:JSONEncode({
-                    cmd = "INVITE_BROWSER",
-                    args = {
-                        code = "eWGZ8rYpxR"
+    if request then
+        credits:AddButton({
+            Name = "Discord Server (Auto Prompt) code: eWGZ8rYpxR",
+            Callback = function()
+                request({
+                    Url = "http://127.0.0.1:6463/rpc?v=1",
+                    Method = "POST",
+                    Headers = {
+                        ["Content-Type"] = "application/json",
+                        ["Origin"] = "https://discord.com"
                     },
-                    nonce = HttpS:GenerateGUID()
+                    Body = HttpS:JSONEncode({
+                        cmd = "INVITE_BROWSER",
+                        args = {
+                            code = "eWGZ8rYpxR"
+                        },
+                        nonce = HttpS:GenerateGUID()
+                    })
                 })
-            })
-        end
-    })
+            end
+        })
+    end
 end
 
 lib:Init()
