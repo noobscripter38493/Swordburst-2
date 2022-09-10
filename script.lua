@@ -1329,8 +1329,7 @@ local rates = setmetatable({Legendary = .05}, {
 
 local ui_module = Services.UI
 local dismantler_module = require(ui_module.Dismantle)
-local inv_utility = getupvalue(dismantler_module.Init, 4)
-local GetItemData = inv_utility.GetItemData
+local GetItemData = inventory_module.GetItemData
 
 local upgrade_amount = {
     Legendary = 20,
