@@ -753,8 +753,6 @@ do
         return floatPart
     end
 
-    local marked = {}
-    local t = tick()
     local function TweenF()
         local to = playerHealthChecks()
         local enemy = to ~= floatPart and to.Parent
@@ -770,45 +768,13 @@ do
                 to = playerHealthChecks()
                 enemy = to ~= floatPart and to.Parent
 
-                local distance = (hrp.Position - to.Position).Magnitude
-                if enemy and distance < 100 and not marked[enemy] then
-                    local oldto = to
-                    local oldenemy = enemy
-
-                    mob_health = getMobHealth(oldenemy)
-                    if not mob_health then
-                        return
-                    end
-
-                    marked[oldenemy] = mob_health:GetPropertyChangedSignal("Value"):Connect(function()
-                        t = tick()
-                    end)
-
-                    coroutine.wrap(function()
-                        while true do
-                            local success = pcall(function()
-                                distance = (hrp.Position - oldto.Position).Magnitude
-                            end)
-
-                            if not success or distance > 100 then
-                                local con = marked[oldenemy]
-                                con:Disconnect()
-                                marked[oldenemy] = nil
-
-                                break
-                            end
-
-                            task.wait(1)
-                        end
-                    end)()
-                end
-
                 if not shouldFloat then
                     mob_health = getMobHealth(enemy)
                 end
 
+                local distance = (hrp.Position - to.Position).Magnitude
                 local seconds = distance / settings.Tween_Speed
-                local y_offset = shouldFloat and 0 or settings.ForceLower or settings.Autofarm_Y_Offset
+                local y_offset = shouldFloat and 0 or settings.Autofarm_Y_Offset
                 local cframe = to.CFrame * CFrame.new(0, y_offset, 0)
 
                 local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
@@ -824,26 +790,6 @@ do
             end
         end
     end
-
-    coroutine.wrap(function()
-        while true do
-            if settings.Autofarm and not shouldFloat and settings.KA then
-                local count = 0
-                for _, _ in next, marked do
-                    count = count + 1
-                    break
-                end
-
-                if count > 0 and tick() - t > 10 then
-                    settings.ForceLower = 0
-                    task.wait(1)
-                    settings.ForceLower = nil
-                end
-            end
-
-            task.wait(1)
-        end
-    end)()
 
     RunS.RenderStepped:Connect(function()
         if not settings.Autofarm then return end
@@ -880,15 +826,6 @@ do
                         shouldFloat = false
                         v:Cancel()
                         tweens[i] = nil
-                    end
-
-                    task.wait()
-                end
-
-                while #marked ~= 0 do
-                    for i, v in next, marked do
-                        v:Disconnect()
-                        marked[i] = nil
                     end
 
                     task.wait()
@@ -1271,11 +1208,14 @@ do
                     pauseKillAura = true
                     task.wait(1)
 
-                    for _ = 1, 10 do
-                        if health2.Value > 0 then
+                    local distance = (hrp.Position - touching.Position).Magnitude
+                    for _ = 1, 15 do
+                        if health2.Value > 0 and stamina.Value > 20 and distance <= 100 then
                             Event:FireServer("Skills", {"UseSkill", skill, {}})
                             Event:FireServer("Combat", remote_key, {"Attack", skill, "1", enemy})
                             task.wait(.2)
+
+                            distance = (hrp.Position - touching.Position).Magnitude
                         else
                             break
                         end
