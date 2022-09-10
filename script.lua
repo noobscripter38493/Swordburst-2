@@ -13,7 +13,6 @@ end
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
-local getconstants = getconstants
 local info = debug.info
 local islclosure = islclosure or function(f)
     return info(f, "s") ~= "[C]"
@@ -296,7 +295,6 @@ local settings = { -- defaults
     skillSilentAim = false,
     Inline = false,
     NoClip = false,
-    SkillCount = 0,
     WeaponSkill = "Weapon Class Skill"
 }
 
@@ -311,7 +309,6 @@ local doLoad = {
     WebhookURL = true,
     Tween_Speed = true,
     skillSilentAim = true,
-    SkillCount = true,
     WeaponSkill = true
 }
 
@@ -395,7 +392,8 @@ RunS.Stepped:Connect(noclip)
 
 local playerHealth
 local maxPlayerHealth
-local health = char:WaitForChild("Entity"):WaitForChild("Health")
+local Entity = char:WaitForChild("Entity")
+local health = Entity:WaitForChild("Health")
 local function setUpPlayerHealthValues()
     local currentHealthSignal = health:GetPropertyChangedSignal("Value"):Connect(function()
         playerHealth = health.Value
@@ -414,16 +412,37 @@ local function setUpPlayerHealthValues()
     end)
 end
 
+local stamina = Entity:WaitForChild("Stamina")
+local hasMaxStamina = stamina.Value >= stamina.MaxValue
+local function setUpStaminaValues()
+    local currentStaminaSignal = stamina:GetPropertyChangedSignal("Value"):Connect(function()
+        if stamina.Value >= stamina.MaxValue then
+            hasMaxStamina = true
+        else
+            hasMaxStamina = false
+        end
+    end)
+
+    local humanoidDied; humanoidDied = humanoid.Died:Connect(function()
+        humanoidDied:Disconnect()
+        currentStaminaSignal:Disconnect()
+    end)
+end
+
 setUpPlayerHealthValues()
+setUpStaminaValues()
 
 plr.CharacterAdded:Connect(function(new)
     char = new
     hrp = char:WaitForChild("HumanoidRootPart")
     humanoid = char:WaitForChild("Humanoid")
 
-    health = new:WaitForChild("Entity"):WaitForChild("Health")
-    setUpPlayerHealthValues()
+    Entity = new:WaitForChild("Entity")
+    health = Entity:WaitForChild("Health")
+    stamina = Entity:WaitForChild("Stamina")
 
+    setUpPlayerHealthValues()
+    setUpStaminaValues()
     setNoClipParts()
 end)
 
@@ -458,7 +477,13 @@ local Profiles = Rs:WaitForChild("Profiles")
 local Profile = Profiles:WaitForChild(plr.Name)
 local Inventory = Profile:WaitForChild("Inventory")
 
-local myCframe
+local mobs = workspace:WaitForChild("Mobs")
+
+local function getMobHealth(mob)
+    local entity = mob and mob:FindFirstChild("Entity")
+    return entity and entity:FindFirstChild("Health")
+end
+
 if iscclosure(hookmetamethod) or setreadonly and getrawMT then
     local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
         local ncm = getnamecallmethod()
@@ -485,16 +510,6 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
     local index; index = hookmetamethod(game, "__index", function(self, i)
         if self == humanoid and i == "WalkSpeed" and not checkcaller() then
             return game_ws
-
-        elseif self == hrp and i == "CFrame" and getconstants then
-            local consts
-            local success = pcall(function()
-                consts = getconstants(3)
-            end)
-            if success and table.find(consts, "lookVector") then
-                myCframe = index(self, i)
-                return myCframe
-            end
         end
 
         return index(self, i)
@@ -524,11 +539,6 @@ local window = lib:MakeWindow({
     SaveConfig = false,
     ConfigFolder = false
 })
-
-local function getMobHealth(mob)
-    local entity = mob and mob:FindFirstChild("Entity")
-    return entity and entity:FindFirstChild("Health")
-end
 
 local split = string.split
 local match = string.match
@@ -840,7 +850,6 @@ do
         hrp.Velocity = Vector3.zero
     end)
 
-    local mobs = workspace.Mobs
     mobs.ChildAdded:Connect(function(mob)
         mob:WaitForChild("HumanoidRootPart")
         mobs_table[mob] = mob
@@ -1035,10 +1044,6 @@ do
     range.Parent = workspace
 
     local remote_key = getupvalue(combat_module.Init, 2)
-
-    local skillService = require(Services.Skills)
-    local UseSkill = skillService.UseSkill
-    local GetCooldown = skillService.GetCooldown
 
     local attacking = {}
     local pauseKillAura = false
@@ -1235,8 +1240,13 @@ do
         selectSkill:Refresh({"Summon Pistol"})
     end)
 
-    local waitTimes = {.33, .66, .99}
+    local skillauraing = {}
     range.Touched:Connect(function(touching)
+        if skillauraing[touching] then
+            return
+        end
+
+        skillauraing[touching] = true
         if settings.SkillAura and touching.Parent ~= char and touching.Name == "HumanoidRootPart" then
             local enemy = touching.Parent
             local mob = table.find(mobs_on_floor[placeid], enemy.Name)
@@ -1247,7 +1257,7 @@ do
             end
 
             local health2 = getMobHealth(enemy)
-            if health2 and health2.Value > 0 then
+            if hasMaxStamina and health2 and health2.Value > 0 then
                 style = CalculateCombatStyle()
 
                 local skill
@@ -1257,19 +1267,27 @@ do
                     skill = "Summon Pistol"
                 end
 
-                if skill and GetCooldown(skill) then
+                if skill then
                     pauseKillAura = true
-
-                    local skillcount = settings.SkillCount
-                    local waitTime = waitTimes[skillcount]
                     task.wait(1)
-                    UseSkill(skill)
-                    task.wait(waitTime)
 
+                    for _ = 1, 10 do
+                        if health2.Value > 0 then
+                            Event:FireServer("Skills", {"UseSkill", skill, {}})
+                            Event:FireServer("Combat", remote_key, {"Attack", skill, "1", enemy})
+                            task.wait(.2)
+                        else
+                            break
+                        end
+                    end
+
+                    task.wait(1)
                     pauseKillAura = false
                 end
             end
         end
+
+        skillauraing[touching] = nil
     end)
 
     local level = WaitForDescendant(plr, "Level")
@@ -1291,59 +1309,6 @@ do
         end
     })
 
-    local mobs = workspace.Mobs
-    local function GetClosestMob()
-        local highest_health = 0
-        local closest_magnitude = math.huge
-        local closest_hrp
-
-        for _, mob in next, mobs:GetChildren() do
-            local mob_hrp = mob:FindFirstChild("HumanoidRootPart")
-            if not mob_hrp then
-                continue
-            end
-
-            local magnitude = (mob_hrp.Position - hrp.Position).Magnitude
-            if magnitude < closest_magnitude then
-                closest_magnitude = magnitude
-                closest_hrp = mob_hrp
-            end
-        end
-
-        if closest_magnitude < 100 then
-            return closest_hrp
-        end
-    end
-
-    local passive = {
-        Heal = true,
-        ["Summon Tree"] = true,
-        Block = true,
-        Roll = true
-    }
-
-    local skillHandlers = require(Services.Skills).skillHandlers
-    for i, old2 in next, skillHandlers do
-        if passive[i] then
-            continue
-        end
-
-        skillHandlers[i] = function()
-            local usecount = 1
-            local skillcount = settings.SkillCount
-            for _ = 1, skillcount do
-                task.spawn(function()
-                    old2()
-                    usecount = usecount + 1
-                end)
-            end
-
-            while usecount ~= skillcount do
-                task.wait()
-            end
-        end
-    end
-
     selectSkill = combat:AddDropdown({
         Name = "Select Skill to Use",
         Default = settings.WeaponSkill,
@@ -1352,47 +1317,6 @@ do
             settings.WeaponSkill = skill
         end
     })
-
-    combat:AddSlider({
-        Name = "Skill Multiplier",
-        Min = 1,
-        Max = 3,
-        Default = settings.SkillCount,
-        Color = Color3.new(255, 255, 255),
-        Increment = 1,
-        ValueName = "Skills",
-        Callback = function(v)
-            settings.SkillCount = v
-        end
-    })
-
-    if getconstants and getrawMT and setreadonly then
-        combat:AddToggle({
-            Name = "Skill Silent Aim",
-            Default = false,
-            Callback = function(bool)
-                settings.skillSilentAim = bool
-            end
-        })
-
-        local mt = getrawMT(CFrame.new())
-        setreadonly(mt, false)
-
-        local old3 = mt.__index
-        mt.__index = function(self, i)
-            if settings.skillSilentAim and rawequal(self, myCframe) and i == "lookVector" then
-                local mob = GetClosestMob()
-                if mob then
-                    local cf = CFrame.new(hrp.Position, mob.Position)
-                    return old3(cf, "lookVector")
-                end
-            end
-
-            return old3(self, i)
-        end
-
-        setreadonly(mt, true)
-    end
 end
 
 local dismantle = {}
