@@ -23,7 +23,7 @@ end
 local getupvalue = getupvalue or debug.getupvalue
 local setupvalue = setupvalue or debug.setupvalue
 local getrawMT = getrawmetatable or debug.getmetatable or debug.getrawmetatable
-local setrawMT = setrawmetatable or debug.setmetatable or debug.getrawmetatable
+local setrawMT = setrawmetatable or debug.setmetatable or debug.s   etrawmetatable
 local setreadonly = setreadonly or makereadonly or makewritable
 local firetouchinterest = firetouchinterest
 local setclipboard = setclipboard or writeclipboard or write_clipboard
