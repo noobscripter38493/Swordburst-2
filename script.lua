@@ -6,7 +6,7 @@ end
 
 getgenv().SB2Script = true
 
-while not game:IsLoaded() do
+while not game:IsLoaded()  do
     task.wait(1)
 end
 
@@ -23,7 +23,7 @@ end
 local getupvalue = getupvalue or debug.getupvalue
 local setupvalue = setupvalue or debug.setupvalue
 local getrawMT = getrawmetatable or debug.getmetatable or debug.getrawmetatable
-local setrawMT = setrawmetatable or debug.setmetatable or debug.s   etrawmetatable
+local setrawMT = setrawmetatable or debug.setmetatable or debug.setrawmetatable
 local setreadonly = setreadonly or makereadonly or makewritable
 local firetouchinterest = firetouchinterest
 local setclipboard = setclipboard or writeclipboard or write_clipboard
