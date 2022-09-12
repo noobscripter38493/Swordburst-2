@@ -315,9 +315,6 @@ local doLoad = {
     excludedMobs = true
 }
 
-local MobExclusion = settings.excludedMobs
-MobExclusion[tostring(placeid)] = {}
-
 local HttpS = game:GetService("HttpService")
 
 local hasfilefunctions = isfolder and makefolder and writefile and readfile
@@ -351,6 +348,9 @@ if hasfilefunctions then
         end
     end)
 end
+
+local MobExclusion = settings.excludedMobs
+MobExclusion[tostring(placeid)] = MobExclusion[tostring(placeid)] or {}
 
 MobExclusion = settings.excludedMobs[tostring(placeid)]
 
