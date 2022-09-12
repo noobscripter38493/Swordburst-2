@@ -316,7 +316,7 @@ local doLoad = {
 }
 
 local MobExclusion = settings.excludedMobs
-MobExclusion[placeid] = {}
+MobExclusion[tostring(placeid)] = {}
 
 local HttpS = game:GetService("HttpService")
 
