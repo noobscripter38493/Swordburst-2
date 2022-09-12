@@ -10,6 +10,11 @@ while not game:IsLoaded()  do
     task.wait(1)
 end
 
+local placeid = game.PlaceId
+if game.GameId ~= 212154879 then
+    return
+end
+
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
@@ -20,6 +25,7 @@ end
 local iscclosure = iscclosure or function(f)
     return info(f, "s") == "[C]"
 end
+local getnamecallmethod = getnamecallmethod
 local getupvalue = getupvalue or debug.getupvalue
 local setupvalue = setupvalue or debug.setupvalue
 local getrawMT = getrawmetatable or debug.getmetatable or debug.getrawmetatable
@@ -37,7 +43,7 @@ local request = (syn and syn.request) or (fluxus and fluxus.request) or request
 
 local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or (syn and syn.queue_on_teleport)
 if teleport_execute then
-    teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
+    teleport_execute("loadfile('Scriptz/sb2 script.lua')()")
 end
 
 local mobs_on_floor = {
@@ -228,10 +234,9 @@ local UserInputS = game:GetService("UserInputService")
 local TweenS = game:GetService("TweenService")
 local RunS = game:GetService("RunService")
 local Rs = game:GetService("ReplicatedStorage")
+local Database = Rs:WaitForChild("Database")
 local Event = Rs:WaitForChild("Event")
 local rf = Rs:WaitForChild("Function")
-
-local placeid = game.PlaceId
 
 for _, v in next, getconnections(plr.Idled) do
     v:Disable()
@@ -272,7 +277,6 @@ local settings = { -- defaults
     Tween_Speed = 50,
     Farm_Only_Bosses = false,
     Boss_Priority = false,
-    MuteSwingSounds = false,
     Prioritized_Boss = nil,
     Mob_Priority = false,
     Prioritized_Mob = nil,
@@ -292,7 +296,6 @@ local settings = { -- defaults
     Autofarm_Idle_Min = 30,
     Autofarm_Idle_Max = 70,
     WebhookURL = "",
-    skillSilentAim = false,
     Inline = false,
     NoClip = false,
     WeaponSkill = "Weapon Class Skill"
@@ -308,9 +311,12 @@ local doLoad = {
     Autofarm_Y_Offset = true,
     WebhookURL = true,
     Tween_Speed = true,
-    skillSilentAim = true,
-    WeaponSkill = true
+    WeaponSkill = true,
+    excludedMobs = true
 }
+
+local MobExclusion = settings.excludedMobs
+MobExclusion[placeid] = {}
 
 local HttpS = game:GetService("HttpService")
 
@@ -338,13 +344,15 @@ if hasfilefunctions then
         settings[i] = v
     end
 
-    coroutine.wrap(function()
+    task.spawn(function()
         while true do
             save_settings()
             task.wait(5)
         end
-    end)()
+    end)
 end
+
+MobExclusion = settings.excludedMobs[tostring(placeid)]
 
 local function WaitForDescendant(parent, descendant_name)
     local already = parent:FindFirstChild(descendant_name, true)
@@ -384,7 +392,7 @@ local function noclip()
     end
 
     for _, v in next, parts do
-        v.CanCollide = false -- thx infinite yield
+        v.CanCollide = false
     end
 end
 
@@ -416,11 +424,7 @@ local stamina = Entity:WaitForChild("Stamina")
 local hasMaxStamina = stamina.Value >= stamina.MaxValue
 local function setUpStaminaValues()
     local currentStaminaSignal = stamina:GetPropertyChangedSignal("Value"):Connect(function()
-        if stamina.Value >= stamina.MaxValue then
-            hasMaxStamina = true
-        else
-            hasMaxStamina = false
-        end
+        hasMaxStamina = stamina.Value >= stamina.MaxValue
     end)
 
     local humanoidDied; humanoidDied = humanoid.Died:Connect(function()
@@ -437,7 +441,7 @@ plr.CharacterAdded:Connect(function(new)
     hrp = char:WaitForChild("HumanoidRootPart")
     humanoid = char:WaitForChild("Humanoid")
 
-    Entity = new:WaitForChild("Entity")
+    Entity = char:WaitForChild("Entity")
     health = Entity:WaitForChild("Health")
     stamina = Entity:WaitForChild("Stamina")
 
@@ -485,47 +489,29 @@ local function getMobHealth(mob)
 end
 
 if iscclosure(hookmetamethod) or setreadonly and getrawMT then
-    local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
-        local ncm = getnamecallmethod()
-        local args = {...}
+    if getnamecallmethod then
+        local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
+            local ncm = getnamecallmethod()
+            local args = {...}
 
-        if self == Event and ncm == "FireServer" then
-            if settings.InfSprint and args[1] == "Actions" then
-                if args[2][2] == "Step" then
-                    return
+            if self == Event and ncm == "FireServer" then
+                if settings.InfSprint and args[1] == "Actions" then
+                    if args[2][2] == "Step" then
+                        return
+                    end
+                end
+
+            elseif self == rf and ncm == "InvokeServer" then
+                if checkcaller and not checkcaller() and args[1] == "Equipment" and getupvalue then
+                    if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
+                        return
+                    end
                 end
             end
 
-        elseif self == rf and ncm == "InvokeServer" then
-            if not checkcaller() and args[1] == "Equipment" and getupvalue then
-                if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
-                    return
-                end
-            end
-        end
-
-        return nc(self, ...)
-    end)
-
-    local index; index = hookmetamethod(game, "__index", function(self, i)
-        if self == humanoid and i == "WalkSpeed" and not checkcaller() then
-            return game_ws
-        end
-
-        return index(self, i)
-    end)
-
-    local newindex; newindex = hookmetamethod(game, "__newindex", function(self, i, v)
-        if self == humanoid and i == "WalkSpeed" and not checkcaller() and typeof(v) == "number" then
-            if settings.speed then
-                v = walkspeed
-            end
-
-            game_ws = v
-        end
-
-        return newindex(self, i, v)
-    end)
+            return nc(self, ...)
+        end)
+    end
 end
 
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))()
@@ -565,14 +551,13 @@ do
         return match(mob_name, "Chest") and not match(mob_name, "Neon") and "Chests"
     end
 
-    local excludedMobs = settings.excludedMobs
     local function searchForMob(mobName)
         local closest_magnitude = math.huge
         local closest_mob
 
         for _, mob in next, mobs_table do
             local name = isChest(mob.Name)
-            if excludedMobs[name or mob.Name] then
+            if MobExclusion[name or mob.Name] then
                 continue
             end
 
@@ -600,7 +585,7 @@ do
 
         for _, mob in next, mobs_table do
             local name = isChest(mob.Name)
-            if excludedMobs[name or mob.Name] then
+            if MobExclusion[name or mob.Name] then
                 continue
             end
 
@@ -630,7 +615,7 @@ do
 
         for _, boss in next, mobs_table do
             local name = isChest(boss.Name)
-            if excludedMobs[name or boss.Name] then
+            if MobExclusion[name or boss.Name] then
                 continue
             end
 
@@ -658,7 +643,7 @@ do
 
         for _, boss in next, mobs_table do
             local name = isChest(boss.Name)
-            if excludedMobs[name or boss.Name] then
+            if MobExclusion[name or boss.Name] then
                 continue
             end
 
@@ -1155,7 +1140,7 @@ do
         end
     end
 
-    local skillsData = Rs.Database.Skills
+    local skillsData = Database:WaitForChild("Skills")
     local skill_classes = {}
     for _, v in next, skillsData:GetChildren() do
         if v:FindFirstChild("Class") then
@@ -1278,30 +1263,23 @@ local upgrade_amount = {
     Common = 10
 }
 
-local database = Rs.Database
+local function GetItemIconURL(ItemData)
+    local icon = ItemData.icon
+    local response2 = request({
+        Url = "https://www.roblox.com/library/" .. match(icon, "%d+"),
+        Method = "GET"
+    })
+
+    local s = split(response2.Body, "https://tr.rbxcdn.com/")[2]
+    local more = split(s, "'")
+    local url = "https://tr.rbxcdn.com/%s" .. more[1]
+    ItemData.image = url
+    return url
+end
+
 local ItemDatas = setmetatable({}, {
     __newindex = function(self, i, v)
-        local ItemData = setmetatable(GetItemData(v), {
-            __index = function(self2, i2)
-                if not request or rawget(self2, "finding") then
-                    return
-                end
-                self2.finding = true
-
-                task.spawn(function()
-                    local response2 = request({
-                        Url = "https://www.roblox.com/library/" .. match(self2.icon, "%d+"),
-                        Method = "GET"
-                    })
-
-                    local s = split(response2.Body, "https://tr.rbxcdn.com/")[2]
-                    local more = split(s, "'")
-                    local url = "https://tr.rbxcdn.com/%s" .. more[1]
-                    self2[i2] = url
-                end)
-            end
-        })
-
+        local ItemData = GetItemData(v)
         if ItemData.Type == "Weapon" or ItemData.Type == "Clothing" then
             local stats = ItemData.stats
             local base
@@ -1322,7 +1300,7 @@ local ItemDatas = setmetatable({}, {
     end
 })
 
-for _, v in next, database.Items:GetChildren() do
+for _, v in next, Database:WaitForChild("Items"):GetChildren() do
     ItemDatas[v.Name] = v
 end
 
@@ -1453,13 +1431,12 @@ do
     end
 
     for _, mob_name in next, all_on_floor do
-        local default = mob_name == "Chests"
+        local default = MobExclusion[mob_name] ~= false and MobExclusion[mob_name] ~= nil
         farm_tab3:AddToggle({
             Name = mob_name,
             Default = default,
             Callback = function(bool)
-                local excludedMobs = settings.excludedMobs
-                excludedMobs[mob_name] = bool
+                MobExclusion[mob_name] = bool
             end
         })
     end
@@ -1638,12 +1615,11 @@ do
 
     local animSettings = Profile.AnimSettings
 
-    local animations = Rs.Database.Animations
-    local ANIMATIONS = {}
-    local blacklisted_animations = {"Spear", "Misc", "Daggers", "SwordShield", "Dagger"}
-    for _, v in next, animations:GetChildren() do
-        if not table.find(blacklisted_animations, v.Name) then
-            table.insert(ANIMATIONS, v.Name)
+    local Animations = {}
+    local BlacklistedAnimations = {"Spear", "Misc", "Daggers", "SwordShield", "Dagger"}
+    for _, v in next, Database:WaitForChild("Animations"):GetChildren() do
+        if not table.find(BlacklistedAnimations, v.Name) then
+            table.insert(Animations, v.Name)
 
             if not animSettings:FindFirstChild(v.Name) then
                 local string_value = Instance.new("StringValue")
@@ -1667,7 +1643,7 @@ do
     Character_tab:AddDropdown({
         Name = "Weapon Animations",
         Default = settings.Animation,
-        Options = ANIMATIONS,
+        Options = Animations,
         Callback = function(animation)
             settings.Weapon_Animation = animation
         end
@@ -1754,11 +1730,8 @@ do
         Default = false,
         Callback = function(bool)
             settings.speed = bool
-
-            if bool then
+            while settings.speed do
                 humanoid.WalkSpeed = walkspeed
-            else
-                humanoid.WalkSpeed = game_ws
             end
         end
     })
@@ -1929,15 +1902,7 @@ do
             end
 
             local item_name = ItemData.name
-            local item_image = ItemData.image
-            while not item_image do
-                item_image = ItemData.image
-                if item_image then
-                    break
-                end
-
-                task.wait(1)
-            end
+            local item_image = ItemData.image or GetItemIconURL(ItemData)
 
             local item_potential = tostring(ItemData.potential)
             local item_base = tostring(ItemData.base)
