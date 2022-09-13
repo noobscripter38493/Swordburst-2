@@ -1259,7 +1259,7 @@ local function GetItemIconURL(ItemData)
 
     local s = split(response2.Body, "https://tr.rbxcdn.com/")[2]
     local more = split(s, "'")
-    local url = "https://tr.rbxcdn.com/%s" .. more[1]
+    local url = "https://tr.rbxcdn.com/" .. more[1]
     ItemData.image = url
     return url
 end
