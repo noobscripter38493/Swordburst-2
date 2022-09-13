@@ -238,19 +238,27 @@ local Database = Rs:WaitForChild("Database")
 local Event = Rs:WaitForChild("Event")
 local rf = Rs:WaitForChild("Function")
 
-for _, v in next, getconnections(plr.Idled) do
-    v:Disable()
-end
+task.spawn(function()
+    if getconnections then
+        local antiafk
+        while not antiafk do
+            for _, v in next, getconnections(plr.Idled) do
+                antiafk = true
+                v:Disable()
+            end
 
-coroutine.wrap(function()
-    local vim = game:GetService("VirtualInputManager")
-    while true do
-        vim:SendKeyEvent(true, Enum.KeyCode.Home, false, game)
-        task.wait(1)
-        vim:SendKeyEvent(false, Enum.KeyCode.Home, false, game)
-        task.wait(60 * 15)
+            task.wait(1)
+        end
+    else
+        local vim = game:GetService("VirtualInputManager")
+        while true do
+            vim:SendKeyEvent(true, Enum.KeyCode.Home, false, game)
+            task.wait(1)
+            vim:SendKeyEvent(false, Enum.KeyCode.Home, false, game)
+            task.wait(60 * 15)
+        end
     end
-end)()
+end)
 
 local char = plr.Character or plr.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
@@ -403,15 +411,15 @@ local maxPlayerHealth
 local Entity = char:WaitForChild("Entity")
 local health = Entity:WaitForChild("Health")
 local function setUpPlayerHealthValues()
+    playerHealth = health.Value
     local currentHealthSignal = health:GetPropertyChangedSignal("Value"):Connect(function()
         playerHealth = health.Value
     end)
-    playerHealth = health.Value
 
+    maxPlayerHealth = health.MaxValue
     local maxHealthSignal = health:GetPropertyChangedSignal("MaxValue"):Connect(function()
         maxPlayerHealth = health.MaxValue
     end)
-    maxPlayerHealth = health.MaxValue
 
     local humanoidDied; humanoidDied = humanoid.Died:Connect(function()
         humanoidDied:Disconnect()
@@ -464,7 +472,6 @@ end
 local inventory_module = require(Services.UI.Inventory)
 
 local walkspeed = humanoid.WalkSpeed
-local game_ws = humanoid.WalkSpeed
 
 local hookmetamethod = hookmetamethod or function(t, metamethod, hook)
     local mt = getrawMT(t)
@@ -677,7 +684,9 @@ do
 
     local shouldFloat = false
     RunS.RenderStepped:Connect(function()
-        if shouldFloat then return end
+        if shouldFloat then 
+            return 
+        end
 
         local height = settings.Height
         floatPart.CFrame = hrp.CFrame * CFrame.new(0, height, 0)
@@ -739,45 +748,28 @@ do
     end
 
     local function TweenF()
-        local to = playerHealthChecks()
-        local enemy = to ~= floatPart and to.Parent
+        task.spawn(function()
+            local to = playerHealthChecks()
 
-        local mob_health
-        if not shouldFloat then
-            mob_health = getMobHealth(enemy)
-        end
-        while mob_health and mob_health.Value > 0 or shouldFloat do
-            task.wait()
+            local distance = (hrp.Position - to.Position).Magnitude
+            local seconds = distance / settings.Tween_Speed
+            local y_offset = shouldFloat and 0 or settings.Autofarm_Y_Offset
+            local cframe = to.CFrame * CFrame.new(0, y_offset, 0)
 
-            coroutine.wrap(function()
-                to = playerHealthChecks()
-                enemy = to ~= floatPart and to.Parent
+            local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
+            local tween = TweenS:Create(hrp, tween_info, {CFrame = cframe})
+            table.insert(tweens, tween)
 
-                if not shouldFloat then
-                    mob_health = getMobHealth(enemy)
-                end
-
-                local distance = (hrp.Position - to.Position).Magnitude
-                local seconds = distance / settings.Tween_Speed
-                local y_offset = shouldFloat and 0 or settings.Autofarm_Y_Offset
-                local cframe = to.CFrame * CFrame.new(0, y_offset, 0)
-
-                local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
-                local tween = TweenS:Create(hrp, tween_info, {CFrame = cframe})
-                table.insert(tweens, tween)
-
-                tween:Play()
-                tween.Completed:Wait()
-            end)()
-
-            if not settings.Autofarm or not to.Parent then
-                break
-            end
-        end
+            tween:Play()
+            tween.Completed:Wait()
+        end)
     end
 
     RunS.RenderStepped:Connect(function()
-        if not settings.Autofarm then return end
+        if not settings.Autofarm then 
+            return 
+        end
+
         hrp.Velocity = Vector3.zero
     end)
 
@@ -793,10 +785,10 @@ do
     end)
 
     for _, mob in next, mobs:GetChildren() do
-        coroutine.wrap(function()
+        task.spawn(function()
             mob:WaitForChild("HumanoidRootPart")
             mobs_table[mob] = mob
-        end)()
+        end)
     end
 
     farm_tab:AddToggle({
@@ -978,7 +970,7 @@ do
 
             if not success or not shouldAttack or not settings.KA then
                 table.remove(attacking, i)
-                return
+                break
             end
 
             local enemy_hrp = enemy:FindFirstChild("HumanoidRootPart")
@@ -1015,7 +1007,7 @@ do
 
     table.clear(Actions)
 
-    coroutine.wrap(function()
+    task.spawn(function()
         while true do
             if #attacking == 0 then
                 task.wait(1)
@@ -1033,7 +1025,7 @@ do
                 end
             end
         end
-    end)()
+    end)
 
     range.Touched:Connect(function(touching)
         if not settings.KA or touching.Parent == char or touching.Name ~= "HumanoidRootPart" then
@@ -1062,7 +1054,6 @@ do
         Default = false,
         Callback = function(bool)
             settings.KA = bool
-            attacking = {} -- to overwrite attacking table when toggled off
         end
     })
 
@@ -1088,29 +1079,25 @@ do
     })
 
     if firesignal then
-        local function getkabutton()
+        local ka_button
+        while not ka_button do
             for _, v in next, orion:GetDescendants() do
                 if v:IsA("TextLabel") and v.Text == "Kill Aura" then
-                    return v.Parent:FindFirstChild("TextButton")
+                    ka_button = v.Parent:FindFirstChild("TextButton")
+                    break
                 end
             end
+
+            task.wait(1)
         end
 
-        local ka_button = getkabutton()
         local ka_bind = combat:AddBind({
             Name = "Kill Aura Keybind",
             Default = Enum.KeyCode[settings.KA_Keybind],
             Hold = false,
             Callback = function()
-                if ka_button then
-                    firesignal(ka_button.MouseButton1Down)
-                    firesignal(ka_button.MouseButton1Up)
-                else
-                    ka_button = getkabutton()
-
-                    firesignal(ka_button.MouseButton1Down)
-                    firesignal(ka_button.MouseButton1Up)
-                end
+                firesignal(ka_button.MouseButton1Down)
+                firesignal(ka_button.MouseButton1Up)
             end
         })
 
@@ -1277,8 +1264,9 @@ local function GetItemIconURL(ItemData)
     return url
 end
 
-local ItemDatas = setmetatable({}, {
-    __newindex = function(self, i, v)
+local ItemDatas = {}
+for _, v in next, Database:WaitForChild("Items"):GetChildren() do
+    task.spawn(function()
         local ItemData = GetItemData(v)
         if ItemData.Type == "Weapon" or ItemData.Type == "Clothing" then
             local stats = ItemData.stats
@@ -1296,12 +1284,8 @@ local ItemDatas = setmetatable({}, {
             ItemData.potential = math.floor(base + (base * rates[rarity] * upgrades))
         end
 
-        rawset(self, i, ItemData)
-    end
-})
-
-for _, v in next, Database:WaitForChild("Items"):GetChildren() do
-    ItemDatas[v.Name] = v
+        ItemDatas[v.Name] = ItemData
+    end)
 end
 
 local function getUpgrade(item)
@@ -1732,6 +1716,7 @@ do
             settings.speed = bool
             while settings.speed do
                 humanoid.WalkSpeed = walkspeed
+                task.wait()
             end
         end
     })
@@ -1746,10 +1731,6 @@ do
         ValueName = "Speed",
         Callback = function(speed)
             walkspeed = speed
-
-            if settings.speed then
-                humanoid.WalkSpeed = speed
-            end
         end
     })
 end
@@ -1854,7 +1835,7 @@ do
     })
 
     local time_label = Stats:AddLabel("Elapsed Time")
-    coroutine.wrap(function()
+    task.spawn(function()
         local floor = math.floor
         while true do task.wait(1)
             local seconds = floor(time())
@@ -1875,7 +1856,7 @@ do
             local displayed = ("%s %s | %s %s | %s %s | %s %s"):format(days, o1, hours, o2, minutes, o3, seconds, o4)
             time_label:Set("Time Elapsed: " .. displayed)
         end
-    end)()
+    end)
 
     if request then
         local ignored_rarities = {}
@@ -1940,7 +1921,6 @@ do
                             value = was_dismantled,
                             inline = shouldInline
                         }},
-
 
                         image = {
                             url = item_image
