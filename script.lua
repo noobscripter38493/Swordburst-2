@@ -41,9 +41,23 @@ local firesignal = firesignal or getconnections and function(signal, args)
 end
 local request = (syn and syn.request) or (fluxus and fluxus.request) or request
 
+local validlevel = debug.validlevel or function(l)
+    return pcall(function()
+        getfenv(l + 3)
+    end)
+end
+
+local isexecutorclosure = isexecutorclosure or isourclosure or is_synapse_function or checkclosure or iskrnlclosure
+local function checkcallstack()
+    local l = 2
+    while validlevel(l) do
+        
+    end
+end
+
 local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or (syn and syn.queue_on_teleport)
 if teleport_execute then
-    teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
+    teleport_execute("loadfile('Scriptz/sb2 script.lua')()")
 end
 
 local mobs_on_floor = {
@@ -297,9 +311,8 @@ local settings = { -- defaults
     InfJump = false,
     KA_Keybind = "R",
     AttackPlayers = false,
-    Animation = CalculateCombatStyle(),
     MaxAutofarmDistance = 5000,
-    excludedMobs = {},
+    excludedMobs = {[tostring(placeid)] = {}},
     Height = 30,
     Autofarm_Idle_Min = 30,
     Autofarm_Idle_Max = 70,
@@ -358,9 +371,6 @@ if hasfilefunctions then
 end
 
 local MobExclusion = settings.excludedMobs
-MobExclusion[tostring(placeid)] = MobExclusion[tostring(placeid)] or {}
-
-MobExclusion = settings.excludedMobs[tostring(placeid)]
 
 local function WaitForDescendant(parent, descendant_name)
     local already = parent:FindFirstChild(descendant_name, true)
@@ -375,9 +385,11 @@ local function WaitForDescendant(parent, descendant_name)
             coroutine.resume(thread, c)
         end
     end)
-
+    
     return coroutine.yield()
 end
+
+local level = WaitForDescendant(plr, "Level")
 
 local parts = {}
 local function setNoClipParts()
@@ -509,7 +521,7 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
                 end
 
             elseif self == rf and ncm == "InvokeServer" then
-                if checkcaller and not checkcaller() and args[1] == "Equipment" and getupvalue then
+                if checkcaller and checkcaller() and args[1] == "Equipment" and getupvalue then
                     if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
                         return
                     end
@@ -766,11 +778,9 @@ do
     end
 
     RunS.RenderStepped:Connect(function()
-        if not settings.Autofarm then 
-            return 
+        if settings.Autofarm then 
+            hrp.Velocity = Vector3.zero 
         end
-
-        hrp.Velocity = Vector3.zero
     end)
 
     mobs.ChildAdded:Connect(function(mob)
@@ -1014,7 +1024,7 @@ do
                 continue
             end
 
-            local animation_style = animations[CalculateCombatStyle(nil, true)]
+            local animation_style = animations[CalculateCombatStyle()]
             for _, v in next, animation_style do
                 if v.Name:find("Swing") then
                     local length = v.Length
@@ -1102,28 +1112,34 @@ do
         })
 
         local inputbegan
-        for _, v in next, orion:GetDescendants() do
-            if v:IsA("TextLabel") and v.Text == "Kill Aura Keybind" then
-                v.Parent.TextButton.MouseButton1Down:Connect(function()
-                    if inputbegan and inputbegan.Connected then
-                        return
-                    end
+        while not inputbegan do
+            for _, v in next, orion:GetDescendants() do
+                if v:IsA("TextLabel") and v.Text == "Kill Aura Keybind" then
+                    inputbegan = {}
 
-                    inputbegan = UserInputS.InputBegan:Connect(function(inputobj)
-                        if inputobj.UserInputType == Enum.UserInputType.Keyboard then
-                            inputbegan:Disconnect()
-
-                            local key = inputobj.KeyCode
-                            local key2 = tostring(key)
-                            settings.KA_Keybind = split(key2, "Code.")[2]
-                            task.wait(.5)
-                            ka_bind:Set(key)
+                    v.Parent.TextButton.MouseButton1Down:Connect(function()
+                        if inputbegan.Connected then
+                            return
                         end
-                    end)
-                end)
 
-                break
+                        inputbegan = UserInputS.InputBegan:Connect(function(inputobj)
+                            if inputobj.UserInputType == Enum.UserInputType.Keyboard then
+                                inputbegan:Disconnect()
+
+                                local key = inputobj.KeyCode
+                                local key2 = tostring(key)
+                                settings.KA_Keybind = split(key2, "Code.")[2]
+                                task.wait(.5)
+                                ka_bind:Set(key)
+                            end
+                        end)
+                    end)
+
+                    break
+                end
             end
+
+            task.wait(1)
         end
     end
 
@@ -1167,7 +1183,7 @@ do
 
             local health2 = getMobHealth(enemy)
             if hasMaxStamina and health2 and health2.Value > 0 then
-                style = CalculateCombatStyle()
+                style = CalculateCombatStyle(false)
 
                 local skill
                 if settings.WeaponSkill == "Weapon Class Skill" then
@@ -1202,7 +1218,6 @@ do
         skillauraing[touching] = nil
     end)
 
-    local level = WaitForDescendant(plr, "Level")
     combat:AddToggle({
         Name = "Skill Aura",
         Default = false,
@@ -1320,11 +1335,16 @@ do
         local highest_weapon
         local highest_armor
 
+        local level2 = tonumber(match(level.Text, "%d+"))
         for _, item in next, Inventory:GetChildren() do
             local ItemData = ItemDatas[item.Name]
 
             local class = ItemData.Type
             if class ~= "Weapon" and class ~= "Clothing" then
+                continue
+            end
+
+            if ItemData.level > level2 then
                 continue
             end
 
@@ -1597,7 +1617,7 @@ do
         PremiumOnly = false
     })
 
-    local animSettings = Profile.AnimSettings
+    local animSettings = Profile:WaitForChild("AnimSettings")
 
     local Animations = {}
     local BlacklistedAnimations = {"Spear", "Misc", "Daggers", "SwordShield", "Dagger"}
@@ -1626,28 +1646,27 @@ do
 
     Character_tab:AddDropdown({
         Name = "Weapon Animations",
-        Default = settings.Animation,
+        Default = CalculateCombatStyle(),
         Options = Animations,
         Callback = function(animation)
             settings.Weapon_Animation = animation
         end
     })
 
-    combat_module.CalculateCombatStyle = function(bool, brah)
-        if checkcaller() then
-            if brah then
-                return settings.Weapon_Animation
-            end
-
-            return CalculateCombatStyle(bool)
+    local OldCalculateCombatStyle = CalculateCombatStyle
+    combat_module.CalculateCombatStyle = function(bool)
+        if getfenv(2) == getfenv(1) and bool == nil then
+            return settings.Weapon_Animation
         end
 
         if not shouldAnimate or bool == false then
-            return CalculateCombatStyle(bool)
+            return OldCalculateCombatStyle(bool)
         end
 
         return settings.Weapon_Animation
     end
+
+    CalculateCombatStyle = combat_module.CalculateCombatStyle
 
     local invisibility = false
     local function goinvisible(new)
