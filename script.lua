@@ -443,6 +443,7 @@ end
 local stamina = Entity:WaitForChild("Stamina")
 local hasMaxStamina = stamina.Value >= stamina.MaxValue
 local function setUpStaminaValues()
+    hasMaxStamina = stamina.Value >= stamina.MaxValue
     local currentStaminaSignal = stamina:GetPropertyChangedSignal("Value"):Connect(function()
         hasMaxStamina = stamina.Value >= stamina.MaxValue
     end)
