@@ -41,17 +41,14 @@ local firesignal = firesignal or getconnections and function(signal, args)
 end
 local request = (syn and syn.request) or (fluxus and fluxus.request) or request
 
-if syn then -- fix weird error on synapse v3
-    local _, isv3 = identifyexecutor()
-    if isv3 == "5bcbba6" then
-        local old; old = hookfunc(writefile, function(a, b)
-            if a:match("SB2 Script | OneTaPuXd on v3rm") then
-                return
-            end
-            
-            return old(a, b)
-        end)
-    end
+if syn and checkcallstack then
+    local old; old = hookfunc(writefile, function(a, b)
+        if a:match("SB2 Script | OneTaPuXd on v3rm") then
+            return
+        end
+
+        return old(a, b)
+    end)
 end
 
 local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or (syn and syn.queue_on_teleport)
