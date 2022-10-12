@@ -1681,7 +1681,7 @@ do
     plr.CharacterAdded:Connect(goinvisible)
 
     Character_tab:AddToggle({
-        Name = "Invisibility (only u can see u)",
+        Name = "Invisibility (INVISIBLE TO EVERYONE BUT URSELF)",
         Default = false,
         Callback = function(bool)
             invisibility = bool
