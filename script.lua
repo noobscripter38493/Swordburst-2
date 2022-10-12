@@ -1729,7 +1729,9 @@ do
         Name = "WalkSpeed Toggle",
         Default = false,
         Callback = function(bool)
+            humanoid.WalkSpeed = 20
             settings.speed = bool
+            
             while settings.speed do
                 humanoid.WalkSpeed = walkspeed
                 task.wait()
