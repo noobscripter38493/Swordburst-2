@@ -181,7 +181,6 @@ local mobs_on_floor = {
         "Mutated Pumpkin",
         "Bloodshard Spider",
         "Candy Chest",
-        "Headless Horseman",
         "Hostile Omen",
         "Elkwood Giant",
         "Cursed Skeleton",
@@ -258,7 +257,8 @@ local bosses_on_floor = {
     [11331145451] = {
         "Magnor, the Necromancer",
         "Bulswick, the Elkwood Behemoth",
-        "Egnor, the Undead King"
+        "Egnor, the Undead King",
+        "Headless Horseman"
     }
 }
 
