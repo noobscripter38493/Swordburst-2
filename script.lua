@@ -46,7 +46,7 @@ if syn and checkcallstack then
         if a:match("SB2 Script | OneTaPuXd on v3rm") then
             return
         end
-
+        
         return old(a, b)
     end)
 end
@@ -171,6 +171,23 @@ local mobs_on_floor = {
         "Watcher",
         "Cybold",
         "Wa, the Curious",
+    },
+
+    [11331145451] = {
+        "Sorcerer",
+        "Spiritual Hound",
+        "Stone Gargoyle",
+        "Black Widow",
+        "Mutated Pumpkin",
+        "Bloodshard Spider",
+        "Candy Chest",
+        "Headless Horseman",
+        "Hostile Omen",
+        "Elkwood Giant",
+        "Cursed Skeleton",
+        "Harbinger",
+        "Mud Brute",
+        "Pumpkin Reaper"
     }
 }
 
@@ -236,6 +253,12 @@ local bosses_on_floor = {
         "Duality Reaper",
         "Saurus, the All-Seeing",
         "Neon Chest"
+    },
+
+    [11331145451] = {
+        "Magnor, the Necromancer",
+        "Bulswick, the Elkwood Behemoth",
+        "Egnor, the Undead King"
     }
 }
 
@@ -702,7 +725,7 @@ do
     end)
     floatPart.Parent = workspace
 
-    local function DoStuff()
+    local function FindNextMob()
         local to
         if settings.Farm_Only_Bosses then
             to = searchForAnyBoss(bosses_on_floor[placeid])
@@ -749,7 +772,7 @@ do
         end
 
         if not IsWaitingFromHealthFloat then
-            return DoStuff()
+            return FindNextMob()
         end
 
         shouldFloat = true
@@ -868,7 +891,7 @@ do
     })
 
     farm_tab:AddSlider({
-        Name = "Max Autofarm Radius",
+        Name = "Max Radius",
         Min = 0,
         Max = 10000,
         Default = settings.MaxAutofarmDistance,
@@ -881,7 +904,7 @@ do
     })
 
     farm_tab:AddSlider({
-        Name = "Autofarm Y Offset",
+        Name = "Y Offset",
         Min = 0,
         Max = 30,
         Default = settings.Autofarm_Y_Offset,
@@ -1113,9 +1136,8 @@ do
             for _, v in next, orion:GetDescendants() do
                 if v:IsA("TextLabel") and v.Text == "Kill Aura Keybind" then
                     inputbegan = {}
-
                     v.Parent.TextButton.MouseButton1Down:Connect(function()
-                        if inputbegan.Connected then
+                        if inputbegan and inputbegan.Connected then
                             return
                         end
 
@@ -1262,7 +1284,12 @@ local upgrade_amount = {
     Common = 10
 }
 
-local function GetItemIconURL(ItemData)
+local function GetItemImage(ItemData)
+    local image = ItemData.image
+    if image then
+        return image
+    end
+
     local icon = ItemData.icon
     local response2 = request({
         Url = "https://www.roblox.com/library/" .. match(icon, "%d+"),
@@ -1290,7 +1317,7 @@ for _, v in next, Database:WaitForChild("Items"):GetChildren() do
                     break
                 end
             end
-
+            
             local rarity = ItemData.rarity
             local upgrades = upgrade_amount[rarity]
             ItemData.potential = math.floor(base + (base * rates[rarity] * upgrades))
@@ -1604,6 +1631,11 @@ do
             makespecialtpbutton("Neon Chest", neon_chest)
             makespecialtpbutton("Boss Room", sauraus)
         end
+
+        if placeid == 11331145451 then -- halloween
+            local a = Vector3.new(1679, 104, -349)
+            loop_workspace(a)
+        end
     end
 end
 
@@ -1681,7 +1713,7 @@ do
     plr.CharacterAdded:Connect(goinvisible)
 
     Character_tab:AddToggle({
-        Name = "Invisibility (INVISIBLE TO EVERYONE BUT URSELF)",
+        Name = "Invisibility (only u can see u)",
         Default = false,
         Callback = function(bool)
             invisibility = bool
@@ -1729,9 +1761,7 @@ do
         Name = "WalkSpeed Toggle",
         Default = false,
         Callback = function(bool)
-            humanoid.WalkSpeed = 20
             settings.speed = bool
-            
             while settings.speed do
                 humanoid.WalkSpeed = walkspeed
                 task.wait()
@@ -1901,7 +1931,7 @@ do
             end
 
             local item_name = ItemData.name
-            local item_image = ItemData.image or GetItemIconURL(ItemData)
+            local item_image = GetItemImage(ItemData)
 
             local item_potential = tostring(ItemData.potential)
             local item_base = tostring(ItemData.base)
