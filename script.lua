@@ -781,7 +781,6 @@ do
             table.insert(tweens, tween)
 
             tween:Play()
-            tween.Completed:Wait()
         end)
     end
 
