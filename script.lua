@@ -272,24 +272,12 @@ local Event = Rs:WaitForChild("Event")
 local rf = Rs:WaitForChild("Function")
 
 task.spawn(function()
-    if getconnections then
-        local antiafk
-        while not antiafk do
-            for _, v in next, getconnections(plr.Idled) do
-                antiafk = true
-                v:Disable()
-            end
-
-            task.wait(1)
-        end
-    else
-        local vim = game:GetService("VirtualInputManager")
-        while true do
-            vim:SendKeyEvent(true, Enum.KeyCode.Home, false, game)
-            task.wait(1)
-            vim:SendKeyEvent(false, Enum.KeyCode.Home, false, game)
-            task.wait(60 * 15)
-        end
+    local vim = game:GetService("VirtualInputManager")
+    while true do
+        vim:SendKeyEvent(true, Enum.KeyCode.Home, false, game)
+        task.wait(1)
+        vim:SendKeyEvent(false, Enum.KeyCode.Home, false, game)
+        task.wait(60 * 10)
     end
 end)
 
