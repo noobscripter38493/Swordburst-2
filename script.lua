@@ -1906,6 +1906,7 @@ do
         end
     end)
 
+    local ping_everyone
     if request then
         local ignored_rarities = {}
         local webhook_toggle
@@ -1945,7 +1946,7 @@ do
                 Body = HttpS:JSONEncode({
                     username = "i <3 swordburst 2",
                     embeds = {{
-                        title = ("%s Rarity Item Drop (%s)"):format(item_rarity, item_name),
+                        title = ("%s %s Rarity Item Drop (%s)"):format(ping_everyone and "@everyone" or "", item_rarity, item_name),
                         color = 16711680,
 
                         fields = {{
@@ -1993,6 +1994,14 @@ do
             TextDisappear = true,
             Callback = function(url)
                 settings.WebhookURL = url:gsub(" ", "")
+            end
+        })
+
+        Stats:AddToggle({
+            Name = "Ping Everyone",
+            Default = false,
+            Callback = function(bool)
+                ping_everyone = bool
             end
         })
 
