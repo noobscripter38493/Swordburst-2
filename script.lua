@@ -277,7 +277,7 @@ task.spawn(function()
         vim:SendKeyEvent(true, Enum.KeyCode.Home, false, game)
         task.wait(1)
         vim:SendKeyEvent(false, Enum.KeyCode.Home, false, game)
-        task.wait(60 * 10)
+        task.wait(60 * 15)
     end
 end)
 
@@ -781,6 +781,7 @@ do
             table.insert(tweens, tween)
 
             tween:Play()
+            tween.Completed:Wait()
         end)
     end
 
@@ -1931,9 +1932,10 @@ do
                 Url = webhookURL,
                 Method = "POST",
                 Body = HttpS:JSONEncode({
+                    content = ping_everyone and "@everyone",
                     username = "i <3 swordburst 2",
                     embeds = {{
-                        title = ("%s %s Rarity Item Drop (%s)"):format(ping_everyone and "@everyone" or "", item_rarity, item_name),
+                        title = ("%s Rarity Item Drop (%s)"):format(item_rarity, item_name),
                         color = 16711680,
 
                         fields = {{
@@ -1985,7 +1987,7 @@ do
         })
 
         Stats:AddToggle({
-            Name = "Ping Everyone",
+            Name = "Ping @everyone",
             Default = false,
             Callback = function(bool)
                 ping_everyone = bool
@@ -1993,7 +1995,7 @@ do
         })
 
         Stats:AddToggle({
-            Name = "Inline Webhook Output",
+            Name = "Inline Webhook Output (may look nicer)",
             Default = settings.Inline,
             Callback = function(bool)
                 settings.Inline = bool
