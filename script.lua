@@ -1980,7 +1980,7 @@ do
         Stats:AddTextbox({
             Name = "Item Drop Webhook URL",
             Default = settings.WebhookURL,
-            TextDisappear = true,
+            TextDisappear = false,
             Callback = function(url)
                 settings.WebhookURL = url:gsub(" ", "")
             end
