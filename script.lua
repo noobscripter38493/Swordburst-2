@@ -88,7 +88,13 @@ local mobs_on_floor = {
         "Icewhal",
         "Ice Elemental",
         "Snowhorse",
-        "Ice Walker"
+        "Ice Walker",
+        
+        "Icy Imp", -- WINTER EVENT
+        "Evergreen Sentinel",
+        "Crystalite",
+        "Gemulite",
+        "Holiday Android"
     },
 
     [572487908] = { -- floor 4
@@ -188,14 +194,6 @@ local mobs_on_floor = {
         "Mud Brute",
         "Pumpkin Reaper"
     },
-    
-    [555980327] = { -- WINTER EVENT
-        "Icy Imp",
-        "Evergreen Sentinel",
-        "Crystalite",
-        "Gemulite",
-        "Holiday Android"
-    }
 }
 
 local bosses_on_floor = {
@@ -218,7 +216,9 @@ local bosses_on_floor = {
     [555980327] = { -- floor 3
         "Qerach The Forgotten Golem",
         "Alpha Icewhal",
-        "Ra'thae the Ice King"
+        "Ra'thae the Ice King",
+        
+        "Withered Wintula" -- WINTER EVENT
     },
 
     [572487908] = { -- floor 4
@@ -267,10 +267,6 @@ local bosses_on_floor = {
         "Bulswick, the Elkwood Behemoth",
         "Egnor, the Undead King",
         "Headless Horseman"
-    },
-    
-    [555980327] = { -- WINTER EVENT
-        "Withered Wintula"
     }
 }
 
