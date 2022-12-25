@@ -776,21 +776,18 @@ do
     end
 
     local function TweenF()
-        task.spawn(function()
-            local to = playerHealthChecks()
+        local to = playerHealthChecks()
 
-            local distance = (hrp.Position - to.Position).Magnitude
-            local seconds = distance / settings.Tween_Speed
-            local y_offset = shouldFloat and 0 or settings.Autofarm_Y_Offset
-            local cframe = to.CFrame * CFrame.new(0, y_offset, 0)
+        local distance = (hrp.Position - to.Position).Magnitude
+        local seconds = distance / settings.Tween_Speed
+        local y_offset = shouldFloat and 0 or settings.Autofarm_Y_Offset
+        local cframe = to.CFrame * CFrame.new(0, y_offset, 0)
 
-            local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
-            local tween = TweenS:Create(hrp, tween_info, {CFrame = cframe})
-            table.insert(tweens, tween)
+        local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
+        local tween = TweenS:Create(hrp, tween_info, {CFrame = cframe})
+        table.insert(tweens, tween)
 
-            tween:Play()
-            tween.Completed:Wait()
-        end)
+        tween:Play()
     end
 
     RunS.RenderStepped:Connect(function()
@@ -838,7 +835,7 @@ do
             end
 
             while settings.Autofarm do
-                TweenF()
+                task.spawn(TweenF)
                 task.wait()
             end
         end
