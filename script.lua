@@ -1262,7 +1262,7 @@ do
 end
 
 local dismantle = {}
-local rates = setmetatable({Legendary = .05}, {
+local rates = setmetatable({Burst = 0.5, Legendary = .05}, {
     __index = function(self, i)
         self[i] = .04
         return .04
