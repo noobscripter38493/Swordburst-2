@@ -1036,7 +1036,7 @@ do
     task.spawn(function()
         while true do
             if #attacking == 0 then
-                task.wait(1)
+                task.wait()
                 continue
             end
 
