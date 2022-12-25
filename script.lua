@@ -1274,6 +1274,7 @@ local dismantler_module = require(ui_module.Dismantle)
 local GetItemData = inventory_module.GetItemData
 
 local upgrade_amount = {
+    Burst = 25,
     Legendary = 20,
     Rare = 15,
     Uncommon = 10,
