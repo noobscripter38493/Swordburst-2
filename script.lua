@@ -173,7 +173,7 @@ local mobs_on_floor = {
         "Wa, the Curious",
     },
 
-    [11331145451] = {
+    [11331145451] = { -- HALLOWEEN EVENT
         "Sorcerer",
         "Spiritual Hound",
         "Stone Gargoyle",
@@ -187,6 +187,14 @@ local mobs_on_floor = {
         "Harbinger",
         "Mud Brute",
         "Pumpkin Reaper"
+    },
+    
+    [555980327] = { -- WINTER EVENT
+        "Icy Imp",
+        "Evergreen Sentinel",
+        "Crystalite",
+        "Gemulite",
+        "Holiday Android"
     }
 }
 
@@ -259,6 +267,10 @@ local bosses_on_floor = {
         "Bulswick, the Elkwood Behemoth",
         "Egnor, the Undead King",
         "Headless Horseman"
+    },
+    
+    [555980327] = { -- WINTER EVENT
+        "Withered Wintula"
     }
 }
 
