@@ -218,7 +218,8 @@ local bosses_on_floor = {
         "Alpha Icewhal",
         "Ra'thae the Ice King",
         
-        "Withered Wintula" -- WINTER EVENT
+        "Withered Wintula", -- WINTER EVENT
+        "Jolrock the Snow Protecter"
     },
 
     [572487908] = { -- floor 4
