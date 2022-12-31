@@ -10,10 +10,11 @@ while not game:IsLoaded()  do
     task.wait(1)
 end
 
-local placeid = game.PlaceId
 if game.GameId ~= 212154879 then
     return
 end
+
+local placeid = game.PlaceId
 
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
@@ -311,7 +312,7 @@ local CalculateCombatStyle = combat_module.CalculateCombatStyle
 
 local settings = { -- defaults
     Autofarm = false,
-    Autofarm_Y_Offset = 10,
+    Autofarm_Y_Offsets = {},
     Tween_Speed = 50,
     Farm_Only_Bosses = false,
     Boss_Priority = false,
@@ -328,7 +329,7 @@ local settings = { -- defaults
     KA_Keybind = "R",
     AttackPlayers = false,
     MaxAutofarmDistance = 5000,
-    excludedMobs = {[tostring(placeid)] = {}},
+    excludedMobs = {},
     Height = 30,
     Autofarm_Idle_Min = 30,
     Autofarm_Idle_Max = 70,
@@ -345,7 +346,7 @@ local doLoad = {
     MaxAutofarmDistance = true,
     KA_Keybind = true,
     KA_Range = true,
-    Autofarm_Y_Offset = true,
+    Autofarm_Y_Offsets = true,
     WebhookURL = true,
     Tween_Speed = true,
     WeaponSkill = true,
@@ -371,11 +372,9 @@ if hasfilefunctions then
 
     local saved_settings = HttpS:JSONDecode(readfile(fileName))
     for i, v in next, saved_settings do
-        if not doLoad[i] then
-            continue
+        if doLoad[i] then
+            settings[i] = v
         end
-
-        settings[i] = v
     end
 
     task.spawn(function()
@@ -386,7 +385,17 @@ if hasfilefunctions then
     end)
 end
 
+local all_on_floor = {"Chests"}
+for _, v in next, bosses_on_floor[placeid] do
+    table.insert(all_on_floor, v)
+end
+
+for _, v in next, mobs_on_floor[placeid] do
+    table.insert(all_on_floor, v)
+end
+
 local MobExclusion = settings.excludedMobs
+local Autofarm_Y_Offsets = settings.Autofarm_Y_Offsets
 
 local function WaitForDescendant(parent, descendant_name)
     local already = parent:FindFirstChild(descendant_name, true)
@@ -485,6 +494,7 @@ plr.CharacterAdded:Connect(function(new)
     setUpPlayerHealthValues()
     setUpStaminaValues()
     setNoClipParts()
+    hasMaxStamina = true
 end)
 
 local Actions = require(Services.Actions)
@@ -778,10 +788,11 @@ do
 
     local function TweenF()
         local to = playerHealthChecks()
+        local mob_name = to.Parent.Name
 
         local distance = (hrp.Position - to.Position).Magnitude
         local seconds = distance / settings.Tween_Speed
-        local y_offset = shouldFloat and 0 or settings.Autofarm_Y_Offset
+        local y_offset = shouldFloat and 0 or Autofarm_Y_Offsets[mob_name]
         local cframe = to.CFrame * CFrame.new(0, y_offset, 0)
 
         local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
@@ -894,19 +905,6 @@ do
         ValueName = "Studs",
         Callback = function(v)
             settings.MaxAutofarmDistance = v
-        end
-    })
-
-    farm_tab:AddSlider({
-        Name = "Y Offset",
-        Min = 0,
-        Max = 30,
-        Default = settings.Autofarm_Y_Offset,
-        Color = Color3.new(255, 255, 255),
-        Increment = 1,
-        ValueName = "Y Offset",
-        Callback = function(v)
-            settings.Autofarm_Y_Offset = v
         end
     })
 
@@ -1444,22 +1442,40 @@ do
         PremiumOnly = false
     })
 
-    local all_on_floor = {"Chests"}
-    for _, v in next, bosses_on_floor[placeid] do
-        table.insert(all_on_floor, v)
-    end
-
-    for _, v in next, mobs_on_floor[placeid] do
-        table.insert(all_on_floor, v)
-    end
-
     for _, mob_name in next, all_on_floor do
-        local default = MobExclusion[mob_name] ~= false and MobExclusion[mob_name] ~= nil
+        local default = MobExclusion[mob_name] == true
         farm_tab3:AddToggle({
             Name = mob_name,
             Default = default,
             Callback = function(bool)
                 MobExclusion[mob_name] = bool
+            end
+        })
+    end
+end
+
+do
+    local AutofarmYOFfsetTab = window:MakeTab({
+        Name = "Autofarm Y Offsets",
+        Icon = "",
+        PremiumOnly = false
+    })
+
+    for i, mob_name in next, all_on_floor do
+        if not Autofarm_Y_Offsets[mob_name] then
+            Autofarm_Y_Offsets[mob_name] = 10
+        end
+
+        AutofarmYOFfsetTab:AddSlider({
+            Name = mob_name,
+            Min = 0,
+            Max = 50,
+            Default = Autofarm_Y_Offsets[mob_name],
+            Color = Color3.new(255, 255, 255),
+            Increment = 1,
+            ValueName = "Y Offset",
+            Callback = function(v)
+                Autofarm_Y_Offsets[mob_name] = v
             end
         })
     end
