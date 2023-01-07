@@ -1,4 +1,4 @@
--- loadfile('Scriptz/sb2 script.lua')()
+    -- loadfile('Scriptz/sb2 script.lua')()
 -- loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()
 if getgenv().SB2Script then
     return
@@ -571,6 +571,9 @@ local window = lib:MakeWindow({
     SaveConfig = false,
     ConfigFolder = false
 })
+
+local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
+local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
 
 local split = string.split
 local match = string.match
@@ -1418,9 +1421,6 @@ do
         end
     end
 
-    local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
-    local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
-
     for i, v in next, names do
         farm_tab2:AddToggle({
             Name = "Auto Dismantle " .. v,
@@ -1868,9 +1868,6 @@ do
         end
     })
 
-    local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
-    local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
-
     for i, v in next, names do
         Smithing:AddButton({
             Name = "Dismantle All " .. v,
@@ -2025,8 +2022,6 @@ do
             end
         })
 
-        local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
-        local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
         for i, v in next, names do
             Stats:AddToggle({
                 Name = "Webhook Ignore Rarity | " .. v,
@@ -2037,6 +2032,61 @@ do
                 end
             })
         end
+    end
+end
+
+do
+    local FastTrade = window:MakeTab({
+        Name = "Crystal Trade",
+        Icon = "",
+        PremiumOnly = false
+    })
+
+    local Amount = 0
+    local TempAmount = 0
+    local function CheckIfHaveCrystal(Item)
+        if Item and Item.Count.Value >= TempAmount then
+            return true
+        else
+            lib:MakeNotification({
+                Name = "Amount provided exceeds amount in inventory",
+                Content = "didn't change number added",
+                Image = "",
+                Time = 5
+            })
+        end
+    end
+
+    local UpgCrysStr = "Upgrade Crystal"
+    for i, v in next, rarities do
+        local Item = Inventory:FindFirstChild(v .. " " .. UpgCrysStr)
+        FastTrade:AddTextbox({
+            Name = ("Change # of %s Upgrade Crystals added"):format(v),
+            Default = "",
+            TextDisappear = false,
+            Callback = function(n)
+                n = tonumber(n)
+                TempAmount = n
+
+                Item = Inventory:FindFirstChild(v .. " " .. UpgCrysStr)
+                if CheckIfHaveCrystal(Item) then
+                    Amount = n
+                end
+            end
+        })
+
+        FastTrade:AddButton({
+            Name = ("Add %s Upgrade Crystals"):format(v),
+            Callback = function()
+                Item = Inventory:FindFirstChild(v .. " " .. UpgCrysStr)
+                if CheckIfHaveCrystal(Item) then
+                    for i = 1, Amount do
+                        Event:FireServer("Trade", "TradeAddItem", {Item})
+                        task.wait(.1)
+                    end
+                end
+            end
+        })
     end
 end
 
