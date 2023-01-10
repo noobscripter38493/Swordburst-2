@@ -1,4 +1,4 @@
-    -- loadfile('Scriptz/sb2 script.lua')()
+-- loadfile('Scriptz/sb2 script.lua')()
 -- loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()
 if getgenv().SB2Script then
     return
@@ -1924,9 +1924,6 @@ do
             end
 
             local webhookURL = settings.WebhookURL
-            if not webhookURL:find("https://discord.com/api/webhooks/") then
-                return
-            end
 
             local ItemData = ItemDatas[c.Name]
             local item_class = ItemData.Type
@@ -1997,12 +1994,42 @@ do
             end
         })
         
+        local function WebhookErr(err)
+            lib:MakeNotification({
+                Name = err,
+                Content = "Didn't set URL",
+                Image = "",
+                Time = 5
+            })
+        end
+
         Stats:AddTextbox({
             Name = "Item Drop Webhook URL",
             Default = settings.WebhookURL,
             TextDisappear = false,
             Callback = function(url)
-                settings.WebhookURL = url:gsub(" ", "")
+                url = url:gsub(" ", "")
+                if not url:find("https://discord.com/api/webhooks/") then
+                    return WebhookErr("Domain not Discord")
+                end
+
+                local response = request({
+                    Url = url,
+                    Method = "GET"
+                })
+
+                if response.Success then
+                    lib:MakeNotification({
+                        Name = "Successfully set webhook url",
+                        Content = "",
+                        Image = "",
+                        Time = 5
+                    })
+
+                    settings.WebhookURL = url
+                else
+                    WebhookErr("Nonexistent Webhook URL")
+                end
             end
         })
 
@@ -2041,7 +2068,7 @@ do
         Icon = "",
         PremiumOnly = false
     })
-
+    
     local Amount = 0
     local TempAmount = 0
     local function CheckIfHaveCrystal(Item)
