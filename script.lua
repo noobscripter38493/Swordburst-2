@@ -80,7 +80,8 @@ local mobs_on_floor = {
         "Leafray",
         "Pearl Keeper",
         "Bushback Tortoise",
-        "Wasp"
+        "Wasp",
+        "Giant Ruins Hornet"
     },
 
     [555980327] = { -- floor 3
