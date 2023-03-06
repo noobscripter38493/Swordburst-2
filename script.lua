@@ -1708,30 +1708,8 @@ do
     end
 
     CalculateCombatStyle = combat_module.CalculateCombatStyle
-
-    local invisibility = false
-    local function goinvisible(new)
-        if not invisibility then
-            return
-        end
-
-        local old_root = new:WaitForChild("LowerTorso"):WaitForChild("Root")
-        local new_root = old_root:Clone()
-
-        new_root.Parent = old_root.Parent
-        old_root:Destroy()
-    end
-
-    plr.CharacterAdded:Connect(goinvisible)
-
-    Character_tab:AddToggle({
-        Name = "Invisibility (only u can see u)",
-        Default = false,
-        Callback = function(bool)
-            invisibility = bool
-            goinvisible(char)
-        end
-    })
+    
+    Character_tab:AddParagraph("INVISIBILITY PATCHED", "INVISIBILITY PATCHED")
 
     Character_tab:AddToggle({
         Name = "Infinite Jump",
