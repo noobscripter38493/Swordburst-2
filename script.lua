@@ -139,7 +139,7 @@ local mobs_on_floor = {
         "Sky Raven",
         "Wingless Hippogriff",
         "Forest Wanderer",
-        "Dungeon Crusador"
+        "Dungeon Crusader"
     },
 
     [573267292] = { -- floor 9
