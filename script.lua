@@ -201,7 +201,6 @@ local mobs_on_floor = {
         "Easterian Knight",
         "Gemulite",
         "Crystalite",
-        "Crystalite",
         "Egg Mimic"
     }
 }
