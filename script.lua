@@ -196,6 +196,14 @@ local mobs_on_floor = {
         "Mud Brute",
         "Pumpkin Reaper"
     },
+
+    [13051622258] = { -- EASTER EVENT
+        "Easterian Knight",
+        "Gemulite",
+        "Crystalite",
+        "Crystalite",
+        "Egg Mimic"
+    }
 }
 
 local bosses_on_floor = {
@@ -270,6 +278,11 @@ local bosses_on_floor = {
         "Bulswick, the Elkwood Behemoth",
         "Egnor, the Undead King",
         "Headless Horseman"
+    },
+
+    [13051622258] = { -- EASTER EVENT
+        "Killer Bunny",
+        "Ultra Killer Bunny"
     }
 }
 
