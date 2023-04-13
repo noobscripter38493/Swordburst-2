@@ -281,7 +281,7 @@ local bosses_on_floor = {
 
     [13051622258] = { -- EASTER EVENT
         "Killer Bunny",
-        "Ultra Killer Bunny"
+        "Alpha Killer Bunny"
     }
 }
 
