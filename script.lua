@@ -1108,7 +1108,7 @@ do
         Name = "Kill Aura",
         Default = false,
         Callback = function(bool)
-            settings.KA = false
+            settings.KA = bool
         end
     })
 
