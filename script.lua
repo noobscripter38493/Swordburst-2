@@ -181,6 +181,18 @@ local mobs_on_floor = {
         "Wa, the Curious",
     },
 
+    [6144637080] = { -- FLOOR 12
+        "Scav",
+        "Radio Slug",
+        "Elite Scav",
+        "Crystal Lizard",
+        "Failed Experiment",
+        "Bat",
+        "Radioactive Experiment",
+        "Blue Failed Experiment",
+        "Organe Failed Experiment",
+    }
+
     [11331145451] = { -- HALLOWEEN EVENT
         "Sorcerer",
         "Spiritual Hound",
@@ -271,6 +283,11 @@ local bosses_on_floor = {
         "Saurus, the All-Seeing",
         "Neon Chest"
     },
+
+    [6144637080] = { -- FLOOR 12
+        "Suspended Unborn",
+        "Limor The Devourer"
+    }
 
     [11331145451] = {
         "Magnor, the Necromancer",
