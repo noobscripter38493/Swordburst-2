@@ -1023,7 +1023,7 @@ do
             end
 
             if not pauseKillAura then
-                Event:FireServer("Combat", remote_key, {"Attack", nil, "1", enemy})
+                Event:FireServer("Combat", remote_key, {"Attack", enemy, nil, "1"})
             end
 
             task.wait(.33)
@@ -1088,10 +1088,10 @@ do
     end)
 
     combat:AddToggle({
-        Name = "Kill Aura (disabled)",
+        Name = "Kill Aura",
         Default = false,
         Callback = function(bool)
-            settings.KA = false
+            settings.KA = bool
         end
     })
 
