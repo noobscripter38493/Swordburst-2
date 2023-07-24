@@ -1088,10 +1088,10 @@ do
     end)
 
     combat:AddToggle({
-        Name = "Kill Aura",
+        Name = "Kill Aura (disabled)",
         Default = false,
         Callback = function(bool)
-            settings.KA = bool
+            settings.KA = false
         end
     })
 
