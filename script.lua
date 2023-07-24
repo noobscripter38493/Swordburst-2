@@ -191,7 +191,7 @@ local mobs_on_floor = {
         "Radioactive Experiment",
         "Blue Failed Experiment",
         "Organe Failed Experiment",
-    }
+    },
 
     [11331145451] = { -- HALLOWEEN EVENT
         "Sorcerer",
@@ -287,7 +287,7 @@ local bosses_on_floor = {
     [6144637080] = { -- FLOOR 12
         "Suspended Unborn",
         "Limor The Devourer"
-    }
+    },
 
     [11331145451] = {
         "Magnor, the Necromancer",
