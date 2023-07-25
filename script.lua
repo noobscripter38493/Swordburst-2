@@ -1512,7 +1512,7 @@ do
 end
 
 do
-    if firetouchinterest then
+    if false then
         local teleports_tab = window:MakeTab({
             Name = 'Teleports',
             Icon = "",
