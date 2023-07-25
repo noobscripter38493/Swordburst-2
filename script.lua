@@ -1248,7 +1248,13 @@ do
                     for _ = 1, 15 do
                         if health2.Value > 0 and stamina.Value > 20 and distance <= 100 then
                             Event:FireServer("Skills", {"UseSkill", skill, {}})
-                            Event:FireServer("Combat", remote_key, {"Attack", enemy, skill, "2"})
+
+                            if placeid ~= 6144637080 then
+                                Event:FireServer("Combat", remote_key, {"Attack", enemy, skill, "1"})
+                            else
+                                Event:FireServer("Combat", remote_key, {"Attack", enemy, skill, "2"})
+                            end
+
                             task.wait(.2)
 
                             distance = (hrp.Position - touching.Position).Magnitude
