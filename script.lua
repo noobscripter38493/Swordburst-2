@@ -15,9 +15,9 @@ if game.GameId ~= 212154879 then
 end
 
 local lastknownupdate = {
-    [540240728] = {}, -- arcadia -- floor 1
+    [540240728] = "nobody cares", -- arcadia -- floor 1
     [737272595] = "2023-07-24T19:43:59.333Z", -- battle arena floor 1
-    [566212942] = {}, -- floor 6 helmfrith
+    [566212942] = "nobody cares", -- floor 6 helmfrith
     [542351431] = "2023-07-24T19:43:59.333Z", -- floor 1
     [548231754] = "2023-07-24T19:44:19.293Z", -- floor 2
     [555980327] = "2023-07-24T19:43:43.107Z", -- floor 3
