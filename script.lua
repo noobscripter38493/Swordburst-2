@@ -1,4 +1,4 @@
--- loadfile('Scriptz/sb2 script.lua')()
+-- loadfile('SB2 Script/SCRIPT.lua')()
 -- loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()
 if getgenv().SB2Script then
     return
@@ -14,7 +14,42 @@ if game.GameId ~= 212154879 then
     return
 end
 
+local lastknownupdate = {
+    [540240728] = {}, -- arcadia -- floor 1
+    [737272595] = "2023-07-24T19:43:59.333Z", -- battle arena floor 1
+    [566212942] = {}, -- floor 6 helmfrith
+    [542351431] = "2023-07-24T19:43:59.333Z", -- floor 1
+    [548231754] = "2023-07-24T19:44:19.293Z", -- floor 2
+    [555980327] = "2023-07-24T19:43:43.107Z", -- floor 3
+    [572487908] = "2023-07-24T19:40:14.107Z", -- floor 4
+    [580239979] = "2023-07-24T19:42:32.867Z", -- floor 5
+    [582198062] = "2023-07-24T19:42:16.3Z", -- floor 7
+    [548878321] = "2023-07-24T19:39:34.563Z", -- floor 8
+    [573267292] = "2023-07-24T19:41:18.803Z", -- floor 9
+    [2659143505] = "2023-07-24T19:41:06.977Z", -- floor 10
+    [5287433115] = "2023-07-24T19:40:36.777Z", -- floor 11
+    [6144637080] = "2023-07-25T20:17:19.97164Z" -- floor 12
+}
+
 local placeid = game.PlaceId
+local MPS = game:GetService("MarketplaceService")
+local info = MPS:GetProductInfo(placeid)
+local hasfilefunctions = isfolder and makefolder and writefile and readfile
+if hasfilefunctions then
+    local s = "SB2 Script/LastFloorUpdates"
+    local a = (s .. "/%s"):format(placeid)
+    if not isfolder("SB2 Script") or not isfolder(s) then
+        makefolder("SB2 Script")
+        makefolder(s)
+        writefile(a, info.Updated)
+    end
+
+    lastknownupdate[placeid] = readfile(a)
+    if info.Updated ~= lastknownupdate[placeid] then
+        writefile(a, info.Updated)
+        plr:Kick("floor update detected. script could be patched, use at risk. t =" .. info.Updated)
+    end
+end
 
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
@@ -54,7 +89,7 @@ end
 
 local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or (syn and syn.queue_on_teleport)
 if teleport_execute then
-    teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
+    teleport_execute("loadfile('SB2 Script/SCRIPT.lua')()")
 end
 
 local mobs_on_floor = {
@@ -387,10 +422,6 @@ local HttpS = game:GetService("HttpService")
 
 local hasfilefunctions = isfolder and makefolder and writefile and readfile
 if hasfilefunctions then
-    if not isfolder("SB2 Script") then
-        makefolder("SB2 Script")
-    end
-
     local fileName = ("SB2 Script/%s Settings.json"):format(plr.UserId)
     local function save_settings()
         writefile(fileName, HttpS:JSONEncode(settings))
@@ -1040,11 +1071,7 @@ do
             end
 
             if not pauseKillAura then
-                if placeid ~= 6144637080 then
-                    Event:FireServer("Combat", remote_key, {"Attack", enemy, nil, "1"})
-                else
-                    Event:FireServer("Combat", remote_key, {"Attack", enemy, nil, "2"})
-                end
+                Event:FireServer("Combat", remote_key, {"Attack", enemy, nil, "2"})
             end
 
             task.wait(.33)
@@ -1112,7 +1139,7 @@ do
         Name = "Kill Aura",
         Default = false,
         Callback = function(bool)
-            settings.KA = false
+            settings.KA = bool
         end
     })
 
@@ -1248,13 +1275,7 @@ do
                     for _ = 1, 15 do
                         if health2.Value > 0 and stamina.Value > 20 and distance <= 100 then
                             Event:FireServer("Skills", {"UseSkill", skill, {}})
-
-                            if placeid ~= 6144637080 then
-                                Event:FireServer("Combat", remote_key, {"Attack", enemy, skill, "1"})
-                            else
-                                Event:FireServer("Combat", remote_key, {"Attack", enemy, skill, "2"})
-                            end
-
+                            Event:FireServer("Combat", remote_key, {"Attack", enemy, skill, "2"})
                             task.wait(.2)
 
                             distance = (hrp.Position - touching.Position).Magnitude
