@@ -229,6 +229,7 @@ local mobs_on_floor = {
         "Radioactive Experiment",
         "Blue Failed Experiment",
         "Organe Failed Experiment",
+        "Newborn Abomination"
     },
 
     [11331145451] = { -- HALLOWEEN EVENT
