@@ -1546,6 +1546,144 @@ do
 end
 
 do
+    if firetouchinterest then
+        local teleports_tab = window:MakeTab({
+            Name = 'Teleports',
+            Icon = "",
+            PremiumOnly = false
+        })
+        local function GetClosestPartFromVector(v3)
+            local closest_magnitude = math.huge
+            local closest_part
+            for _, v in next, workspace:GetDescendants() do
+                if v.Parent.Name == "TeleportSystem" and v.Name == "Part" then
+                    local distance = (v3 - v.Position).Magnitude
+                    if distance < closest_magnitude then
+                        closest_magnitude = distance
+                        closest_part = v
+                    end
+                end
+            end
+            return closest_part
+        end
+        local function makespecialtpbutton(name, pos)
+            task.spawn(function()
+                plr:RequestStreamAroundAsync(pos)
+                task.wait(1)
+                local totouch = GetClosestPartFromVector(pos)
+                teleports_tab:AddButton({
+                    Name = name,
+                    Callback = function()
+                        firetouchinterest(hrp, totouch, 0)
+                        task.wait(.1)
+                        firetouchinterest(hrp, totouch, 1)
+                    end
+                })
+            end)
+        end
+        local function makeTPbutton(name, part)
+            teleports_tab:AddButton({
+                Name = name,
+                Callback = function()
+                    firetouchinterest(hrp, part, 0)
+                    task.wait(.1)
+                    firetouchinterest(hrp, part, 1)
+                end
+            })
+        end
+        local function loop_workspace(entrance, boss, miniboss, shop)
+            local totouch1 = entrance and GetClosestPartFromVector(entrance)
+            local totouch2 = boss and GetClosestPartFromVector(boss)
+            local totouch3 = miniboss and GetClosestPartFromVector(miniboss)
+            local totouch4 = shop and GetClosestPartFromVector(shop)
+            if totouch1 then
+                makeTPbutton("Dungeon Entrance", totouch1)
+            end
+            if totouch2 then
+                makeTPbutton("Boss Room", totouch2)
+            end
+            if totouch3 then
+                makeTPbutton("Mini Boss", totouch3)
+            end
+            if totouch4 then -- floor 10
+                makeTPbutton("Shop", totouch4)
+            end
+        end
+        if placeid == 542351431 then -- floor 1
+            local dungeon_entrance = Vector3.new(-1181, 70, 308)
+            local miniboss = Vector3.new(139, 225, -132)
+            local boss = Vector3.new(-2942, -125, 336)
+            loop_workspace(dungeon_entrance, boss, miniboss)
+        end
+        if placeid == 548231754 then -- floor 2
+            local dungeon_entrance = Vector3.new(-2185, 161, -2321)
+            local boss = Vector3.new(-2943, 201, -9805)
+            loop_workspace(dungeon_entrance, boss)
+        end
+        if placeid == 555980327 then -- floor 3
+            local dungeon_entrance = Vector3.new(1179, 6737, 1675)
+            local boss = Vector3.new(448, 4279, -385)
+            makespecialtpbutton("Boss Room", boss)
+            loop_workspace(dungeon_entrance)
+        end
+        if placeid == 572487908 then -- floor 4
+            local dungeon_entrance = Vector3.new(-1946, 5169, -1415)
+            local boss = Vector3.new(-2319, 2280, -515)
+            loop_workspace(dungeon_entrance, boss)
+        end
+        if placeid == 580239979 then -- floor 5
+            local dungeon_entrance = Vector3.new(-1562, 4040, -868)
+            local boss = Vector3.new(2189, 1308, -122)
+            loop_workspace(dungeon_entrance, boss)
+        end
+        if placeid == 582198062 then -- floor 7
+            local dungeon_entrance = Vector3.new(1219, 1083, -274)
+            local boss = Vector3.new(3347, 800, -804)
+            makespecialtpbutton("Dungeon Entrance", dungeon_entrance)
+            makespecialtpbutton("Boss", boss)
+        end
+        if placeid == 548878321 then -- floor 8
+            local dungeon_entrance = Vector3.new(-6679, 7801, 10006)
+            local boss = Vector3.new(1848, 4110, 7723)
+            local miniboss = Vector3.new(-808, 3174, -941)
+            loop_workspace(dungeon_entrance, boss, miniboss)
+        end
+        if placeid == 573267292 then -- floor 9
+            local dungeon_entrance = Vector3.new(878, 3452, -11139)
+            local boss = Vector3.new(12241, 461, -3656)
+            local miniboss_gargoyle = Vector3.new(-256, 3077, -4605)
+            local miniboss_poly = Vector3.new(1973, 2986, -4487)
+            loop_workspace(dungeon_entrance, boss, miniboss_gargoyle)
+            loop_workspace(nil, nil, miniboss_poly)
+        end
+        if placeid == 2659143505 then -- floor 10
+            local miniboss = Vector3.new(-895, 467, 6505)
+            local boss = Vector3.new(45, 1003, 25432)
+            local dungeon_entrance = Vector3.new(-606, 697, 9989)
+            local shop = Vector3.new(-252, 504, 6163)
+            loop_workspace(dungeon_entrance, boss, miniboss, shop)
+        end
+        if placeid == 5287433115 then -- floor 11
+            local DaRaKa = Vector3.new(4801, 1646, 2083)
+            local Za = Vector3.new(4001, 421, -3794)
+            local duality_reaper = Vector3.new(4763, 501, -4344)
+            local neon_chest = Vector3.new(5204, 2294, 5778)
+            local sauraus = Vector3.new(5333, 3230, 5589)
+            makespecialtpbutton("Duality Reaper", duality_reaper)
+            makespecialtpbutton("Da, Ra, Ka", DaRaKa)
+            makespecialtpbutton("Za", Za)
+            makespecialtpbutton("Neon Chest", neon_chest)
+            makespecialtpbutton("Boss Room", sauraus)
+        end
+        
+        if placeid == 11331145451 then -- halloween
+            local a = Vector3.new(1679, 104, -349)
+            loop_workspace(a)
+        end
+    end
+end
+
+do
     local Character_tab = window:MakeTab({
         Name = "Character",
         Icon = "",
@@ -1602,8 +1740,6 @@ do
     end
 
     CalculateCombatStyle = combat_module.CalculateCombatStyle
-    
-    Character_tab:AddParagraph("INVISIBILITY PATCHED", "INVISIBILITY PATCHED")
 
     Character_tab:AddToggle({
         Name = "Infinite Jump",
