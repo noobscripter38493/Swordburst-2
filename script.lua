@@ -18,9 +18,9 @@ local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 
 local lastknownupdate = {
-    [540240728] = "nobody cares", -- arcadia -- floor 1
+    --[540240728] = "nobody cares", -- arcadia -- floor 1
     [737272595] = "2023-07-24T19:43:59.333Z", -- battle arena floor 1
-    [566212942] = "nobody cares", -- floor 6 helmfrith
+    --[566212942] = "nobody cares", -- floor 6 helmfrith
     [542351431] = "2023-07-24T19:43:59.333Z", -- floor 1
     [548231754] = "2023-07-24T19:44:19.293Z", -- floor 2
     [555980327] = "2023-07-24T19:43:43.107Z", -- floor 3
@@ -38,7 +38,7 @@ local placeid = game.PlaceId
 local MPS = game:GetService("MarketplaceService")
 local info = MPS:GetProductInfo(placeid)
 local hasfilefunctions = isfolder and makefolder and writefile and readfile
-if hasfilefunctions then
+if hasfilefunctions and placeid ~= 540240728 and placeid ~= 566212942 then
     local s = "SB2 Script/LastFloorUpdates"
     local a = (s .. "/%s"):format(placeid)
     if not isfolder("SB2 Script") or not isfolder(s) then
