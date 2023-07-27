@@ -41,6 +41,9 @@ if hasfilefunctions then
     if not isfolder("SB2 Script") or not isfolder(s) then
         makefolder("SB2 Script")
         makefolder(s)
+    end
+
+    if not isfile(a) then
         writefile(a, info.Updated)
     end
 
