@@ -14,6 +14,9 @@ if game.GameId ~= 212154879 then
     return
 end
 
+local Players = game:GetService("Players")
+local plr = Players.LocalPlayer
+
 local lastknownupdate = {
     [540240728] = "nobody cares", -- arcadia -- floor 1
     [737272595] = "2023-07-24T19:43:59.333Z", -- battle arena floor 1
@@ -53,9 +56,6 @@ if hasfilefunctions then
         plr:Kick("floor update detected. script could be patched, use at risk. t =" .. info.Updated)
     end
 end
-
-local Players = game:GetService("Players")
-local plr = Players.LocalPlayer
 
 local info = debug.info
 local islclosure = islclosure or function(f)
