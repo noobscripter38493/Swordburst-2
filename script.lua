@@ -334,7 +334,7 @@ local bosses_on_floor = {
         "Warlord"
     },
 
-    [13965775911] = {"Atheon"} -- "Atheon's realm
+    [13965775911] = {"Atheon"}, -- "Atheon's realm
 
     [11331145451] = { -- halloween
         "Magnor, the Necromancer",
