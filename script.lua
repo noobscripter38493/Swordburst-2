@@ -226,7 +226,6 @@ local mobs_on_floor = {
         "Crystal Lizard",
         "Failed Experiment",
         "Bat",
-        "Radioactive Experiment",
         "Blue Failed Experiment",
         "Organe Failed Experiment",
         "Newborn Abomination"
@@ -325,7 +324,10 @@ local bosses_on_floor = {
 
     [6144637080] = { -- FLOOR 12
         "Suspended Unborn",
-        "Limor The Devourer"
+        "Limor The Devourer",
+        "C-618 Uriotol, The Forgotten Hunter",
+        "Atheon",
+        "Radioactive Experiment",
     },
 
     [11331145451] = {
