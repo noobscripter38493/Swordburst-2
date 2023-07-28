@@ -327,7 +327,7 @@ local bosses_on_floor = {
         "Limor The Devourer",
         "C-618 Uriotol, The Forgotten Hunter",
         "Atheon",
-        "Radioactive Experiment",
+        "Radioactive Experiment"
     },
 
     [11331145451] = {
@@ -644,6 +644,7 @@ local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
 
 local split = string.split
 local match = string.match
+local negative = false
 do
     local farm_tab = window:MakeTab({
         Name = "Autofarm",
@@ -798,6 +799,10 @@ do
         end
 
         local height = settings.Height
+        if negative then
+            height = -height
+        end
+        
         floatPart.CFrame = hrp.CFrame * CFrame.new(0, height, 0)
     end)
     floatPart.Parent = workspace
@@ -863,6 +868,10 @@ do
         local distance = (hrp.Position - to.Position).Magnitude
         local seconds = distance / settings.Tween_Speed
         local y_offset = shouldFloat and 0 or Autofarm_Y_Offsets[mob_name]
+        if negative then
+            y_offset = -y_offset
+        end
+        
         local cframe = to.CFrame * CFrame.new(0, y_offset, 0)
 
         local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
@@ -1526,6 +1535,14 @@ do
         Name = "Autofarm Y Offsets",
         Icon = "",
         PremiumOnly = false
+    })
+
+    AutofarmYOFfsetTab:AddToggle({
+        Name = "Farm Under",
+        Default = false,
+        Callback = function(bool)
+            negative = bool
+        end
     })
 
     for i, mob_name in next, all_on_floor do
