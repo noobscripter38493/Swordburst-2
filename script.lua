@@ -232,7 +232,7 @@ local mobs_on_floor = {
         "Newborn Abomination"
     },
 
-    [13965775911] = {} -- atheon's realm
+    [13965775911] = {}, -- atheon's realm
 
     [11331145451] = { -- HALLOWEEN EVENT
         "Sorcerer",
