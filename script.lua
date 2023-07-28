@@ -31,7 +31,8 @@ local lastknownupdate = {
     [573267292] = "2023-07-24T19:41:18.803Z", -- floor 9
     [2659143505] = "2023-07-24T19:41:06.977Z", -- floor 10
     [5287433115] = "2023-07-24T19:40:36.777Z", -- floor 11
-    [6144637080] = "2023-07-25T20:17:19.97164Z" -- floor 12
+    [6144637080] = "2023-07-25T20:17:19.97164Z", -- floor 12
+    [13965775911] = "2023-07-27T21:16:05.2416692Z" -- atheon's realm
 }
 
 local placeid = game.PlaceId
@@ -92,7 +93,7 @@ end
 
 local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or (syn and syn.queue_on_teleport)
 if teleport_execute then
-    teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
+    teleport_execute("loadfile('SB2 Script/SCRIPT.lua')()")
 end
 
 local mobs_on_floor = {
@@ -231,6 +232,8 @@ local mobs_on_floor = {
         "Newborn Abomination"
     },
 
+    [13965775911] = {} -- atheon's realm
+
     [11331145451] = { -- HALLOWEEN EVENT
         "Sorcerer",
         "Spiritual Hound",
@@ -327,10 +330,13 @@ local bosses_on_floor = {
         "Limor The Devourer",
         "C-618 Uriotol, The Forgotten Hunter",
         "Atheon",
-        "Radioactive Experiment"
+        "Radioactive Experiment",
+        "Warlord"
     },
 
-    [11331145451] = {
+    [13965775911] = {"Atheon"} -- "Atheon's realm
+
+    [11331145451] = { -- halloween
         "Magnor, the Necromancer",
         "Bulswick, the Elkwood Behemoth",
         "Egnor, the Undead King",
@@ -644,7 +650,6 @@ local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
 
 local split = string.split
 local match = string.match
-local negative = false
 do
     local farm_tab = window:MakeTab({
         Name = "Autofarm",
@@ -797,15 +802,24 @@ do
         if shouldFloat then 
             return 
         end
-
-        local height = settings.Height
-        if negative then
-            height = -height
-        end
         
+        local height = settings.Height
         floatPart.CFrame = hrp.CFrame * CFrame.new(0, height, 0)
     end)
     floatPart.Parent = workspace
+
+    workspace.ChildAdded:Connect(function(c)
+        if c.Name == "Circle" and c.Size == Vector3.new(30, 50, 30) then
+            print("a")
+            atkstarted = os.time()
+        end
+    end)
+
+    local function IsBossAttacking(mob_name)
+        if mob_name == "Warlord" then
+            return os.time() - atkstarted < 5.5
+        end
+    end
 
     local function FindNextMob()
         local to
@@ -815,6 +829,12 @@ do
             to = to or floatPart
 
             shouldFloat = to == floatPart
+
+            if IsBossAttacking(to.Parent.Name) then
+                shouldFloat = true
+                to = floatPart
+            end
+
             return to
         end
 
@@ -833,8 +853,8 @@ do
         end
 
         to = to and to:FindFirstChild("HumanoidRootPart") or floatPart
-
         shouldFloat = to == floatPart
+
         return to
     end
 
@@ -868,10 +888,6 @@ do
         local distance = (hrp.Position - to.Position).Magnitude
         local seconds = distance / settings.Tween_Speed
         local y_offset = shouldFloat and 0 or Autofarm_Y_Offsets[mob_name]
-        if negative then
-            y_offset = -y_offset
-        end
-        
         local cframe = to.CFrame * CFrame.new(0, y_offset, 0)
 
         local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
@@ -1537,14 +1553,6 @@ do
         PremiumOnly = false
     })
 
-    AutofarmYOFfsetTab:AddToggle({
-        Name = "Farm Under",
-        Default = false,
-        Callback = function(bool)
-            negative = bool
-        end
-    })
-
     for i, mob_name in next, all_on_floor do
         if not Autofarm_Y_Offsets[mob_name] then
             Autofarm_Y_Offsets[mob_name] = 10
@@ -1694,6 +1702,12 @@ do
             makespecialtpbutton("Za", Za)
             makespecialtpbutton("Neon Chest", neon_chest)
             makespecialtpbutton("Boss Room", sauraus)
+        end
+        if placeid == 6144637080 then -- floor 12
+            local Warlord = Vector3.new(-714, 143, 4961)
+            local SuspendedUndeadAndAtheon = Vector3.new(-5325, 427, 4145)
+            makespecialtpbutton("Suspended Undead + Atheon", SuspendedUndeadAndAtheon)
+            makespecialtpbutton("Warlord", Warlord)
         end
         
         if placeid == 11331145451 then -- halloween
