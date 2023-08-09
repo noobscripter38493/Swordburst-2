@@ -625,9 +625,9 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
                     if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
                         return
                     end
-                end
+                end]]
             end
-]]
+
             return nc(self, ...)
         end)
     end
