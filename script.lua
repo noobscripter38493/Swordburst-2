@@ -619,7 +619,7 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
                         return
                     end
                 end
-
+--[[
             elseif self == rf and ncm == "InvokeServer" then
                 if checkcaller and not checkcaller() and args[1] == "Equipment" and getupvalue then
                     if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
@@ -627,7 +627,7 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
                     end
                 end
             end
-
+]]
             return nc(self, ...)
         end)
     end
