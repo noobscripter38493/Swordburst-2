@@ -1555,7 +1555,7 @@ do
 
     for i, mob_name in next, all_on_floor do
         if not Autofarm_Y_Offsets[mob_name] then
-            Autofarm_Y_Offsets[mob_name] = 25
+            Autofarm_Y_Offsets[mob_name] = 15
         end
 
         AutofarmYOFfsetTab:AddSlider({
