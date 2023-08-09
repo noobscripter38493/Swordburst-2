@@ -810,7 +810,6 @@ do
 
     workspace.ChildAdded:Connect(function(c)
         if c.Name == "Circle" and c.Size == Vector3.new(30, 50, 30) then
-            print("a")
             atkstarted = os.time()
         end
     end)
