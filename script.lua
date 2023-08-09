@@ -619,13 +619,13 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
                         return
                     end
                 end
---[[
+
             elseif self == rf and ncm == "InvokeServer" then
-                if checkcaller and not checkcaller() and args[1] == "Equipment" and getupvalue then
+                if checkcaller and checkcaller() and args[1] == "Equipment" and getupvalue then
                     if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
                         return
                     end
-                end]]
+                end
             end
 
             return nc(self, ...)
@@ -810,6 +810,7 @@ do
 
     workspace.ChildAdded:Connect(function(c)
         if c.Name == "Circle" and c.Size == Vector3.new(30, 50, 30) then
+            print("a")
             atkstarted = os.time()
         end
     end)
@@ -1340,7 +1341,7 @@ do
             settings.SkillAura = bool
         end
     })
-
+    
     selectSkill = combat:AddDropdown({
         Name = "Select Skill to Use",
         Default = settings.WeaponSkill,
@@ -1352,7 +1353,7 @@ do
 end
 
 local dismantle = {}
-local rates = setmetatable({Burst = .05, Legendary = .05}, {
+local rates = setmetatable({Burst = .06, Tribute = .05, Legendary = .05}, {
     __index = function(self, i)
         self[i] = .04
         return .04
@@ -1366,6 +1367,7 @@ local GetItemData = inventory_module.GetItemData
 local upgrade_amount = {
     Burst = 25,
     Legendary = 20,
+    Tribute = 20,
     Rare = 15,
     Uncommon = 10,
     Common = 10
@@ -1598,6 +1600,14 @@ do
                 plr:RequestStreamAroundAsync(pos)
                 task.wait(1)
                 local totouch = GetClosestPartFromVector(pos)
+                while (totouch.Position - pos).Magnitude > 10 do
+                    plr:RequestStreamAroundAsync(pos)
+                    totouch = GetClosestPartFromVector(pos)
+                    task.wait()
+                end
+
+                print("Created TP", name)
+
                 teleports_tab:AddButton({
                     Name = name,
                     Callback = function()
