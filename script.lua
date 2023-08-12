@@ -4,8 +4,6 @@ if getgenv().SB2Script then
     return
 end
 
-getgenv().SB2Script = true
-
 while not game:IsLoaded()  do
     task.wait(1)
 end
@@ -14,8 +12,34 @@ if game.GameId ~= 212154879 then
     return
 end
 
+local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
+
+local protected = gethui and gethui() or CoreGui
+local screen = Instance.new("ScreenGui", CoreGui)
+local function create_confirm(text)
+    local popup = CoreGui.RobloxGui.PopupFrame
+    local new = popup:Clone()
+
+    local thread = coroutine.running()
+    new.PopupAcceptButton.MouseButton1Click:Connect(function()
+        new:Destroy()
+        coroutine.resume(thread, true)
+    end)
+
+    new.PopupDeclineButton.MouseButton1Click:Connect(function()
+        new:Destroy()
+        coroutine.resume(thread, false)
+    end)
+
+    new.PopupText.TextSize = 20
+    new.PopupText.Text = text
+    new.Visible = true
+    new.Parent = screen
+
+    return coroutine.yield()
+end
 
 local lastknownupdate = {
     --[540240728] = "nobody cares", -- arcadia -- floor 1
@@ -50,13 +74,18 @@ if hasfilefunctions and placeid ~= 540240728 and placeid ~= 566212942 then
     if not isfile(a) then
         writefile(a, info.Updated)
     end
-
+    
     lastknownupdate[placeid] = readfile(a)
+    print(lastknownupdate[placeid], info.Updated)
     if info.Updated ~= lastknownupdate[placeid] then
         writefile(a, info.Updated)
-        plr:Kick("floor update detected. script could be patched, use at risk. t =" .. info.Updated)
+        if not create_confirm("update detected. use script at risk. t =" .. info.Updated .. "\n\tContinue?") then
+            return
+        end
     end
 end
+
+getgenv().SB2Script = true
 
 local info = debug.info
 local islclosure = islclosure or function(f)
@@ -349,7 +378,6 @@ local bosses_on_floor = {
     }
 }
 
-local CoreGui = game:GetService("CoreGui")
 local UserInputS = game:GetService("UserInputService")
 local TweenS = game:GetService("TweenService")
 local RunS = game:GetService("RunService")
@@ -634,8 +662,6 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
 end
 
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/orion/main/orionnnn.lua"))()
-
-local protected = gethui and gethui() or CoreGui
 local orion = protected:WaitForChild("Orion")
 
 local window = lib:MakeWindow({
@@ -810,7 +836,6 @@ do
 
     workspace.ChildAdded:Connect(function(c)
         if c.Name == "Circle" and c.Size == Vector3.new(30, 50, 30) then
-            print("a")
             atkstarted = os.time()
         end
     end)
@@ -1581,6 +1606,7 @@ do
             Icon = "",
             PremiumOnly = false
         })
+        
         local function GetClosestPartFromVector(v3)
             local closest_magnitude = math.huge
             local closest_part
@@ -1593,8 +1619,10 @@ do
                     end
                 end
             end
+
             return closest_part
         end
+
         local function makespecialtpbutton(name, pos)
             task.spawn(function()
                 plr:RequestStreamAroundAsync(pos)
@@ -1874,29 +1902,6 @@ do
         end
     end
 
-    local screen = Instance.new("ScreenGui", CoreGui)
-    local function create_confirm()
-        local popup = CoreGui.RobloxGui.PopupFrame
-        local new = popup:Clone()
-
-        local thread = coroutine.running()
-        new.PopupAcceptButton.MouseButton1Click:Connect(function()
-            new:Destroy()
-            coroutine.resume(thread, true)
-        end)
-
-        new.PopupDeclineButton.MouseButton1Click:Connect(function()
-            new:Destroy()
-            coroutine.resume(thread, false)
-        end)
-
-        new.PopupText.Text = "Confirm Dismantle? (CANNOT BE UNDONE)"
-        new.Visible = true
-        new.Parent = screen
-
-        return coroutine.yield()
-    end
-
     local crystalForge_module = require(ui_module.CrystalForge)
     Smithing:AddButton({
         Name = "Open Crystal Forge",
@@ -1924,7 +1929,7 @@ do
         Smithing:AddButton({
             Name = "Dismantle All " .. v,
             Callback = function()
-                local confirm = create_confirm()
+                local confirm = create_confirm("Confirm Dismantle? (CANNOT BE UNDONE)")
 
                 if confirm then
                     local rarity = rarities[i]
@@ -2379,4 +2384,3 @@ do
     end
 end
 
-lib:Init()
