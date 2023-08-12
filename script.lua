@@ -122,7 +122,7 @@ end
 
 local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or (syn and syn.queue_on_teleport)
 if teleport_execute then
-    teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
+    teleport_execute("loadfile('SB2 Script/SCRIPT.lua')()")
 end
 
 local mobs_on_floor = {
@@ -2120,43 +2120,21 @@ do
     })
     
     local Amount = 0
-    local TempAmount = 0
-    local function CheckIfHaveCrystal(Item)
-        if Item and Item.Count.Value >= TempAmount then
-            return true
-        else
-            lib:MakeNotification({
-                Name = "Amount provided exceeds amount in inventory",
-                Content = "didn't change number added",
-                Image = "",
-                Time = 5
-            })
+    FastTrade:AddTextbox({
+        Name = ("Change # of Upgrade Crystals added"),
+        Default = "",
+        TextDisappear = false,
+        Callback = function(n)
+            Amount = tonumber(n)
         end
-    end
+    })
 
-    local UpgCrysStr = "Upgrade Crystal"
     for i, v in next, rarities do
-        local Item = Inventory:FindFirstChild(v .. " " .. UpgCrysStr)
-        FastTrade:AddTextbox({
-            Name = ("Change # of %s Upgrade Crystals added"):format(v),
-            Default = "",
-            TextDisappear = false,
-            Callback = function(n)
-                n = tonumber(n)
-                TempAmount = n
-
-                Item = Inventory:FindFirstChild(v .. " " .. UpgCrysStr)
-                if CheckIfHaveCrystal(Item) then
-                    Amount = n
-                end
-            end
-        })
-
         FastTrade:AddButton({
             Name = ("Add %s Upgrade Crystals"):format(v),
             Callback = function()
-                Item = Inventory:FindFirstChild(v .. " " .. UpgCrysStr)
-                if CheckIfHaveCrystal(Item) then
+                local Item = Inventory:FindFirstChild(v .. " Upgrade Crystal")
+                if Item and Item.Count.Value >= Amount then
                     for i = 1, Amount do
                         Event:FireServer("Trade", "TradeAddItem", {Item})
                         task.wait(.1)
