@@ -1527,6 +1527,10 @@ do
     local function AutoDismantle(item)
         task.wait(1)
 
+        if item.Name:find("Upgrade Crystal") then
+            return
+        end
+
         if dismantle[ItemDatas[item.Name].rarity] then
             Event:FireServer("Equipment", {"Dismantle", {item}})
         end
