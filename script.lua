@@ -1527,18 +1527,11 @@ do
     local function AutoDismantle(item)
         task.wait(1)
 
-        local ItemData = ItemDatas[item.Name]
-        local class = ItemData.Type
-        if class ~= "Weapon" and class ~= "Clothing" then
-            return
-        end
-
-        local rarity = ItemData.rarity
-        if dismantle[rarity] then
+        if ItemDatas[item.Name].rarity then
             Event:FireServer("Equipment", {"Dismantle", {item}})
         end
     end
-
+    
     for i, v in next, names do
         farm_tab2:AddToggle({
             Name = "Auto Dismantle " .. v,
@@ -2181,6 +2174,36 @@ do
         PremiumOnly = false
     })
 
+    local screen = game.CoreGui.ScreenGui
+    local frame = Instance.new("Frame")
+    frame.Position = UDim2.fromOffset(0, -50)
+    frame.Parent = screen
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    
+    local label = Instance.new("TextLabel")
+    label.Text = "discord.gg/eWGZ8rYpxR"
+    label.Parent = frame
+    label.TextSize = 30
+    label.TextColor3 = Color3.fromRGB(255, 0, 0)
+
+    task.spawn(function()
+        while true do
+            local vp = workspace.CurrentCamera.ViewportSize
+            frame.Size = UDim2.fromOffset(vp.X, vp.Y + 50)
+            label.Position = UDim2.fromOffset(vp.X/2, vp.Y/2)
+            task.wait(1)
+        end
+    end)
+
+    Performance_tab:AddToggle({
+        Name = "Disable 3d rendering",
+        Default = false,
+        Callback = function(bool)
+            game.RunService:Set3dRenderingEnabled(not bool)
+            frame.Visible = bool
+        end
+    })
+
     local hiteffects = workspace:WaitForChild("HitEffects")
     Performance_tab:AddToggle({
         Name = "Remove Hit Effects",
@@ -2383,4 +2406,3 @@ do
         })
     end
 end
-
