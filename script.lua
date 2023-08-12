@@ -1527,7 +1527,7 @@ do
     local function AutoDismantle(item)
         task.wait(1)
 
-        if item.Name:find("Upgrade Crystal") then
+        if item:FindFirstChild("Count") then
             return
         end
 
