@@ -1527,7 +1527,7 @@ do
     local function AutoDismantle(item)
         task.wait(1)
 
-        if ItemDatas[item.Name].rarity then
+        if dismantle[ItemDatas[item.Name].rarity] then
             Event:FireServer("Equipment", {"Dismantle", {item}})
         end
     end
