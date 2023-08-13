@@ -1609,7 +1609,7 @@ do
             local huntercframe = CFrame.new(1635, 283, 3742)
             local seconds = (hrp.Position - huntercframe.Position).Magnitude / 80
             local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
-            local huntertween = TweenS:Create(hrp, tween_info, {CFrame = huntercframe})
+            huntertween = TweenS:Create(hrp, tween_info, {CFrame = huntercframe})
             huntertween.Completed:Connect(function()
                 tpingtohunter = false
             end)
@@ -1618,13 +1618,20 @@ do
                 Name = "Stop Hunter TP",
                 Callback = function()
                     tpingtohunter = false
-                    huntertween:Cancel()
+                    if huntertween then
+                        huntertween:Cancel()
+                    end
                 end
             })
 
             teleports_tab:AddButton({
                 Name = "Hunter",
                 Callback = function()
+                    local huntercframe = CFrame.new(1635, 283, 3742)
+                    local seconds = (hrp.Position - huntercframe.Position).Magnitude / 80
+                    local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
+                    huntertween = TweenS:Create(hrp, tween_info, {CFrame = huntercframe})
+
                     tpingtohunter = true
                     huntertween:Play()
                 end
