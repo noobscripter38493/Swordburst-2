@@ -533,12 +533,10 @@ setNoClipParts()
 
 local tpingtohunter
 local function noclip()
-    if not settings.Autofarm or not settings.NoClip or not tpingtohunter then
-        return
-    end
-
-    for _, v in next, parts do
-        v.CanCollide = false
+    if settings.Autofarm or settings.NoClip or tpingtohunter then
+        for _, v in next, parts do
+            v.CanCollide = false
+        end
     end
 end
 
