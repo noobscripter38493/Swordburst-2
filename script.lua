@@ -257,7 +257,7 @@ local mobs_on_floor = {
         "Failed Experiment",
         "Bat",
         "Blue Failed Experiment",
-        "Organe Failed Experiment",
+        "Orange Failed Experiment",
         "Newborn Abomination"
     },
 
