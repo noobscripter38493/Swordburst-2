@@ -532,7 +532,7 @@ end
 setNoClipParts()
 
 local function noclip()
-    if not settings.Autofarm and not settings.NoClip then
+    if not settings.Autofarm and not settings.NoClip or not tpingtohunter then
         return
     end
 
