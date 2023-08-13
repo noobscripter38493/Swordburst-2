@@ -531,8 +531,9 @@ end
 
 setNoClipParts()
 
+local tpingtohunter
 local function noclip()
-    if not settings.Autofarm and not settings.NoClip or not tpingtohunter then
+    if not settings.Autofarm or not settings.NoClip or not tpingtohunter then
         return
     end
 
@@ -582,7 +583,6 @@ end
 setUpPlayerHealthValues()
 setUpStaminaValues()
 
-local tpingtohunter
 plr.CharacterAdded:Connect(function(new)
     tpingtohunter = false
     char = new
