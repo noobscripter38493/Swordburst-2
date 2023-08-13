@@ -923,7 +923,7 @@ do
     end
 
     RunS.RenderStepped:Connect(function()
-        if settings.Autofarm then 
+        if settings.Autofarm or tpingtohunter then 
             hrp.Velocity = Vector3.zero 
         end
     end)
