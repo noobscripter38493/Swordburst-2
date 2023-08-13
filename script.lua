@@ -582,7 +582,9 @@ end
 setUpPlayerHealthValues()
 setUpStaminaValues()
 
+local tpingtohunter
 plr.CharacterAdded:Connect(function(new)
+    tpingtohunter = false
     char = new
     hrp = char:WaitForChild("HumanoidRootPart")
     humanoid = char:WaitForChild("Humanoid")
@@ -675,7 +677,6 @@ local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
 
 local split = string.split
 local match = string.match
-local tpingtohunter
 do
     local farm_tab = window:MakeTab({
         Name = "Autofarm",
