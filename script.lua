@@ -1605,34 +1605,34 @@ do
         })
 
         local function makehuntertp()
-            local huntercframe = CFrame.new(1635, 283, 3742)
-            local seconds = (hrp.Position - huntercframe.Position).Magnitude / 80
-            local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
-            huntertween = TweenS:Create(hrp, tween_info, {CFrame = huntercframe})
-            huntertween.Completed:Connect(function()
-                tpingtohunter = false
-            end)
-
-            teleports_tab:AddButton({
-                Name = "Stop Hunter TP",
-                Callback = function()
-                    tpingtohunter = false
-                    if huntertween then
-                        huntertween:Cancel()
-                    end
-                end
-            })
-
-            teleports_tab:AddButton({
+            local huntertweens = {}
+            teleports_tab:AddToggle({
                 Name = "Hunter",
-                Callback = function()
-                    local huntercframe = CFrame.new(1635, 283, 3742)
-                    local seconds = (hrp.Position - huntercframe.Position).Magnitude / 80
-                    local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
-                    huntertween = TweenS:Create(hrp, tween_info, {CFrame = huntercframe})
+                Default = false,
+                Callback = function(bool)
+                    tpingtohunter = bool
+                    
+                    if not bool then
+                        while #huntertweens ~= 0 do
+                            for i, v in next, huntertweens do
+                                v:Cancel()
+                                huntertweens[i] = nil
+                            end
+        
+                            task.wait()
+                        end
+                    end
 
-                    tpingtohunter = true
-                    huntertween:Play()
+                    while tpingtohunter do
+                        local huntercframe = CFrame.new(1635, 283, 3742)
+                        local seconds = (hrp.Position - huntercframe.Position).Magnitude / 80
+                        local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
+                        local huntertween = TweenS:Create(hrp, tween_info, {CFrame = huntercframe})
+                        huntertweens[#huntertweens + 1] = huntertween
+                        
+                        huntertween:Play()
+                        task.wait()
+                    end
                 end
             })
         end
