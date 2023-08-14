@@ -2340,13 +2340,15 @@ do
     label.TextSize = 30
     label.TextColor3 = Color3.fromRGB(255, 0, 0)
 
-    task.spawn(function()
-        while true do
-            local vp = workspace.CurrentCamera.ViewportSize
-            frame.Size = UDim2.fromOffset(vp.X, vp.Y + 50)
-            label.Position = UDim2.fromOffset(vp.X/2, vp.Y/2)
-            task.wait(1)
-        end
+    local cam = workspace.CurrentCamera
+    local vp = cam.ViewportSize
+    frame.Size = UDim2.fromOffset(vp.X, vp.Y + 50)
+    label.Position = UDim2.fromOffset(vp.X/2, vp.Y/2)
+
+    cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+        vp = cam.ViewportSize
+        frame.Size = UDim2.fromOffset(vp.X, vp.Y + 50)
+        label.Position = UDim2.fromOffset(vp.X/2, vp.Y/2)
     end)
 
     local circle = Drawing.new("Circle")
