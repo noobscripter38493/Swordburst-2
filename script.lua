@@ -595,6 +595,7 @@ local appearance = Players:GetCharacterAppearanceAsync(plr.UserId)
 local avatarshirtasset = appearance.Shirt.ShirtTemplate
 local avatarpantsasset = appearance.Pants.PantsTemplate
 
+--[[
 local hidearmor
 local shirt = char:FindFirstChildWhichIsA("Shirt")
 local pants = char:FindFirstChildWhichIsA("Pants")
@@ -626,10 +627,11 @@ local function setUpNoArmor()
         end
     end)
 end
+]]
 
 setUpPlayerHealthValues()
 setUpStaminaValues()
-setUpNoArmor()
+--setUpNoArmor()
 
 plr.CharacterAdded:Connect(function(new)
     tpingtohunter = false
@@ -644,7 +646,7 @@ plr.CharacterAdded:Connect(function(new)
     setUpPlayerHealthValues()
     setUpStaminaValues()
     setNoClipParts()
-    setUpNoArmor()
+    --setUpNoArmor()
 
     stamina.Value = 100
     hasMaxStamina = true
@@ -2004,18 +2006,18 @@ do
         end
     })
 
+    --[[
     Character_tab:AddToggle({
         Name = "Hide Armor",
         Default = false,
         Callback = function(bool)
             hidearmor = bool
-
-            print(shirt.Parent, pants.Parent)
             
             shirt.ShirtTemplate = hidearmor and avatarshirtasset or armorshirtasset
             pants.PantsTemplate = hidearmor and avatarpantsasset or armorpantsasset
         end
     })
+    ]]
 
     Character_tab:AddToggle({
         Name = "WalkSpeed Toggle",
