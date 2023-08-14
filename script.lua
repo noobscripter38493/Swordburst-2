@@ -1160,9 +1160,7 @@ do
                 task.wait()
                 continue
             end
-
-            print("animating")
-
+                
             local animation_style = animations[CalculateCombatStyle()]
             for _, v in next, animation_style do
                 if v.Name:find("Swing") then
