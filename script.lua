@@ -591,8 +591,45 @@ local function setUpStaminaValues()
     end)
 end
 
+local appearance = Players:GetCharacterAppearanceAsync(plr.UserId)
+local avatarshirtasset = appearance.Shirt.ShirtTemplate
+local avatarpantsasset = appearance.Pants.PantsTemplate
+
+local hidearmor
+local shirt = char:FindFirstChildWhichIsA("Shirt")
+local pants = char:FindFirstChildWhichIsA("Pants")
+local armorshirtasset = shirt.ShirtTemplate
+local armorpantsasset = pants.PantsTemplate
+
+local function setUpNoArmor()
+    shirt = char:FindFirstChildWhichIsA("Shirt")
+    pants = char:FindFirstChildWhichIsA("Pants")
+    if hidearmor then
+        shirt.ShirtTemplate = avatarshirtasset
+        pants.PantsTemplate = avatarpantsasset
+    end
+
+    char.ChildAdded:Connect(function(c)
+        if c:IsA("Shirt") then
+            shirt = c
+            armorshirtasset = shirt.ShirtTemplate
+            if hidearmor then
+                shirt.ShirtTemplate = avatarshirtasset
+            end
+
+        elseif c:IsA("Pants") then
+            pants = c
+            armorpantsasset = pants.PantsTemplate
+            if hidearmor then
+                pants.PantsTemplate = avatarpantsasset
+            end
+        end
+    end)
+end
+
 setUpPlayerHealthValues()
 setUpStaminaValues()
+setUpNoArmor()
 
 plr.CharacterAdded:Connect(function(new)
     tpingtohunter = false
@@ -607,6 +644,9 @@ plr.CharacterAdded:Connect(function(new)
     setUpPlayerHealthValues()
     setUpStaminaValues()
     setNoClipParts()
+    setUpNoArmor()
+
+    stamina.Value = 100
     hasMaxStamina = true
 end)
 
@@ -1961,6 +2001,19 @@ do
         Default = false,
         Callback = function(bool)
             settings.InfSprint = bool
+        end
+    })
+
+    Character_tab:AddToggle({
+        Name = "Hide Armor",
+        Default = false,
+        Callback = function(bool)
+            hidearmor = bool
+
+            print(shirt.Parent, pants.Parent)
+            
+            shirt.ShirtTemplate = hidearmor and avatarshirtasset or armorshirtasset
+            pants.PantsTemplate = hidearmor and avatarpantsasset or armorpantsasset
         end
     })
 
