@@ -618,8 +618,8 @@ local function setUpStaminaValues()
 end
 
 local appearance = Players:GetCharacterAppearanceAsync(plr.UserId)
-local avatarshirt = appearance:FindFirstChild("Shirt")
-local avatarpants = appearance:FindFirstChild("Pants")
+local avatarshirt = appearance:FindFirstChildWhichIsA("Shirt")
+local avatarpants = appearance:FindFirstChildWhichIsA("Pants")
 local avatarshirtasset = avatarshirt and avatarshirt.ShirtTemplate
 local avatarpantsasset = avatarpants and avatarpants.PantsTemplate
 
@@ -917,9 +917,9 @@ do
         floatPart.CFrame = hrp.CFrame * CFrame.new(0, height, 0)
     end)
     floatPart.Parent = workspace
-
-    --local AtheonAttack = {n = nil, t = nil}
 --[[
+    local AtheonAttack = {n = nil, t = nil}
+
     local WarlordCircleRadius = 30
     local AtheonNukeRadius = 155
     workspace.ChildAdded:Connect(function(c)
@@ -977,9 +977,9 @@ do
 
             shouldFloat = to == floatPart
 
-            --if IsBossAttacking(to.Parent.Name) then
-                --return SafeArea(to.Parent.Name)
-           -- end
+            if IsBossAttacking(to.Parent.Name) then
+                return SafeArea(to.Parent.Name)
+            end
 
             return to
         end
@@ -987,9 +987,9 @@ do
         local boss = settings.Prioritized_Boss
         if settings.Boss_Priority and boss then
             to = searchForBoss(boss)
-            --if IsBossAttacking(to.Parent.Name) then
-                --return SafeArea(to.Parent.Name)
-            --end
+            if IsBossAttacking(to.Parent.Name) then
+                return SafeArea(to.Parent.Name)
+            end
         end
 
         local mob = settings.Prioritized_Mob
