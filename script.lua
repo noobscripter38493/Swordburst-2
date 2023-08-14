@@ -1405,7 +1405,7 @@ do
         end
 
         local t = os.time()
-        if hotkeys:FindFirstChild("Cursed Enhancement") and t - ce_cd >= 15 and and autoce and stamina.Value >= 30 then
+        if hotkeys:FindFirstChild("Cursed Enhancement") and t - ce_cd >= 15 and autoce and stamina.Value >= 30 then
             ce_cd = t
             Event:FireServer("Skills", {"UseSkill", "Cursed Enhancement", {}})
         end
