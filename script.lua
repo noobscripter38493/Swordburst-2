@@ -121,7 +121,7 @@ end
 
 local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or (syn and syn.queue_on_teleport)
 if teleport_execute then
-    teleport_execute("loadfile('SB2 Script/SCRIPT.lua')()")
+    teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
 end
 
 local mobs_on_floor = {
@@ -1406,7 +1406,6 @@ do
     })
 
     local ce_cd = 9e9
-    local heal_cd = 9e9
     range.Touched:Connect(function(touching)
         if touching.Name ~= "HumanoidRootPart" and not touching:FindFirstAncestor("Mobs") then
             return
@@ -2297,10 +2296,23 @@ do
         end
     end)
 
+    local circle = Drawing.New("Circle")
+    circle.Radius = 15
+    circle.Filled = true
+    circle.Color = Color3.fromRGB(255, 0, 0)
+    circle.Visible = false
+    game.UserInputService.InputChanged:Connect(function(input, processed)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            local pos = input.Position
+            circle.Position = Vector2.new(pos.X, pos.Y) + Vector2.new(0, 40)
+        end
+    end)
+
     Performance_tab:AddToggle({
         Name = "Disable 3d rendering",
         Default = false,
         Callback = function(bool)
+            circle.Visible = bool
             game.RunService:Set3dRenderingEnabled(not bool)
             frame.Visible = bool
         end
