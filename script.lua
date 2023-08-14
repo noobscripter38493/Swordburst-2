@@ -524,6 +524,23 @@ local function WaitForDescendant(parent, descendant_name)
     return coroutine.yield()
 end
 
+local function WaitForChildWhichIsA(parent, child_class)
+    local already = parent:FindFirstChildWhichIsA(child_class)
+    if already then
+        return already
+    end
+
+    local thread = coroutine.running()
+    local con; con = parent.ChildAdded:Connect(function(c)
+        if c:IsA(child_class) then
+            con:Disconnect()
+            coroutine.resume(thread, c)
+        end
+    end)
+    
+    return coroutine.yield()
+end
+
 local match = string.match
 local leveltext = WaitForDescendant(plr, "Level")
 local level = tonumber(match(leveltext.Text, "%d+"))
@@ -605,16 +622,15 @@ local appearance = Players:GetCharacterAppearanceAsync(plr.UserId)
 local avatarshirtasset = appearance.Shirt.ShirtTemplate
 local avatarpantsasset = appearance.Pants.PantsTemplate
 
---[[
 local hidearmor
-local shirt = char:FindFirstChildWhichIsA("Shirt")
-local pants = char:FindFirstChildWhichIsA("Pants")
+local shirt = WaitForChildWhichIsA(char, "Shirt")
+local pants = WaitForChildWhichIsA(char, "Pants")
 local armorshirtasset = shirt.ShirtTemplate
 local armorpantsasset = pants.PantsTemplate
 
 local function setUpNoArmor()
-    shirt = char:FindFirstChildWhichIsA("Shirt")
-    pants = char:FindFirstChildWhichIsA("Pants")
+    shirt = WaitForChildWhichIsA(char, "Shirt")
+    pants = WaitForChildWhichIsA(char, "Pants")
     if hidearmor then
         shirt.ShirtTemplate = avatarshirtasset
         pants.PantsTemplate = avatarpantsasset
@@ -637,11 +653,10 @@ local function setUpNoArmor()
         end
     end)
 end
-]]
 
 setUpPlayerHealthValues()
 setUpStaminaValues()
---setUpNoArmor()
+setUpNoArmor()
 
 plr.CharacterAdded:Connect(function(new)
     tpingtohunter = false
@@ -656,7 +671,7 @@ plr.CharacterAdded:Connect(function(new)
     setUpPlayerHealthValues()
     setUpStaminaValues()
     setNoClipParts()
-    --setUpNoArmor()
+    setUpNoArmor()
 
     stamina.Value = 100
     hasMaxStamina = true
@@ -971,11 +986,10 @@ do
 
     local function TweenF()
         local to = playerHealthChecks()
-        local mob_name = to.Parent.Name
 
         local distance = (hrp.Position - to.Position).Magnitude
         local seconds = distance / settings.Tween_Speed
-        local y_offset = shouldFloat and 0 or Autofarm_Y_Offsets[mob_name]
+        local y_offset = shouldFloat and 0 or Autofarm_Y_Offsets[to.Parent.Name]
         local cframe = to.CFrame * CFrame.new(0, y_offset, 0)
 
         local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
@@ -2016,7 +2030,6 @@ do
         end
     })
 
-    --[[
     Character_tab:AddToggle({
         Name = "Hide Armor",
         Default = false,
@@ -2027,7 +2040,6 @@ do
             pants.PantsTemplate = hidearmor and avatarpantsasset or armorpantsasset
         end
     })
-    ]]
 
     Character_tab:AddToggle({
         Name = "WalkSpeed Toggle",
