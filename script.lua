@@ -514,7 +514,12 @@ local function WaitForDescendant(parent, descendant_name)
     return coroutine.yield()
 end
 
-local level = WaitForDescendant(plr, "Level")
+local match = string.match
+local leveltext = WaitForDescendant(plr, "Level")
+local level = tonumber(match(leveltext.Text, "%d+"))
+leveltext:GetPropertyChangedSignal("Text"):Connect(function()
+    level = tonumber(match(leveltext.Text, "%d+"))
+end)
 
 local parts = {}
 local function setNoClipParts()
@@ -674,7 +679,6 @@ local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
 local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
 
 local split = string.split
-local match = string.match
 do
     local farm_tab = window:MakeTab({
         Name = "Autofarm",
@@ -1089,7 +1093,7 @@ do
     })
 
     local range = Instance.new("Part")
-    range.Size = Vector3.new(25, 25, 25)
+    range.Size = Vector3.new(50, 50, 50)
     range.CanCollide = false
     range.Transparency = 1
 
@@ -1210,7 +1214,7 @@ do
     combat:AddSlider({
         Name = "Kill Aura Range",
         Min = 0,
-        Max = 25,
+        Max = 50,
         Default = settings.KA_Range,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
@@ -1353,8 +1357,7 @@ do
         Name = "Skill Aura",
         Default = false,
         Callback = function(bool)
-            local n = match(level.Text, "%d+")
-            if tonumber(n) < 22 then
+            if level < 22 then
                 return lib:MakeNotification({
                     Name = "Your Level is Not High Enough",
                     Content = "Reach Level 22 Before Using Skill Aura",
@@ -1375,6 +1378,38 @@ do
             settings.WeaponSkill = skill
         end
     })
+
+    local autoce
+    combat:AddToggle({
+        Name = "Auto Cursed Enhancement",
+        Default = false,
+        Callback = function(bool)
+            autoce = bool
+        end
+    })
+
+    local autoheal
+    combat:AddToggle({
+        Name = "Auto Heal",
+        Default = false,
+        Callback = function(bool)
+            autoheal = bool
+        end
+    })
+
+    range.Touched:Connect(function(touching)
+        if not touching:FindFirstAncestor("Mobs") then
+            return
+        end
+
+        if hotkeys:FindFirstChild("Cursed Enhancement") and autoce and stamina.Value >= 30 then
+            Event:FireServer("Skills", {"UseSkill", "Cursed Enhancement", {}})
+        end
+
+        if level >= 50 and autoheal and playerHealth / maxPlayerHealth <= .7 and stamina.Value >= 40 then
+            Event:FireServer("Skills", {"UseSkill", "Heal", {}})
+        end
+    end)
 end
 
 local dismantle = {}
@@ -1473,7 +1508,6 @@ do
         local highest_weapon
         local highest_armor
 
-        local level2 = tonumber(match(level.Text, "%d+"))
         for _, item in next, Inventory:GetChildren() do
             local ItemData = ItemDatas[item.Name]
 
@@ -1482,7 +1516,7 @@ do
                 continue
             end
 
-            if ItemData.level > level2 then
+            if ItemData.level > level then
                 continue
             end
 
