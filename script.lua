@@ -367,7 +367,6 @@ local bosses_on_floor = {
         "Suspended Unborn",
         "Limor The Devourer",
         "C-618 Uriotol, The Forgotten Hunter",
-        "Atheon",
         "Radioactive Experiment",
         "Warlord"
     },
@@ -619,14 +618,10 @@ local function setUpStaminaValues()
 end
 
 local appearance = Players:GetCharacterAppearanceAsync(plr.UserId)
-local avatarshirtasset = appearance.Shirt.ShirtTemplate
-local avatarpantsasset = appearance.Pants.PantsTemplate
-
-local hidearmor
-local shirt = WaitForChildWhichIsA(char, "Shirt")
-local pants = WaitForChildWhichIsA(char, "Pants")
-local armorshirtasset = shirt.ShirtTemplate
-local armorpantsasset = pants.PantsTemplate
+local avatarshirt = appearance:FindFirstChild("Shirt")
+local avatarpants = appearance:FindFirstChild("Pants")
+local avatarshirtasset = avatarshirt and avatarshirt.ShirtTemplate
+local avatarpantsasset = avatarpants and avatarpants.PantsTemplate
 
 local function setUpNoArmor()
     shirt = WaitForChildWhichIsA(char, "Shirt")
@@ -654,9 +649,18 @@ local function setUpNoArmor()
     end)
 end
 
+if avatarpantsasset and avatarshirtasset then
+    local hidearmor
+    local shirt = WaitForChildWhichIsA(char, "Shirt")
+    local pants = WaitForChildWhichIsA(char, "Pants")
+    local armorshirtasset = shirt.ShirtTemplate
+    local armorpantsasset = pants.PantsTemplate
+
+    setUpNoArmor()
+end
+
 setUpPlayerHealthValues()
 setUpStaminaValues()
-setUpNoArmor()
 
 plr.CharacterAdded:Connect(function(new)
     tpingtohunter = false
@@ -671,7 +675,9 @@ plr.CharacterAdded:Connect(function(new)
     setUpPlayerHealthValues()
     setUpStaminaValues()
     setNoClipParts()
-    setUpNoArmor()
+    if avatarpantsasset and avatarshirtasset then
+        setUpNoArmor()
+    end
 
     stamina.Value = 100
     hasMaxStamina = true
@@ -912,15 +918,53 @@ do
     end)
     floatPart.Parent = workspace
 
+    local AtheonAttack = {n = nil, t = nil}
+
+    local WarlordCircleRadius = 30
+    local AtheonNukeRadius = 155
     workspace.ChildAdded:Connect(function(c)
-        if c.Name == "Circle" and c.Size == Vector3.new(30, 50, 30) then
-            atkstarted = os.time()
+        if c.Name == "Circle" then
+            if c.Size.X == WarlordCircleRadius then
+                atkstarted = os.time()
+            
+            elseif c.Size.X == AtheonNukeRadius then
+                AtheonAttack.n = "Nuke"
+                AtheonAttack.t = os.time()
+            end
         end
     end)
 
     local function IsBossAttacking(mob_name)
+        if mob_name == "Atheon" then
+            local name = AtheonAttack.n 
+            local t = AtheonAttack.t 
+            if AtheonAttack.n == "Nuke" and os.time() - t < 7 then
+                return true
+
+            elseif AtheonAttack.n == "LavaDash" and os.time() - t < 5 then
+                return true
+
+            elseif os.time() - t < 6 then
+                return true
+            end
+        end
+
         if mob_name == "Warlord" then
             return os.time() - atkstarted < 5.5
+        end
+    end
+
+    local function SafeArea(mob_name)
+        local part = 
+        if mob_name == "Atheon" then
+            if AtheonAttack.n == "Nuke" then
+                return CFrame.new()
+
+            elseif AtheonAttack.n == "LavaDash" then
+                
+            else
+
+            end
         end
     end
 
@@ -934,8 +978,7 @@ do
             shouldFloat = to == floatPart
 
             if IsBossAttacking(to.Parent.Name) then
-                shouldFloat = true
-                to = floatPart
+                return SafeArea(to.Parent.Name)
             end
 
             return to
@@ -944,6 +987,9 @@ do
         local boss = settings.Prioritized_Boss
         if settings.Boss_Priority and boss then
             to = searchForBoss(boss)
+            if IsBossAttacking(to.Parent.Name) then
+                return SafeArea(to.Parent.Name)
+            end
         end
 
         local mob = settings.Prioritized_Mob
@@ -986,10 +1032,13 @@ do
 
     local function TweenF()
         local to = playerHealthChecks()
-
         local distance = (hrp.Position - to.Position).Magnitude
         local seconds = distance / settings.Tween_Speed
-        local y_offset = shouldFloat and 0 or Autofarm_Y_Offsets[to.Parent.Name]
+        local y_offset = 0
+        if typeof(to) ~= "CFrame" then
+            y_offset = shouldFloat and 0 or Autofarm_Y_Offsets[to.Parent.Name]
+        end
+
         local cframe = to.CFrame * CFrame.new(0, y_offset, 0)
 
         local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
@@ -2030,17 +2079,19 @@ do
         end
     })
 
-    Character_tab:AddToggle({
-        Name = "Hide Armor",
-        Default = false,
-        Callback = function(bool)
-            hidearmor = bool
-            
-            shirt.ShirtTemplate = hidearmor and avatarshirtasset or armorshirtasset
-            pants.PantsTemplate = hidearmor and avatarpantsasset or armorpantsasset
-        end
-    })
-
+    if armorpantsasset and armorshirtasset then
+        Character_tab:AddToggle({
+            Name = "Hide Armor",
+            Default = false,
+            Callback = function(bool)
+                hidearmor = bool
+                
+                shirt.ShirtTemplate = hidearmor and avatarshirtasset or armorshirtasset
+                pants.PantsTemplate = hidearmor and avatarpantsasset or armorpantsasset
+            end
+        })
+    end
+    
     Character_tab:AddToggle({
         Name = "WalkSpeed Toggle",
         Default = false,
