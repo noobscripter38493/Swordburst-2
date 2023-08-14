@@ -1405,12 +1405,13 @@ do
         end
 
         local t = os.time()
-        if hotkeys:FindFirstChild("Cursed Enhancement") and t - ce_cd > 15 and and autoce and stamina.Value >= 30 then
-            ce_cd
+        if hotkeys:FindFirstChild("Cursed Enhancement") and t - ce_cd >= 15 and and autoce and stamina.Value >= 30 then
+            ce_cd = t
             Event:FireServer("Skills", {"UseSkill", "Cursed Enhancement", {}})
         end
 
-        if level >= 50 and t - heal_cd > 3 and autoheal and playerHealth / maxPlayerHealth <= .7 and stamina.Value >= 40 then
+        if level >= 50 and t - heal_cd >= 3 and autoheal and playerHealth / maxPlayerHealth <= .7 and stamina.Value >= 40 then
+            heal_cd = t
             Event:FireServer("Skills", {"UseSkill", "Heal", {}})
         end
     end)
