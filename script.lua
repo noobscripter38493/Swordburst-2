@@ -548,7 +548,7 @@ end
 RunS.Stepped:Connect(noclip)
 
 local autoheal
-local heal_cd = 9e9
+local lastheal = 9e9
 local playerHealth
 local maxPlayerHealth
 local Entity = char:WaitForChild("Entity")
@@ -561,8 +561,8 @@ local function setUpPlayerHealthValues()
         playerHealth = health.Value
 
         local t = os.time()
-        if level >= 50 and t - heal_cd >= 3 and autoheal and playerHealth / maxPlayerHealth <= .7 and stamina.Value >= 40 then
-            heal_cd = t
+        if level >= 50 and t - lastheal >= 25 and autoheal and playerHealth / maxPlayerHealth <= .7 and stamina.Value >= 40 then
+            lastheal = t
             Event:FireServer("Skills", {"UseSkill", "Heal", {}})
         end
     end)
@@ -1405,15 +1405,15 @@ do
         end
     })
 
-    local ce_cd = 9e9
+    local lastcd = 9e9
     range.Touched:Connect(function(touching)
         if touching.Name ~= "HumanoidRootPart" and not touching:FindFirstAncestor("Mobs") then
             return
         end
 
         local t = os.time()
-        if hotkeys:FindFirstChild("Cursed Enhancement") and t - ce_cd >= 15 and autoce and stamina.Value >= 30 then
-            ce_cd = t
+        if hotkeys:FindFirstChild("Cursed Enhancement") and t - lastcd >= 16 and autoce and stamina.Value >= 30 then
+            lastcd = t
             Event:FireServer("Skills", {"UseSkill", "Cursed Enhancement", {}})
         end
     end)
@@ -2296,7 +2296,7 @@ do
         end
     end)
 
-    local circle = Drawing.New("Circle")
+    local circle = Drawing.new("Circle")
     circle.Radius = 15
     circle.Filled = true
     circle.Color = Color3.fromRGB(255, 0, 0)
