@@ -977,9 +977,9 @@ do
 
             shouldFloat = to == floatPart
 
-            if IsBossAttacking(to.Parent.Name) then
-                return SafeArea(to.Parent.Name)
-            end
+           -- if IsBossAttacking(to.Parent.Name) then
+                --return SafeArea(to.Parent.Name)
+            --end
 
             return to
         end
@@ -987,9 +987,9 @@ do
         local boss = settings.Prioritized_Boss
         if settings.Boss_Priority and boss then
             to = searchForBoss(boss)
-            if IsBossAttacking(to.Parent.Name) then
-                return SafeArea(to.Parent.Name)
-            end
+           -- if IsBossAttacking(to.Parent.Name) then
+               -- return SafeArea(to.Parent.Name)
+            --end
         end
 
         local mob = settings.Prioritized_Mob
