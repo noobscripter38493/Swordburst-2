@@ -1085,6 +1085,7 @@ do
     })
 end
 
+local alwaysswinganimation
 do
     local combat = window:MakeTab({
         Name = "Combat",
@@ -1155,10 +1156,12 @@ do
 
     task.spawn(function()
         while true do
-            if #attacking == 0 then
+            if #attacking == 0 and not alwaysswinganimation then
                 task.wait()
                 continue
             end
+
+            print("animating")
 
             local animation_style = animations[CalculateCombatStyle()]
             for _, v in next, animation_style do
@@ -1902,6 +1905,14 @@ do
     end
 
     CalculateCombatStyle = combat_module.CalculateCombatStyle
+
+    Character_tab:AddToggle({
+        Name = "Always Swing Animation",
+        Default = false,
+        Callback = function(bool) 
+            alwaysswinganimation = bool
+        end
+    })
 
     Character_tab:AddToggle({
         Name = "Infinite Jump",
