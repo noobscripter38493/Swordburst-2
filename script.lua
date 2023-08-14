@@ -121,7 +121,7 @@ end
 
 local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or (syn and syn.queue_on_teleport)
 if teleport_execute then
-    teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
+    teleport_execute("loadfile('SB2 Script/SCRIPT.lua')()")
 end
 
 local mobs_on_floor = {
@@ -1397,16 +1397,20 @@ do
         end
     })
 
+    local ce_cd = 9e9
+    local heal_cd = 9e9
     range.Touched:Connect(function(touching)
         if not touching:FindFirstAncestor("Mobs") then
             return
         end
 
-        if hotkeys:FindFirstChild("Cursed Enhancement") and autoce and stamina.Value >= 30 then
+        local t = os.time()
+        if hotkeys:FindFirstChild("Cursed Enhancement") and t - ce_cd > 15 and and autoce and stamina.Value >= 30 then
+            ce_cd
             Event:FireServer("Skills", {"UseSkill", "Cursed Enhancement", {}})
         end
 
-        if level >= 50 and autoheal and playerHealth / maxPlayerHealth <= .7 and stamina.Value >= 40 then
+        if level >= 50 and t - heal_cd > 3 and autoheal and playerHealth / maxPlayerHealth <= .7 and stamina.Value >= 40 then
             Event:FireServer("Skills", {"UseSkill", "Heal", {}})
         end
     end)
