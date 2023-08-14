@@ -121,7 +121,7 @@ end
 
 local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or (syn and syn.queue_on_teleport)
 if teleport_execute then
-    teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
+    teleport_execute("loadfile('SB2 Script/SCRIPT.lua')()")
 end
 
 local mobs_on_floor = {
@@ -1922,15 +1922,30 @@ do
         end
     })
 
+    local pressing
     UserInputS.InputBegan:Connect(function(key, processed)
         if processed or not settings.InfJump then
             return
         end
 
         if key.KeyCode == Enum.KeyCode.Space then
-            pcall(function()
-                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-            end)
+            pressing = true
+            while pressing do
+                pcall(function()
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    task.wait(1/10)
+                end)
+            end
+        end
+    end)
+
+    UserInputS.InputEnded:Connect(function(key, processed)
+        if processed or not settings.InfJump then
+            return
+        end
+
+        if key.KeyCode == Enum.KeyCode.Space then
+            pressing = false
         end
     end)
 
@@ -1965,7 +1980,7 @@ do
     Character_tab:AddSlider({
         Name = "WalkSpeed",
         Min = 0,
-        Max = 50,
+        Max = 100,
         Default = walkspeed,
         Color = Color3.new(255, 255, 255),
         Increment = 1,
