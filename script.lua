@@ -547,17 +547,26 @@ end
 
 RunS.Stepped:Connect(noclip)
 
+local autoheal
+local heal_cd = 9e9
 local playerHealth
 local maxPlayerHealth
 local Entity = char:WaitForChild("Entity")
+local stamina = Entity:WaitForChild("Stamina")
 local health = Entity:WaitForChild("Health")
 local function setUpPlayerHealthValues()
     playerHealth = health.Value
+    maxPlayerHealth = health.MaxValue
     local currentHealthSignal = health:GetPropertyChangedSignal("Value"):Connect(function()
         playerHealth = health.Value
+
+        local t = os.time()
+        if level >= 50 and t - heal_cd >= 3 and autoheal and playerHealth / maxPlayerHealth <= .7 and stamina.Value >= 40 then
+            heal_cd = t
+            Event:FireServer("Skills", {"UseSkill", "Heal", {}})
+        end
     end)
 
-    maxPlayerHealth = health.MaxValue
     local maxHealthSignal = health:GetPropertyChangedSignal("MaxValue"):Connect(function()
         maxPlayerHealth = health.MaxValue
     end)
@@ -569,7 +578,6 @@ local function setUpPlayerHealthValues()
     end)
 end
 
-local stamina = Entity:WaitForChild("Stamina")
 local hasMaxStamina = stamina.Value >= stamina.MaxValue
 local function setUpStaminaValues()
     hasMaxStamina = stamina.Value >= stamina.MaxValue
@@ -1160,7 +1168,7 @@ do
                 task.wait()
                 continue
             end
-                
+
             local animation_style = animations[CalculateCombatStyle()]
             for _, v in next, animation_style do
                 if v.Name:find("Swing") then
@@ -1389,7 +1397,6 @@ do
         end
     })
 
-    local autoheal
     combat:AddToggle({
         Name = "Auto Heal",
         Default = false,
@@ -1401,7 +1408,7 @@ do
     local ce_cd = 9e9
     local heal_cd = 9e9
     range.Touched:Connect(function(touching)
-        if not touching:FindFirstAncestor("Mobs") then
+        if touching.Name ~= "HumanoidRootPart" and not touching:FindFirstAncestor("Mobs") then
             return
         end
 
@@ -1409,11 +1416,6 @@ do
         if hotkeys:FindFirstChild("Cursed Enhancement") and t - ce_cd >= 15 and autoce and stamina.Value >= 30 then
             ce_cd = t
             Event:FireServer("Skills", {"UseSkill", "Cursed Enhancement", {}})
-        end
-
-        if level >= 50 and t - heal_cd >= 3 and autoheal and playerHealth / maxPlayerHealth <= .7 and stamina.Value >= 40 then
-            heal_cd = t
-            Event:FireServer("Skills", {"UseSkill", "Heal", {}})
         end
     end)
 end
