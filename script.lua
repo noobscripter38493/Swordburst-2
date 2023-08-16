@@ -1825,7 +1825,7 @@ do
         end
 
         AutofarmYOffsetTab:AddTextbox({
-            Name = mob_name .. ("0-50"),
+            Name = mob_name .. (" 0-50"),
             Default = tostring(Autofarm_Y_Offsets[mob_name]),
             TextDisappear = false,
             Callback = function(text)
@@ -2215,20 +2215,20 @@ do
     local function Dismantle_Rarity(rarity)
         local items = {}
         for _, item in next, Inventory:GetChildren() do
-            local ItemData = ItemDatas[item.Name]
             if isEquipped(item) then
                 continue
             end
 
+            local ItemData = ItemDatas[item.Name]
             if ItemData.rarity == rarity then
-                if ItemData.Type == "Weapon" or ItemData.Type == "Clothing" then
+                if not item:FindFirstChild("Count") then
                     table.insert(items, item)
                 end
             end
+        end
 
-            if #items > 0 then
-                Event:FireServer("Equipment", {"Dismantle", items})
-            end
+        if #items > 0 then
+            Event:FireServer("Equipment", {"Dismantle", items})
         end
     end
 
@@ -2259,11 +2259,8 @@ do
         Smithing:AddButton({
             Name = "Dismantle All " .. v,
             Callback = function()
-                local confirm = create_confirm("Confirm Dismantle? (CANNOT BE UNDONE)")
-
-                if confirm then
-                    local rarity = rarities[i]
-                    Dismantle_Rarity(rarity)
+                if create_confirm("Confirm Dismantle? (CANNOT BE UNDONE)") then
+                    Dismantle_Rarity(rarities[i])
                 end
             end
         })
