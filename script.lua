@@ -885,11 +885,12 @@ do
     local AtheonMeteorDiameter = 35
     local AtheonNukeDiameter = 155
     local AtheonNukeRadius = 155/2 + 5
+    local WarlordCircleAttackT = 0
     local gettingmeteors
     workspace.ChildAdded:Connect(function(c)
         if c.Name == "Circle" then
-            if c.Size.X == WarlordCircleRadius then
-                atkstarted = os.time()
+            if c.Size.X == WarlordCircleDiameter then
+                WarlordCircleAttackT = os.time()
             
             elseif c.Size.X == AtheonNukeDiameter then
                 AtheonAttack.n = "Nuke"
@@ -930,8 +931,8 @@ do
             end
         end
 
-        if mob_name == "Warlord" then
-            return os.time() - atkstarted < 5.5
+        if mob_name == "Warlord" and os.time() - WarlordCircleAttackT < 5.5 then
+            return true
         end
     end
 
@@ -939,6 +940,11 @@ do
     local sin = math.sin
     local rad = math.rad
     local function SafeArea(mob_name)
+        if mob_name == "Warlord" then
+            shouldFloat = true
+            return floatPart
+        end
+
         if mob_name == "Atheon" then
             local atheon = workspace.Mobs.Atheon
             local atheon_hrp = atheon.HumanoidRootPart
