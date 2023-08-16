@@ -1157,6 +1157,18 @@ do
         end
     })
 
+    farm_tab:AddTextbox({
+        Name = "MaxRadius (0-10000)",
+        Default = tostring(settings.MaxAutofarmDistance),
+        TextDisappear = false,
+        Callback = function(n)
+            n = tonumber(n)
+            if n and n >= 0 and n <= 10000 then
+                settings.MaxAutofarmDistance = n
+            end
+        end
+    })
+
     farm_tab:AddSlider({
         Name = "Max Radius",
         Min = 0,
@@ -1170,8 +1182,20 @@ do
         end
     })
 
+    farm_tab:AddTextbox({
+        Name = "Idle Float Height (30-100)",
+        Default = tostring(settings.Height),
+        TextDisappear = false,
+        Callback = function(n)
+            n = tonumber(n)
+            if n and n >= 30 and n <= 100 then
+                settings.Height = n
+            end
+        end
+    })
+
     farm_tab:AddSlider({
-        Name = "Idle Float Height (supports only farm bosses & health %)",
+        Name = "Idle Float Height",
         Min = 30,
         Max = 100,
         Default = settings.Height,
@@ -1180,6 +1204,18 @@ do
         ValueName = "Studs",
         Callback = function(v)
             settings.Height = v
+        end
+    })
+
+    farm_tab:AddTextbox({
+        Name = "Idle Float when under % health (0-100)",
+        Default = tostring(settings.Autofarm_Idle_Min),
+        TextDisappear = false,
+        Callback = function(n)
+            n = tonumber(n)
+            if n and n >= 0 and n <= 100 then
+                settings.Autofarm_Idle_Min = n
+            end
         end
     })
 
@@ -1196,6 +1232,18 @@ do
         end
     })
 
+    farm_tab:AddTextbox({
+        Name = "Resume Farm when over % health (0-100)",
+        Default = tostring(settings.Autofarm_Idle_Max),
+        TextDisappear = false,
+        Callback = function(n)
+            n = tonumber(n)
+            if n and n >= 0 and n <= 100 then
+                settings.Autofarm_Idle_Max = n
+            end
+        end
+    })
+
     farm_tab:AddSlider({
         Name = "Resume Farm when over % health",
         Min = 0,
@@ -1206,6 +1254,18 @@ do
         ValueName = "%",
         Callback = function(v)
             settings.Autofarm_Idle_Max = v
+        end
+    })
+
+    farm_tab:AddTextbox({
+        Name = "Tween Speed (0-100)",
+        Default = tostring(settings.Tween_Speed),
+        TextDisappear = false,
+        Callback = function(n)
+            n = tonumber(n)
+            if n and n >= 0 and n <= 100 then
+                settings.Tween_Speed = n
+            end
         end
     })
 
@@ -1347,6 +1407,18 @@ do
         Default = false,
         Callback = function(bool)
             settings.AttackPlayers = bool
+        end
+    })
+
+    combat:AddTextbox({
+        Name = "Kill Aura Range (0-50)",
+        Default = tostring(settings.KA_Range),
+        TextDisappear = false,
+        Callback = function(text)
+            local n = tonumber(text)
+            if n and n >= 0 and n <= 50 then
+                settings.KA_Range = n
+            end
         end
     })
 
@@ -1753,7 +1825,7 @@ do
         end
 
         AutofarmYOffsetTab:AddTextbox({
-            Name = mob_name,
+            Name = mob_name .. ("0-50"),
             Default = tostring(Autofarm_Y_Offsets[mob_name]),
             TextDisappear = false,
             Callback = function(text)
@@ -2579,6 +2651,17 @@ do
 
     if setfpscap then
         local fps = getfpscap and getfpscap() or 60
+        Misc_tab:AddTextbox({
+            Name = "Set FPS Cap (Requires executor FPS unlocker on)",
+            Default = tostring(fps),
+            TextDisappear = false,
+            Callback = function(text)
+                local n = tonumber(text)
+                if n and n > 0 then
+                    setfpscap(n)
+                end
+            end
+        })
         Misc_tab:AddSlider({
             Name = "Set FPS Cap (Requires executor FPS unlocker on)",
             Min = 0,
