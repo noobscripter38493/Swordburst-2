@@ -1754,7 +1754,7 @@ do
 
         AutofarmYOffsetTab:AddTextbox({
             Name = mob_name,
-            Default = tostring(AutofarmYOffsetTab[mob_name]),
+            Default = tostring(Autofarm_Y_Offsets[mob_name]),
             TextDisappear = false,
             Callback = function(text)
                 local a = tonumber(text)
