@@ -1581,14 +1581,14 @@ do
         end
     })
 
-    local lastcd = 9e9
+    local lastcd = 0
     range.Touched:Connect(function(touching)
         if touching.Name ~= "HumanoidRootPart" and not touching:FindFirstAncestor("Mobs") then
             return
         end
 
         local t = os.time()
-        if hotkeys:FindFirstChild("Cursed Enhancement") and t - lastcd >= 16 and autoce and stamina.Value >= 30 then
+        if hotkeys:FindFirstChild("Cursed Enhancement") and t - lastcd >= 17 and autoce and stamina.Value >= 30 then
             lastcd = t
             Event:FireServer("Skills", {"UseSkill", "Cursed Enhancement", {}})
         end
