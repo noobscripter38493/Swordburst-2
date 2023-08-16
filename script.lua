@@ -1753,9 +1753,9 @@ do
         end
 
         AutofarmYOffsetTab:AddTextbox({
-            Name = mob_name
+            Name = mob_name,
             Default = tostring(AutofarmYOffsetTab[mob_name]),
-            TextDisappear = false
+            TextDisappear = false,
             Callback = function(text)
                 local a = tonumber(text)
                 if a and a >= 0 and a <= 50 then
