@@ -433,7 +433,7 @@ local settings = { -- defaults
     Mob_Priority = false,
     Prioritized_Mob = nil,
     KA = false,
-    KA_Range = 20,
+    KA_Range = 30,
     WalkSpeed = humanoid.WalkSpeed,
     speed = false,
     AutoEquip = false,
@@ -616,49 +616,6 @@ local function setUpStaminaValues()
         currentStaminaSignal:Disconnect()
     end)
 end
-
-local appearance = Players:GetCharacterAppearanceAsync(plr.UserId)
-local avatarshirt = appearance:FindFirstChildWhichIsA("Shirt")
-local avatarpants = appearance:FindFirstChildWhichIsA("Pants")
-local avatarshirtasset = avatarshirt and avatarshirt.ShirtTemplate
-local avatarpantsasset = avatarpants and avatarpants.PantsTemplate
-
-local function setUpNoArmor()
-    shirt = WaitForChildWhichIsA(char, "Shirt")
-    pants = WaitForChildWhichIsA(char, "Pants")
-    if hidearmor then
-        shirt.ShirtTemplate = avatarshirtasset
-        pants.PantsTemplate = avatarpantsasset
-    end
-
-    char.ChildAdded:Connect(function(c)
-        if c:IsA("Shirt") then
-            shirt = c
-            armorshirtasset = shirt.ShirtTemplate
-            if hidearmor then
-                shirt.ShirtTemplate = avatarshirtasset
-            end
-
-        elseif c:IsA("Pants") then
-            pants = c
-            armorpantsasset = pants.PantsTemplate
-            if hidearmor then
-                pants.PantsTemplate = avatarpantsasset
-            end
-        end
-    end)
-end
-
-if avatarpantsasset and avatarshirtasset then
-    local hidearmor
-    local shirt = WaitForChildWhichIsA(char, "Shirt")
-    local pants = WaitForChildWhichIsA(char, "Pants")
-    local armorshirtasset = shirt.ShirtTemplate
-    local armorpantsasset = pants.PantsTemplate
-
-    setUpNoArmor()
-end
-
 setUpPlayerHealthValues()
 setUpStaminaValues()
 
@@ -675,9 +632,6 @@ plr.CharacterAdded:Connect(function(new)
     setUpPlayerHealthValues()
     setUpStaminaValues()
     setNoClipParts()
-    if avatarpantsasset and avatarshirtasset then
-        setUpNoArmor()
-    end
 
     stamina.Value = 100
     hasMaxStamina = true
@@ -746,7 +700,7 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
     end
 end
 
-local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/orion/main/orionnnn.lua"))()
+local lib = loadfile("orion ui.lua")()
 local orion = protected:WaitForChild("Orion")
 
 local window = lib:MakeWindow({
@@ -925,7 +879,7 @@ do
     local AtheonAttack = {
         n = nil, 
         t = os.time()
-       }
+    }   
 
     local WarlordCircleDiameter = 30
     local AtheonMeteorDiameter = 35
@@ -1094,7 +1048,7 @@ do
         else
             if AtheonAttack.n == "Meteors" then
                 local atheon_hrp = searchForAnyEnemy("GetHrp")
-                if atheon_hrp and math.abs(atheon_hrp.Position.Y - hrp.Position.Y) >= 50 then
+                if atheon_hrp and hrp.Position.Y - atheon_hrp.Position.Y >= 50 then
                     return
                 end
             end
@@ -1585,10 +1539,10 @@ do
     range.Touched:Connect(function(touching)
         if touching.Name ~= "HumanoidRootPart" and not touching:FindFirstAncestor("Mobs") then
             return
-        end
+        end 
 
         local t = os.time()
-        if hotkeys:FindFirstChild("Cursed Enhancement") and t - lastcd >= 17 and autoce and stamina.Value >= 30 then
+        if hotkeys:FindFirstChild("Cursed Enhancement") and t - lastcd >= 18 and autoce and stamina.Value >= 30 then
             lastcd = t
             Event:FireServer("Skills", {"UseSkill", "Cursed Enhancement", {}})
         end
@@ -1787,7 +1741,7 @@ do
 end
 
 do
-    local AutofarmYOFfsetTab = window:MakeTab({
+    local AutofarmYOffsetTab = window:MakeTab({
         Name = "Autofarm Y Offsets",
         Icon = "",
         PremiumOnly = false
@@ -1798,7 +1752,19 @@ do
             Autofarm_Y_Offsets[mob_name] = 15
         end
 
-        AutofarmYOFfsetTab:AddSlider({
+        AutofarmYOffsetTab:AddTextbox({
+            Name = mob_name
+            Default = tostring(AutofarmYOffsetTab[mob_name]),
+            TextDisappear = false
+            Callback = function(text)
+                local a = tonumber(text)
+                if a and a >= 0 and a <= 50 then
+                    Autofarm_Y_Offsets[mob_name] = a
+                end
+            end
+        })
+
+        AutofarmYOffsetTab:AddSlider({
             Name = mob_name,
             Min = 0,
             Max = 50,
@@ -2140,19 +2106,6 @@ do
         end
     })
 
-    if armorpantsasset and armorshirtasset then
-        Character_tab:AddToggle({
-            Name = "Hide Armor",
-            Default = false,
-            Callback = function(bool)
-                hidearmor = bool
-                
-                shirt.ShirtTemplate = hidearmor and avatarshirtasset or armorshirtasset
-                pants.PantsTemplate = hidearmor and avatarpantsasset or armorpantsasset
-            end
-        })
-    end
-    
     Character_tab:AddToggle({
         Name = "WalkSpeed Toggle",
         Default = false,
