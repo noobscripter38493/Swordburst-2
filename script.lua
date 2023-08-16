@@ -811,7 +811,7 @@ do
         return closest_mob
     end
 
-    local function searchForAnyEnemy()
+    local function searchForAnyEnemy(a)
         local closest_magnitude = math.huge
         local closest_mob
 
@@ -836,6 +836,10 @@ do
                     end
                 end
             end
+        end
+
+        if a and closest_mob then
+            return closest_mob.HumanoidRootPart
         end
 
         return closest_mob
@@ -917,20 +921,43 @@ do
         floatPart.CFrame = hrp.CFrame * CFrame.new(0, height, 0)
     end)
     floatPart.Parent = workspace
---[[
-    local AtheonAttack = {n = nil, t = nil}
 
-    local WarlordCircleRadius = 30
-    local AtheonNukeRadius = 155
+    local AtheonAttack = {
+        n = nil, 
+        t = os.time()
+       }
+
+    local WarlordCircleDiameter = 30
+    local AtheonMeteorDiameter = 35
+    local AtheonNukeDiameter = 155
+    local AtheonNukeRadius = 155/2 + 5
+    local gettingmeteors
     workspace.ChildAdded:Connect(function(c)
         if c.Name == "Circle" then
             if c.Size.X == WarlordCircleRadius then
                 atkstarted = os.time()
             
-            elseif c.Size.X == AtheonNukeRadius then
+            elseif c.Size.X == AtheonNukeDiameter then
                 AtheonAttack.n = "Nuke"
                 AtheonAttack.t = os.time()
+
+            elseif c.Size.X == AtheonMeteorDiameter then
+                if gettingmeteors then return end
+
+                task.spawn(function()
+                    gettingmeteors = true
+                    AtheonAttack.n = "Meteors"
+                    AtheonAttack.t = os.time()
+
+                    task.wait(5)
+
+                    gettingmeteors = false
+                end)
             end
+
+        elseif c.Name == "Box" then
+            AtheonAttack.n = "LavaDash"
+            AtheonAttack.t = os.time()
         end
     end)
 
@@ -938,13 +965,13 @@ do
         if mob_name == "Atheon" then
             local name = AtheonAttack.n 
             local t = AtheonAttack.t 
-            if AtheonAttack.n == "Nuke" and os.time() - t < 7 then
+            if AtheonAttack.n == "Nuke" and os.time() - t < 4 then
                 return true
 
             elseif AtheonAttack.n == "LavaDash" and os.time() - t < 5 then
                 return true
 
-            elseif os.time() - t < 6 then
+            elseif AtheonAttack.n == "Meteors" and os.time() - t < 5 then
                 return true
             end
         end
@@ -954,20 +981,42 @@ do
         end
     end
 
+    local cos = math.cos
+    local sin = math.sin
+    local rad = math.rad
     local function SafeArea(mob_name)
-        local part = 
         if mob_name == "Atheon" then
+            local atheon = workspace.Mobs.Atheon
+            local atheon_hrp = atheon.HumanoidRootPart
             if AtheonAttack.n == "Nuke" then
-                return CFrame.new()
+                local safepoints = {}
+                for i = 1, 8 do
+                    local radians = rad(360/i)
+                    safepoints[i] = AtheonNukeRadius * Vector2.new(cos(radians), sin(radians)) + Vector2.new(atheon_hrp.Position.X, atheon_hrp.Position.Z)
+                end
+
+                local closestsafepoint
+                local closestmag = math.huge
+                for i, v in next, safepoints do
+                    local pos = Vector2.new(hrp.Position.X, hrp.Position.Z)
+                    local mag = (pos - v).Magnitude
+                    if mag < closestmag then
+                        closestmag = mag
+                        closestsafepoint = v
+                    end
+                end
+
+                return CFrame.new(closestsafepoint.X, hrp.Position.Y, closestsafepoint.Y)
 
             elseif AtheonAttack.n == "LavaDash" then
-                
-            else
+                return atheon_hrp.CFrame * CFrame.new(0, Autofarm_Y_Offsets["Atheon"], 10)
 
+            elseif AtheonAttack.n == "Meteors" then
+                return atheon_hrp.CFrame * CFrame.new(0, 50, 0)
             end
         end
     end
-]]
+
     local function FindNextMob()
         local to
         if settings.Farm_Only_Bosses then
@@ -977,9 +1026,9 @@ do
 
             shouldFloat = to == floatPart
 
-           -- if IsBossAttacking(to.Parent.Name) then
-                --return SafeArea(to.Parent.Name)
-            --end
+            if IsBossAttacking(to and to.Parent.Name) then
+                return SafeArea(to.Parent.Name)
+            end
 
             return to
         end
@@ -987,9 +1036,9 @@ do
         local boss = settings.Prioritized_Boss
         if settings.Boss_Priority and boss then
             to = searchForBoss(boss)
-           -- if IsBossAttacking(to.Parent.Name) then
-               -- return SafeArea(to.Parent.Name)
-            --end
+            if IsBossAttacking(to and to.Name) then
+                return SafeArea(to.Name)
+            end
         end
 
         local mob = settings.Prioritized_Mob
@@ -999,6 +1048,9 @@ do
 
         if not to then
             to = searchForAnyEnemy()
+            if IsBossAttacking(to and to.Name) then
+                return SafeArea(to.Name)
+            end
         end
 
         to = to and to:FindFirstChild("HumanoidRootPart") or floatPart
@@ -1035,11 +1087,20 @@ do
         local distance = (hrp.Position - to.Position).Magnitude
         local seconds = distance / settings.Tween_Speed
         local y_offset = 0
+        local cframe
         if typeof(to) ~= "CFrame" then
             y_offset = shouldFloat and 0 or Autofarm_Y_Offsets[to.Parent.Name]
-        end
+            cframe = to.CFrame * CFrame.new(0, y_offset, 0)
+        else
+            if AtheonAttack.n == "Meteors" then
+                local atheon_hrp = searchForAnyEnemy("GetHrp")
+                if atheon_hrp and math.abs(atheon_hrp.Position.Y - hrp.Position.Y) >= 50 then
+                    return
+                end
+            end
 
-        local cframe = to.CFrame * CFrame.new(0, y_offset, 0)
+            cframe = to
+        end
 
         local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
         local tween = TweenS:Create(hrp, tween_info, {CFrame = cframe})
