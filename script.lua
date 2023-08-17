@@ -1017,8 +1017,18 @@ do
         end
     end
 
+    local tweeningtosavedcframe
     local savedcframe
     local function FindNextMob()
+        if tweeningtosavedcframe and (hrp.Position - savedcframe.Position).Magnitude <= 10 then
+            tweeningtosavedcframe = false
+        end
+
+        if savedcframe and (hrp.Position - savedcframe.Position).Magnitude > settings.MaxAutofarmDistance then
+            tweeningtosavedcframe = true
+            return savedcframe
+        end
+
         local to
         if settings.Farm_Only_Bosses then
             to = searchForAnyBoss(bosses_on_floor[placeid])
@@ -1060,7 +1070,6 @@ do
         end
 
         shouldFloat = to == floatPart
-
         return to
     end
 
@@ -1234,7 +1243,7 @@ do
     })
 
     farm_tab:AddButton({
-        Name = "Save Position (tween here when no mobs or death)",
+        Name = "Save Position (tween here when no mobs or out of range)",
         Callback = function()
             savedcframe = hrp.CFrame
         end
