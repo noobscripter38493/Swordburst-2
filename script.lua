@@ -33,6 +33,16 @@ local function create_confirm(text)
         coroutine.resume(thread, false)
     end)
 
+    new.PopupAcceptButton.TouchTap:Connect(function()
+        new:Destroy()
+        coroutine.resume(thread, true)
+    end)
+
+    new.PopupDeclineButton.TouchTap:Connect(function()
+        new:Destroy()
+        coroutine.resume(thread, false)
+    end)
+
     new.PopupText.TextSize = 20
     new.PopupText.Text = text
     new.Visible = true
@@ -703,6 +713,45 @@ local window = lib:MakeWindow({
 local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
 local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
 
+local othercharacters = {}
+local function SetupCharacterListeners(v)
+    othercharacters[v.Name] = v.Character
+    v.CharacterAdded:Connect(function(new)
+        othercharacters[v.Name] = new
+    end)
+end
+
+for i, v in next, Players:GetChildren() do      
+    SetupCharacterListeners(v)
+end
+
+Players.PlayerAdded:Connect(function(v)
+    SetupCharacterListeners(v)
+end)
+
+Players.PlayerRemoving:Connect(function(v)
+    othercharacters[v.Name] = nil
+end)
+
+task.spawn(function()
+    while true do
+        for i, v in next, othercharacters do
+            if not settings.Autofarm then
+                continue
+            end
+
+            local theirhrp = v:FindFirstChild("HumanoidRootPart")
+            if theirhrp and (hrp.Position - theirhrp.Position).Magnitude >= 10 then
+                v.Parent = nil
+            else
+                v.Parent = workspace
+            end
+        end
+
+        task.wait(1)
+    end
+end)
+
 local split = string.split
 do
     local farm_tab = window:MakeTab({
@@ -896,6 +945,7 @@ do
 
                     task.wait(5)
 
+                    AtheonAttack.n = nil
                     gettingmeteors = false
                 end)
             end
@@ -967,6 +1017,7 @@ do
         end
     end
 
+    local savedcframe
     local function FindNextMob()
         local to
         if settings.Farm_Only_Bosses then
@@ -1004,6 +1055,10 @@ do
         end
 
         to = to and to:FindFirstChild("HumanoidRootPart") or floatPart
+        if to == floatPart and savedcframe then
+            to = savedcframe
+        end
+
         shouldFloat = to == floatPart
 
         return to
@@ -1175,6 +1230,13 @@ do
         ValueName = "Studs",
         Callback = function(v)
             settings.MaxAutofarmDistance = v
+        end 
+    })
+
+    farm_tab:AddButton({
+        Name = "Save Position (tween here when no mobs or death)",
+        Callback = function()
+            savedcframe = hrp.CFrame
         end
     })
 
