@@ -33,16 +33,6 @@ local function create_confirm(text)
         coroutine.resume(thread, false)
     end)
 
-    new.PopupAcceptButton.TouchTap:Connect(function()
-        new:Destroy()
-        coroutine.resume(thread, true)
-    end)
-
-    new.PopupDeclineButton.TouchTap:Connect(function()
-        new:Destroy()
-        coroutine.resume(thread, false)
-    end)
-
     new.PopupText.TextSize = 20
     new.PopupText.Text = text
     new.Visible = true
