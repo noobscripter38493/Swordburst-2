@@ -737,6 +737,10 @@ task.spawn(function()
     while true do
         for i, v in next, othercharacters do
             if not settings.Autofarm then
+                if v:FindFirstChild("HumanoidRootPart") then
+                    v.Parent = workspace
+                end
+
                 continue
             end
 
