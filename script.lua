@@ -721,8 +721,10 @@ local function SetupCharacterListeners(v)
     end)
 end
 
-for i, v in next, Players:GetChildren() do      
-    SetupCharacterListeners(v)
+for i, v in next, Players:GetChildren() do
+    if v ~= plr then
+        SetupCharacterListeners(v)
+    end
 end
 
 Players.PlayerAdded:Connect(function(v)
@@ -737,15 +739,12 @@ task.spawn(function()
     while true do
         for i, v in next, othercharacters do
             if not settings.Autofarm then
-                if v:FindFirstChild("HumanoidRootPart") then
-                    v.Parent = workspace
-                end
-
+                v.Parent = workspace
                 continue
             end
 
             local theirhrp = v:FindFirstChild("HumanoidRootPart")
-            if theirhrp and (hrp.Position - theirhrp.Position).Magnitude >= 10 then
+            if theirhrp and (hrp.Position - theirhrp.Position).Magnitude <= 10 then
                 v.Parent = nil
             else
                 v.Parent = workspace
@@ -1950,7 +1949,7 @@ do
                     end
 
                     while tpingtohunter do
-                        local huntercframe = CFrame.new(1635, 283, 3742)
+                        local huntercframe = CFrame.new(1635, 330, 3742)
                         local seconds = (hrp.Position - huntercframe.Position).Magnitude / 80
                         local tween_info = TweenInfo.new(seconds, Enum.EasingStyle.Linear)
                         local huntertween = TweenS:Create(hrp, tween_info, {CFrame = huntercframe})
