@@ -33,16 +33,6 @@ local function create_confirm(text)
         coroutine.resume(thread, false)
     end)
 
-    new.PopupAcceptButton.TouchTap:Connect(function()
-        new:Destroy()
-        coroutine.resume(thread, true)
-    end)
-
-    new.PopupDeclineButton.TouchTap:Connect(function()
-        new:Destroy()
-        coroutine.resume(thread, false)
-    end)
-
     new.PopupText.TextSize = 20
     new.PopupText.Text = text
     new.Visible = true
@@ -434,8 +424,6 @@ local settings = { -- defaults
     Prioritized_Mob = nil,
     KA = false,
     KA_Range = 30,
-    WalkSpeed = humanoid.WalkSpeed,
-    speed = false,
     AutoEquip = false,
     InfSprint = false,
     InfJump = false,
@@ -649,8 +637,6 @@ Actions.StartSwing = function(...)
 end
 
 local inventory_module = require(Services.UI.Inventory)
-
-local walkspeed = humanoid.WalkSpeed
 
 local hookmetamethod = hookmetamethod or function(t, metamethod, hook)
     local mt = getrawMT(t)
@@ -1220,31 +1206,6 @@ do
         end
     })
 
-    farm_tab:AddTextbox({
-        Name = "MaxRadius (0-10000)",
-        Default = tostring(settings.MaxAutofarmDistance),
-        TextDisappear = false,
-        Callback = function(n)
-            n = tonumber(n)
-            if n and n >= 0 and n <= 10000 then
-                settings.MaxAutofarmDistance = n
-            end
-        end
-    })
-
-    farm_tab:AddSlider({
-        Name = "Max Radius",
-        Min = 0,
-        Max = 10000,
-        Default = settings.MaxAutofarmDistance,
-        Color = Color3.new(255, 255, 255),
-        Increment = 100,
-        ValueName = "Studs",
-        Callback = function(v)
-            settings.MaxAutofarmDistance = v
-        end 
-    })
-
     farm_tab:AddButton({
         Name = "Save Position (tween here when no mobs or out of range)",
         Callback = function()
@@ -1252,105 +1213,132 @@ do
         end
     })
 
-    farm_tab:AddTextbox({
-        Name = "Idle Float Height (30-100)",
-        Default = tostring(settings.Height),
-        TextDisappear = false,
-        Callback = function(n)
-            n = tonumber(n)
-            if n and n >= 30 and n <= 100 then
-                settings.Height = n
+    if UserInputS.TouchEnabled then
+        farm_tab:AddTextbox({
+            Name = "MaxRadius (0-10000)",
+            Default = tostring(settings.MaxAutofarmDistance),
+            TextDisappear = false,
+            Callback = function(n)
+                n = tonumber(n)
+                if n and n >= 0 and n <= 10000 then
+                    settings.MaxAutofarmDistance = n
+                end
             end
-        end
-    })
+        })
 
-    farm_tab:AddSlider({
-        Name = "Idle Float Height",
-        Min = 30,
-        Max = 100,
-        Default = settings.Height,
-        Color = Color3.new(255, 255, 255),
-        Increment = 1,
-        ValueName = "Studs",
-        Callback = function(v)
-            settings.Height = v
-        end
-    })
-
-    farm_tab:AddTextbox({
-        Name = "Idle Float when under % health (0-100)",
-        Default = tostring(settings.Autofarm_Idle_Min),
-        TextDisappear = false,
-        Callback = function(n)
-            n = tonumber(n)
-            if n and n >= 0 and n <= 100 then
-                settings.Autofarm_Idle_Min = n
+        farm_tab:AddTextbox({
+            Name = "Idle Float Height (30-100)",
+            Default = tostring(settings.Height),
+            TextDisappear = false,
+            Callback = function(n)
+                n = tonumber(n)
+                if n and n >= 30 and n <= 100 then
+                    settings.Height = n
+                end
             end
-        end
-    })
+        })
 
-    farm_tab:AddSlider({
-        Name = "Idle Float when under % health",
-        Min = 0,
-        Max = 100,
-        Default = settings.Autofarm_Idle_Min,
-        Color = Color3.new(255, 255, 255),
-        Increment = 1,
-        ValueName = "%",
-        Callback = function(v)
-            settings.Autofarm_Idle_Min = v
-        end
-    })
-
-    farm_tab:AddTextbox({
-        Name = "Resume Farm when over % health (0-100)",
-        Default = tostring(settings.Autofarm_Idle_Max),
-        TextDisappear = false,
-        Callback = function(n)
-            n = tonumber(n)
-            if n and n >= 0 and n <= 100 then
-                settings.Autofarm_Idle_Max = n
+        farm_tab:AddTextbox({
+            Name = "Idle Float when under % health (0-100)",
+            Default = tostring(settings.Autofarm_Idle_Min),
+            TextDisappear = false,
+            Callback = function(n)
+                n = tonumber(n)
+                if n and n >= 0 and n <= 100 then
+                    settings.Autofarm_Idle_Min = n
+                end
             end
-        end
-    })
+        })
 
-    farm_tab:AddSlider({
-        Name = "Resume Farm when over % health",
-        Min = 0,
-        Max = 100,
-        Default = settings.Autofarm_Idle_Max,
-        Color = Color3.new(255, 255, 255),
-        Increment = 1,
-        ValueName = "%",
-        Callback = function(v)
-            settings.Autofarm_Idle_Max = v
-        end
-    })
-
-    farm_tab:AddTextbox({
-        Name = "Tween Speed (0-100)",
-        Default = tostring(settings.Tween_Speed),
-        TextDisappear = false,
-        Callback = function(n)
-            n = tonumber(n)
-            if n and n >= 0 and n <= 100 then
-                settings.Tween_Speed = n
+        farm_tab:AddTextbox({
+            Name = "Resume Farm when over % health (0-100)",
+            Default = tostring(settings.Autofarm_Idle_Max),
+            TextDisappear = false,
+            Callback = function(n)
+                n = tonumber(n)
+                if n and n >= 0 and n <= 100 then
+                    settings.Autofarm_Idle_Max = n
+                end
             end
-        end
-    })
+        })
 
-    farm_tab:AddSlider({
-        Name = "Tween Speed",
-        Min = 0,
-        Max = 100,
-        Default = settings.Tween_Speed,
-        Color = Color3.new(255, 255, 255),
-        Increment = 1,
-        ValueName = "Speed",
-        Callback = function(v)
-            settings.Tween_Speed = v
-        end
-    })
+        farm_tab:AddTextbox({
+            Name = "Tween Speed (0-100)",
+            Default = tostring(settings.Tween_Speed),
+            TextDisappear = false,
+            Callback = function(n)
+                n = tonumber(n)
+                if n and n >= 0 and n <= 100 then
+                    settings.Tween_Speed = n
+                end
+            end
+        })
+    else
+        farm_tab:AddSlider({
+            Name = "Max Radius",
+            Min = 0,
+            Max = 10000,
+            Default = settings.MaxAutofarmDistance,
+            Color = Color3.new(255, 255, 255),
+            Increment = 100,
+            ValueName = "Studs",
+            Callback = function(v)
+                settings.MaxAutofarmDistance = v
+            end 
+        })
+
+        farm_tab:AddSlider({
+            Name = "Idle Float Height",
+            Min = 30,
+            Max = 100,
+            Default = settings.Height,
+            Color = Color3.new(255, 255, 255),
+            Increment = 1,
+            ValueName = "Studs",
+            Callback = function(v)
+                settings.Height = v
+            end
+        })
+
+        farm_tab:AddSlider({
+            Name = "Idle Float when under % health",
+            Min = 0,
+            Max = 100,
+            Default = settings.Autofarm_Idle_Min,
+            Color = Color3.new(255, 255, 255),
+            Increment = 1,
+            ValueName = "%",
+            Callback = function(v)
+                settings.Autofarm_Idle_Min = v
+            end
+        })
+
+        farm_tab:AddSlider({
+            Name = "Resume Farm when over % health",
+            Min = 0,
+            Max = 100,
+            Default = settings.Autofarm_Idle_Max,
+            Color = Color3.new(255, 255, 255),
+            Increment = 1,
+            ValueName = "%",
+            Callback = function(v)
+                settings.Autofarm_Idle_Max = v
+            end
+        })
+
+        farm_tab:AddSlider({
+            Name = "Tween Speed",
+            Min = 0,
+            Max = 100,
+            Default = settings.Tween_Speed,
+            Color = Color3.new(255, 255, 255),
+            Increment = 1,
+            ValueName = "Speed",
+            Callback = function(v)
+                settings.Tween_Speed = v
+            end
+        })
+    end
 end
 
 local alwaysswinganimation
@@ -1480,30 +1468,32 @@ do
         end
     })
 
-    combat:AddTextbox({
-        Name = "Kill Aura Range (0-50)",
-        Default = tostring(settings.KA_Range),
-        TextDisappear = false,
-        Callback = function(text)
-            local n = tonumber(text)
-            if n and n >= 0 and n <= 50 then
-                settings.KA_Range = n
+    if UserInputS.TouchEnabled then
+        combat:AddTextbox({
+            Name = "Kill Aura Range (0-50)",
+            Default = tostring(settings.KA_Range),
+            TextDisappear = false,
+            Callback = function(text)
+                local n = tonumber(text)
+                if n and n >= 0 and n <= 50 then
+                    settings.KA_Range = n
+                end
             end
-        end
-    })
-
-    combat:AddSlider({
-        Name = "Kill Aura Range",
-        Min = 0,
-        Max = 50,
-        Default = settings.KA_Range,
-        Color = Color3.new(255, 255, 255),
-        Increment = 1,
-        ValueName = "Range",
-        Callback = function(v)
-            settings.KA_Range = v
-        end
-    })
+        })
+    else
+        combat:AddSlider({
+            Name = "Kill Aura Range",
+            Min = 0,
+            Max = 50,
+            Default = settings.KA_Range,
+            Color = Color3.new(255, 255, 255),
+            Increment = 1,
+            ValueName = "Range",
+            Callback = function(v)
+                settings.KA_Range = v
+            end
+        })
+    end
 
     if firesignal then
         local ka_button
@@ -1894,30 +1884,32 @@ do
             Autofarm_Y_Offsets[mob_name] = 15
         end
 
-        AutofarmYOffsetTab:AddTextbox({
-            Name = mob_name .. (" 0-50"),
-            Default = tostring(Autofarm_Y_Offsets[mob_name]),
-            TextDisappear = false,
-            Callback = function(text)
-                local a = tonumber(text)
-                if a and a >= 0 and a <= 50 then
-                    Autofarm_Y_Offsets[mob_name] = a
+        if UserInputS.TouchEnabled then
+            AutofarmYOffsetTab:AddTextbox({
+                Name = mob_name .. (" 0-50"),
+                Default = tostring(Autofarm_Y_Offsets[mob_name]),
+                TextDisappear = false,
+                Callback = function(text)
+                    local a = tonumber(text)
+                    if a and a >= 0 and a <= 50 then
+                        Autofarm_Y_Offsets[mob_name] = a
+                    end
                 end
-            end
-        })
-
-        AutofarmYOffsetTab:AddSlider({
-            Name = mob_name,
-            Min = 0,
-            Max = 50,
-            Default = Autofarm_Y_Offsets[mob_name],
-            Color = Color3.new(255, 255, 255),
-            Increment = 1,
-            ValueName = "Y Offset",
-            Callback = function(v)
-                Autofarm_Y_Offsets[mob_name] = v
-            end
-        })
+            })
+        else
+            AutofarmYOffsetTab:AddSlider({
+                Name = mob_name,
+                Min = 0,
+                Max = 50,
+                Default = Autofarm_Y_Offsets[mob_name],
+                Color = Color3.new(255, 255, 255),
+                Increment = 1,
+                ValueName = "Y Offset",
+                Callback = function(v)
+                    Autofarm_Y_Offsets[mob_name] = v
+                end
+            })
+        end
     end
 end
 
@@ -2248,18 +2240,7 @@ do
         end
     })
 
-    Character_tab:AddToggle({
-        Name = "WalkSpeed Toggle",
-        Default = false,
-        Callback = function(bool)
-            settings.speed = bool
-            while settings.speed do
-                humanoid.WalkSpeed = walkspeed
-                task.wait()
-            end
-        end
-    })
-
+    local walkspeed = humanoid.WalkSpeed
     Character_tab:AddSlider({
         Name = "WalkSpeed",
         Min = 0,
@@ -2272,6 +2253,13 @@ do
             walkspeed = speed
         end
     })
+
+    task.spawn(function()
+        while true do
+            humanoid.WalkSpeed = walkspeed
+            task.wait(.1)
+        end
+    end)
 end
 
 do
@@ -2718,17 +2706,6 @@ do
 
     if setfpscap then
         local fps = getfpscap and getfpscap() or 60
-        Misc_tab:AddTextbox({
-            Name = "Set FPS Cap (Requires executor FPS unlocker on)",
-            Default = tostring(fps),
-            TextDisappear = false,
-            Callback = function(text)
-                local n = tonumber(text)
-                if n and n > 0 then
-                    setfpscap(n)
-                end
-            end
-        })
         Misc_tab:AddSlider({
             Name = "Set FPS Cap (Requires executor FPS unlocker on)",
             Min = 0,
