@@ -2512,14 +2512,29 @@ do
     })
     
     local Amount = 0
-    FastTrade:AddTextbox({
-        Name = ("Change # of Upgrade Crystals added"),
-        Default = "",
-        TextDisappear = false,
-        Callback = function(n)
-            Amount = tonumber(n)
-        end
-    })
+    if UserInputS.TouchEnabled then
+        FastTrade:AddTextbox({
+            Name = "Change # of Upgrade Crystals added",
+            Default = "",
+            TextDisappear = false,
+            Callback = function(n)
+                Amount = tonumber(n)
+            end
+        })
+    else
+        FastTrade:AddSlider({
+            Name = "Change # of Upgrade Crystals added",
+            Min = 0,
+            Max = 128,
+            Default = 1,
+            Color = Color3.new(255, 255, 255),
+            Increment = 1,
+            ValueName = "Crystals",
+            Callback = function(v)
+                Amount = v
+            end
+        })
+    end
 
     for i, v in next, rarities do
         FastTrade:AddButton({
