@@ -1568,6 +1568,7 @@ do
 
     local style
     local hotkeys = Profile.Hotkeys
+    local skills = Profile.Skills
 
     local selectSkill
     task.spawn(function()
@@ -1683,7 +1684,7 @@ do
         end 
 
         local t = os.time()
-        if hotkeys:FindFirstChild("Cursed Enhancement") and t - lastcd >= 18 and autoce and stamina.Value >= 30 then
+        if skills:FindFirstChild("Cursed Enhancement") and t - lastcd >= 18 and autoce and stamina.Value >= 30 then
             lastcd = t
             Event:FireServer("Skills", {"UseSkill", "Cursed Enhancement", {}})
         end
