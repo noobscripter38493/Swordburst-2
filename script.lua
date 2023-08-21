@@ -660,6 +660,7 @@ local function getMobHealth(mob)
     return entity and entity:FindFirstChild("Health")
 end
 
+local sprinting
 if iscclosure(hookmetamethod) or setreadonly and getrawMT then
     if getnamecallmethod then
         local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
@@ -667,7 +668,14 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
             local args = {...}
 
             if self == Event and ncm == "FireServer" then
-                if settings.InfSprint and args[1] == "Actions" then
+                if args[1] == "Actions" and args[2][1] == "Sprint" then
+                    if args[2][2] == "Enabled" then
+                        sprinting = true
+                    else
+                        sprinting = false
+                    end
+
+                elseif settings.InfSprint and args[1] == "Actions" then
                     if args[2][2] == "Step" then
                         return
                     end
@@ -1495,7 +1503,7 @@ do
         })
     end
 
-    if firesignal then
+    if firesignal and not UserInputS.TouchEnabled then
         local ka_button
         while not ka_button do
             for _, v in next, orion:GetDescendants() do
@@ -2241,22 +2249,40 @@ do
     })
 
     local walkspeed = humanoid.WalkSpeed
-    Character_tab:AddSlider({
-        Name = "WalkSpeed",
-        Min = 0,
-        Max = 100,
-        Default = walkspeed,
-        Color = Color3.new(255, 255, 255),
-        Increment = 1,
-        ValueName = "Speed",
-        Callback = function(speed)
-            walkspeed = speed
-        end
-    })
+    if UserInputS.TouchEnabled then
+        Character_tab:AddTextbox({
+            Name = "WalkSpeed",
+            Default = "20",
+            TextDisappear = false,
+            Callback = function(text)
+                local n = tonumber(text)
+                if n and n >= 0 and n <= 100 then
+                    walkspeed = n 
+                end
+            end
+        })
+    else
+        Character_tab:AddSlider({
+            Name = "WalkSpeed",
+            Min = 0,
+            Max = 100,
+            Default = walkspeed,
+            Color = Color3.new(255, 255, 255),
+            Increment = 1,
+            ValueName = "Speed",
+            Callback = function(speed)
+                walkspeed = speed
+            end
+        })
+    end
+end
 
     task.spawn(function()
         while true do
-            humanoid.WalkSpeed = walkspeed
+            if not sprinting then
+                humanoid.WalkSpeed = walkspeed
+            end
+
             task.wait(.1)
         end
     end)
