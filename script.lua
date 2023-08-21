@@ -671,7 +671,8 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
                 if args[1] == "Actions" and args[2][1] == "Sprint" then
                     if args[2][2] == "Enabled" then
                         sprinting = true
-                    else
+                        
+                    elseif args[2][2] == "Disabled" then
                         sprinting = false
                     end
 
@@ -2275,14 +2276,13 @@ do
             end
         })
     end
-end
 
     task.spawn(function()
         while true do
             if not sprinting then
                 humanoid.WalkSpeed = walkspeed
             end
-
+    
             task.wait(.1)
         end
     end)
