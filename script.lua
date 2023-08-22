@@ -2894,6 +2894,7 @@ do
     })
 
     credits:AddParagraph("Credits", "Made by OneTaPuXd on v3rm | PM Bugs")
+    credits:AddParagraph("discord: ragingbirito")
     if setclipboard then
         credits:AddButton({
             Name = "Copy v3rm url to clipboard",
@@ -2908,8 +2909,6 @@ do
                 setclipboard("https://v3rmillion.net/showthread.php?tid=1172798")
             end
         })
-    else
-        credits:AddParagraph("v3rm url", "https://v3rmillion.net/member.php?action=profile&uid=1229592")
     end
 
     if request then
