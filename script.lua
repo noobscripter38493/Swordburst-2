@@ -607,6 +607,29 @@ end
 setUpPlayerHealthValues()
 setUpStaminaValues()
 
+local savedcframe
+local function GetClosestPartFromVector(v3)
+    local closest_magnitude = math.huge
+    local closest_part
+    for _, v in next, workspace:GetDescendants() do
+        if v.Parent.Name == "TeleportSystem" and v.Name == "Part" then
+            local distance = (v3 - v.Position).Magnitude
+            if distance < closest_magnitude then
+                closest_magnitude = distance
+                closest_part = v
+            end
+        end
+    end
+
+    return closest_part
+end
+
+local function Tp(totouch)
+    firetouchinterest(hrp, totouch, 0)
+    task.wait(.1)
+    firetouchinterest(hrp, totouch, 1)
+end
+
 plr.CharacterAdded:Connect(function(new)
     tpingtohunter = false
     char = new
@@ -623,6 +646,23 @@ plr.CharacterAdded:Connect(function(new)
 
     stamina.Value = 100
     hasMaxStamina = true
+
+    if savedcframe then
+        task.wait(1)
+
+        local savedpos = savedcframe.Position
+        local totouch = GetClosestPartFromVector(savedpos)
+        if totouch then
+            Tp(totouch)
+
+            task.wait(1)
+            for i, v in next, totouch.Parent:GetChildren() do
+                if v ~= totouch then
+                    Tp(v)
+                end
+            end
+        end
+    end
 end)
 
 local Actions = require(Services.Actions)
@@ -1095,7 +1135,6 @@ do
     end
 
     local tweeningtosavedcframe
-    local savedcframe
     local function FindNextMob()
         if tweeningtosavedcframe and (hrp.Position - savedcframe.Position).Magnitude <= 10 then
             tweeningtosavedcframe = false
@@ -2041,22 +2080,6 @@ do
                 end
             })
         end
-        
-        local function GetClosestPartFromVector(v3)
-            local closest_magnitude = math.huge
-            local closest_part
-            for _, v in next, workspace:GetDescendants() do
-                if v.Parent.Name == "TeleportSystem" and v.Name == "Part" then
-                    local distance = (v3 - v.Position).Magnitude
-                    if distance < closest_magnitude then
-                        closest_magnitude = distance
-                        closest_part = v
-                    end
-                end
-            end
-
-            return closest_part
-        end
 
         local function makespecialtpbutton(name, pos)
             task.spawn(function()
@@ -2073,9 +2096,7 @@ do
                 teleports_tab:AddButton({
                     Name = name,
                     Callback = function()
-                        firetouchinterest(hrp, totouch, 0)
-                        task.wait(.1)
-                        firetouchinterest(hrp, totouch, 1)
+                        Tp(totouch)
                     end
                 })
 
@@ -2087,9 +2108,7 @@ do
             teleports_tab:AddButton({
                 Name = name,
                 Callback = function()
-                    firetouchinterest(hrp, part, 0)
-                    task.wait(.1)
-                    firetouchinterest(hrp, part, 1)
+                    Tp(part)
                 end
             })
         end
