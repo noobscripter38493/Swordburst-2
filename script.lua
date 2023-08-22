@@ -923,7 +923,10 @@ do
     local AtheonNukeDiameter = 155
     local AtheonNukeRadius = 155/2 + 5
     local WarlordCircleAttackT = 0
+    local SuspendedUnbornYCircle = 100
     local gettingmeteors
+    local gettingcircles
+    local suspendedcircles = {}
     workspace.ChildAdded:Connect(function(c)
         if c.Name == "Circle" then
             if c.Size.X == WarlordCircleDiameter then
@@ -945,6 +948,22 @@ do
 
                     AtheonAttack.n = nil
                     gettingmeteors = false
+                end)
+
+            elseif c.Size.Y == SuspendedUnbornYCircle then
+                table.insert(suspendedcircles, c)
+                if gettingcircles then 
+                    table.insert(suspendedcircles, c)
+                    return 
+                end
+
+                task.spawn(function()
+                    gettingcircles = true
+
+                    task.wait(5)
+
+                    gettingcircles = false
+                    table.clear(suspendedcircles)
                 end)
             end
 
@@ -972,11 +991,26 @@ do
         if mob_name == "Warlord" and os.time() - WarlordCircleAttackT < 5.5 then
             return true
         end
+
+        if mob_name == "Suspended Unborn" and gettingcircles then
+            return true
+        end
     end
 
     local cos = math.cos
     local sin = math.sin
     local rad = math.rad
+
+    local function SafePoints(radius, b)
+        local safepoints = {}
+        for i = 1, 8 do
+            local radians = rad(360/i)
+            safepoints[i] = (radius + 3) * Vector2.new(cos(radians), sin(radians)) + Vector2.new(b.Position.X, b.Position.Z)
+        end
+
+        return safepoints
+    end
+
     local function SafeArea(mob_name)
         if mob_name == "Warlord" then
             shouldFloat = true
@@ -984,15 +1018,11 @@ do
         end
 
         if mob_name == "Atheon" then
-            local atheon = workspace.Mobs.Atheon
+            local atheon = mobs.Atheon
             local atheon_hrp = atheon.HumanoidRootPart
             if AtheonAttack.n == "Nuke" then
-                local safepoints = {}
-                for i = 1, 8 do
-                    local radians = rad(360/i)
-                    safepoints[i] = AtheonNukeRadius * Vector2.new(cos(radians), sin(radians)) + Vector2.new(atheon_hrp.Position.X, atheon_hrp.Position.Z)
-                end
-
+                local safepoints = SafePoints(AtheonNukeRadius, atheon_hrp)
+   
                 local closestsafepoint
                 local closestmag = math.huge
                 for i, v in next, safepoints do
@@ -1012,6 +1042,55 @@ do
             elseif AtheonAttack.n == "Meteors" then
                 return atheon_hrp.CFrame * CFrame.new(0, 50, 0)
             end
+        end
+
+        if mob_name == "Suspended Unborn" then
+            local closestmag = 9e9
+            local closestcircle
+            for i, v in next, suspendedcircles do
+                local mag = (v.Position - hrp.Position).Magnitude
+                if mag < closestmag then
+                    closestmag = mag
+                    closestcircle = v
+                end
+            end
+
+            local SafePointsNot = SafePoints(13, closestcircle)
+            local safepoints = {}
+            for i, v in next, SafePointsNot do
+                for i2, v2 in next, suspendedcircles do
+                    if v2 == closestcircle then
+                        continue
+                    end
+
+                    local pos = Vector2.new(v2.Position.X, v2.Position.Z)
+                    local mag = (pos - v).Magnitude
+                    if mag >= 15 then
+                        safepoints[i] = v
+                    else
+                        safepoints[i] = nil
+                    end
+                end
+            end
+
+            local closestmag = 9e9
+            local closestsafe
+            local pos = Vector2.new(hrp.Position.X, hrp.Position.Z)
+            for i, v in next, safepoints do
+                local mag = (v - pos).Magnitude
+                if mag < closestmag then
+                    closestmag = mag
+                    closestsafe = v
+                end
+            end
+
+            local suspendedunborn = mobs["Suspended Unborn"]
+            local suspendedunbornhrp = suspendedunborn.HumanoidRootPart
+            if (closestsafe - pos).Magnitude >= 15 then
+                return suspendedunbornhrp
+            end
+
+            return CFrame.new(closestsafe.X, suspendedunbornhrp.Position.Y + Autofarm_Y_Offsets["Suspended Unborn"], closestsafe.Y)
         end
     end
 
@@ -1527,11 +1606,11 @@ do
             end
         })
 
-        local inputbegan
-        while not inputbegan do
+        local found
+        while not found do
             for _, v in next, orion:GetDescendants() do
                 if v:IsA("TextLabel") and v.Text == "Kill Aura Keybind" then
-                    inputbegan = {}
+                    found = true
                     v.Parent.TextButton.MouseButton1Down:Connect(function()
                         if inputbegan and inputbegan.Connected then
                             return
@@ -1542,8 +1621,7 @@ do
                                 inputbegan:Disconnect()
 
                                 local key = inputobj.KeyCode
-                                local key2 = tostring(key)
-                                settings.KA_Keybind = split(key2, "Code.")[2]
+                                settings.KA_Keybind = split(tostring(key), "Code.")[2]
                                 task.wait(.5)
                                 ka_bind:Set(key)
                             end
@@ -1679,7 +1757,7 @@ do
 
     local lastcd = 0
     range.Touched:Connect(function(touching)
-        if touching.Name ~= "HumanoidRootPart" and not touching:FindFirstAncestor("Mobs") then
+        if touching.Parent ~= char and touching.Name ~= "HumanoidRootPart" and not touching:FindFirstAncestor("Mobs") then
             return
         end 
 
