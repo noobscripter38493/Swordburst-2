@@ -2750,24 +2750,12 @@ do
         end
     })
 
-    local nostamfx
     local noparticles
     workspace.DescendantAdded:Connect(function(c)
-        if c.Name == "StaminaRegenEffect" and nostamfx then
-            c.Parent = nil
-
-        elseif c:IsA("ParticleEmitter") and noparticles then
+        if c:IsA("ParticleEmitter") and noparticles then
             c.Lifetime = NumberRange.new(0)
         end
     end)
-
-    Performance_tab:AddToggle({
-        Name = "No stam regen fx",
-        Default = false,
-        Callback = function(bool)
-            nostamfx = bool
-        end
-    })
 
     Performance_tab:AddToggle({
         Name = "No Particles",
