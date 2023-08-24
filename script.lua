@@ -450,7 +450,6 @@ local doLoad = {
     Autofarm_Y_Offsets = true,
     WebhookURL = true,
     Tween_Speed = true,
-    WeaponSkill = true,
     excludedMobs = true
 }
 
