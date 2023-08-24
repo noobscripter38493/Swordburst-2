@@ -743,7 +743,7 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
                 end
 
             elseif self == rf and ncm == "InvokeServer" then
-                if checkcaller and checkcaller() and args[1] == "Equipment" and getupvalue then
+                if checkcaller and checkcaller() and args[1] == "Equipment" then
                     if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
                         return
                     end
@@ -1180,9 +1180,6 @@ do
         local boss = settings.Prioritized_Boss
         if settings.Boss_Priority and boss then
             to = searchForBoss(boss)
-            if IsBossAttacking(to and to.Name) then
-                return SafeArea(to.Name)
-            end
         end
 
         local mob = settings.Prioritized_Mob
@@ -1192,9 +1189,10 @@ do
 
         if not to then
             to = searchForAnyEnemy()
-            if IsBossAttacking(to and to.Name) then
-                return SafeArea(to.Name)
-            end
+        end
+
+        if IsBossAttacking(to and to.Name) then
+            return SafeArea(to.Name)
         end
 
         to = to and to:FindFirstChild("HumanoidRootPart") or floatPart
@@ -1287,15 +1285,13 @@ do
             settings.Autofarm = bool
 
             if not bool then
-                while #tweens ~= 0 do
-                    for i, v in next, tweens do
-                        shouldFloat = false
-                        v:Cancel()
-                        tweens[i] = nil
-                    end
-
-                    task.wait()
+                local tween = tweens[#tweens]
+                if tween then
+                    tween:Cancel()
                 end
+
+                table.clear(tweens)
+                shouldFloat = false
             end
 
             while settings.Autofarm do
@@ -1752,10 +1748,6 @@ do
                             Event:FireServer("Skills", {"UseSkill", skill, {}})
                             Event:FireServer("Combat", remote_key, {"Attack", enemy, skill, "2"})
                             task.wait(.2)
-
-                            distance = (hrp.Position - touching.Position).Magnitude
-                        else
-                            break
                         end
                     end
 
@@ -2034,7 +2026,7 @@ do
 
         if UserInputS.TouchEnabled then
             AutofarmYOffsetTab:AddTextbox({
-                Name = mob_name .. (" 0-50"),
+                Name = mob_name .. " 0-50",
                 Default = tostring(Autofarm_Y_Offsets[mob_name]),
                 TextDisappear = false,
                 Callback = function(text)
@@ -2078,14 +2070,12 @@ do
                     tpingtohunter = bool
                     
                     if not bool then
-                        while #huntertweens ~= 0 do
-                            for i, v in next, huntertweens do
-                                v:Cancel()
-                                huntertweens[i] = nil
-                            end
-        
-                            task.wait()
+                        local tween = huntertweens[#huntertweens]
+                        if tween then
+                            tween:Cancel()
                         end
+
+                        table.clear(huntertweens)
                     end
 
                     while tpingtohunter do
@@ -2161,65 +2151,56 @@ do
             local miniboss = Vector3.new(139, 225, -132)
             local boss = Vector3.new(-2942, -125, 336)
             loop_workspace(dungeon_entrance, boss, miniboss)
-        end
         
-        if placeid == 548231754 then -- floor 2
+        elseif placeid == 548231754 then -- floor 2
             local dungeon_entrance = Vector3.new(-2185, 161, -2321)
             local boss = Vector3.new(-2943, 201, -9805)
             loop_workspace(dungeon_entrance, boss)
-        end
 
-        if placeid == 555980327 then -- floor 3
+        elseif placeid == 555980327 then -- floor 3
             local dungeon_entrance = Vector3.new(1179, 6737, 1675)
             local boss = Vector3.new(448, 4279, -385)
             makespecialtpbutton("Boss Room", boss)
             loop_workspace(dungeon_entrance)
-        end
 
-        if placeid == 572487908 then -- floor 4
+        elseif placeid == 572487908 then -- floor 4
             local dungeon_entrance = Vector3.new(-1946, 5169, -1415)
             local boss = Vector3.new(-2319, 2280, -515)
             loop_workspace(dungeon_entrance, boss)
-        end
 
-        if placeid == 580239979 then -- floor 5
+        elseif placeid == 580239979 then -- floor 5
             local dungeon_entrance = Vector3.new(-1562, 4040, -868)
             local boss = Vector3.new(2189, 1308, -122)
             loop_workspace(dungeon_entrance, boss)
-        end
 
-        if placeid == 582198062 then -- floor 7
+        elseif placeid == 582198062 then -- floor 7
             local dungeon_entrance = Vector3.new(1219, 1083, -274)
             local boss = Vector3.new(3347, 800, -804)
             makespecialtpbutton("Dungeon Entrance", dungeon_entrance)
             makespecialtpbutton("Boss", boss)
-        end
         
-        if placeid == 548878321 then -- floor 8
+        elseif placeid == 548878321 then -- floor 8
             local dungeon_entrance = Vector3.new(-6679, 7801, 10006)
             local boss = Vector3.new(1848, 4110, 7723)
             local miniboss = Vector3.new(-808, 3174, -941)
             loop_workspace(dungeon_entrance, boss, miniboss)
-        end
 
-        if placeid == 573267292 then -- floor 9
+        elseif placeid == 573267292 then -- floor 9
             local dungeon_entrance = Vector3.new(878, 3452, -11139)
             local boss = Vector3.new(12241, 461, -3656)
             local miniboss_gargoyle = Vector3.new(-256, 3077, -4605)
             local miniboss_poly = Vector3.new(1973, 2986, -4487)
             loop_workspace(dungeon_entrance, boss, miniboss_gargoyle)
             loop_workspace(nil, nil, miniboss_poly)
-        end
         
-        if placeid == 2659143505 then -- floor 10
+        elseif placeid == 2659143505 then -- floor 10
             local miniboss = Vector3.new(-895, 467, 6505)
             local boss = Vector3.new(45, 1003, 25432)
             local dungeon_entrance = Vector3.new(-606, 697, 9989)
             local shop = Vector3.new(-252, 504, 6163)
             loop_workspace(dungeon_entrance, boss, miniboss, shop)
-        end
 
-        if placeid == 5287433115 then -- floor 11
+        elseif placeid == 5287433115 then -- floor 11
             local DaRaKa = Vector3.new(4801, 1646, 2083)
             local Za = Vector3.new(4001, 421, -3794)
             local duality_reaper = Vector3.new(4763, 501, -4344)
@@ -2230,9 +2211,8 @@ do
             makespecialtpbutton("Za", Za)
             makespecialtpbutton("Neon Chest", neon_chest)
             makespecialtpbutton("Boss Room", sauraus)
-        end
 
-        if placeid == 6144637080 then -- floor 12
+        elseif placeid == 6144637080 then -- floor 12
             local Warlord = Vector3.new(-714, 143, 4961)
             local Atheon = Vector3.new(-2415, 129, 6344)
             local RadioactiveExperiment = Vector3.new(-2290, 242, 3090)
@@ -2242,9 +2222,8 @@ do
             makespecialtpbutton("Radioactive Experiment", RadioactiveExperiment)
             makespecialtpbutton("Suspended Unborn", SuspendedUnborn)
             makehuntertp()
-        end
         
-        if placeid == 11331145451 then -- halloween
+        elseif placeid == 11331145451 then -- halloween
             local a = Vector3.new(1679, 104, -349)
             loop_workspace(a)
         end
@@ -2824,44 +2803,42 @@ do
         end
     })
 
-    if getupvalue then
-        local graphics = require(Services.Graphics)
-        local effects = getupvalue(graphics.DoEffect, 1)
+    local graphics = require(Services.Graphics)
+    local effects = getupvalue(graphics.DoEffect, 1)
 
-        for i, v in next, effects do
-            if i == "Slash Trail" then
-                Performance_tab:AddToggle({
-                    Name = "No Slash Trails",
-                    Default = false,
-                    Callback = function(bool)
-                        noslashtrails = bool
-
-                        task.spawn(RemoveTrail, humanoid)
-                        for i, v in next, othercharacters do
-                            task.spawn(RemoveTrail, v:WaitForChild("Humanoid"))
-                        end
-                    end
-                })
-
-                continue
-            end
-
-            local DisableEffect
+    for i, v in next, effects do
+        if i == "Slash Trail" then
             Performance_tab:AddToggle({
-                Name = "Remove " .. i,
+                Name = "No Slash Trails",
                 Default = false,
                 Callback = function(bool)
-                    DisableEffect = bool
+                    noslashtrails = bool
+
+                    task.spawn(RemoveTrail, humanoid)
+                    for i, v in next, othercharacters do
+                        task.spawn(RemoveTrail, v:WaitForChild("Humanoid"))
+                    end
                 end
             })
 
-            effects[i] = function(...)
-                if DisableEffect then
-                    return
-                end
+            continue
+        end
 
-                return v(...)
+        local DisableEffect
+        Performance_tab:AddToggle({
+            Name = "Remove " .. i,
+            Default = false,
+            Callback = function(bool)
+                DisableEffect = bool
             end
+        })
+
+        effects[i] = function(...)
+            if DisableEffect then
+                return
+            end
+
+            return v(...)
         end
     end
 
@@ -2906,7 +2883,7 @@ do
         PremiumOnly = false
     })
 
-    if setupvalue and getupvalue then
+    if setupvalue then
         local players_names = {}
         for _, v in next, Players:GetPlayers() do
             table.insert(players_names, v.Name)
