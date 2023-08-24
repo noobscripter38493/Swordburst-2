@@ -2751,8 +2751,10 @@ do
 
     local noparticles
     workspace.DescendantAdded:Connect(function(c)
-        if c:IsA("ParticleEmitter") and noparticles then
-            c.Lifetime = NumberRange.new(0)
+        if noparticles then
+            if c:IsA("ParticleEmitter") or c:IsA("Trail") then
+                c.Lifetime = NumberRange.new(0)
+            end
         end
     end)
 
