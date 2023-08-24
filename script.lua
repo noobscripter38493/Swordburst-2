@@ -2244,18 +2244,15 @@ do
     local animSettings = Profile:WaitForChild("AnimSettings")
 
     local Animations = {}
-    local BlacklistedAnimations = {"Misc", "Daggers", "SwordShield", "Dagger"}
     for _, v in next, Database:WaitForChild("Animations"):GetChildren() do
-        if not table.find(BlacklistedAnimations, v.Name) then
-            table.insert(Animations, v.Name)
+        table.insert(Animations, v.Name)
 
-            if not animSettings:FindFirstChild(v.Name) then
-                local string_value = Instance.new("StringValue")
+        if not animSettings:FindFirstChild(v.Name) then
+            local string_value = Instance.new("StringValue")
 
-                string_value.Name = v.Name
-                string_value.Value = ""
-                string_value.Parent = animSettings
-            end
+            string_value.Name = v.Name
+            string_value.Value = ""
+            string_value.Parent = animSettings
         end
     end
 
