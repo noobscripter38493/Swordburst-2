@@ -787,6 +787,10 @@ Players.PlayerAdded:Connect(function(v)
     SetupCharacterListeners(v)
 end)
 
+Players.PlayerRemoving:Connect(function(v)
+    othercharacters[v.Name] = nil
+end)
+
 task.spawn(function()
     while true do
         for i, v in next, othercharacters do
@@ -1564,7 +1568,7 @@ do
                     v:AdjustSpeed(1 / length)
                     v:Play()
 
-                    task.wait(.5)
+                    task.wait(.6)
                 end
             end
         end
