@@ -629,11 +629,22 @@ local function Tp(totouch)
     firetouchinterest(hrp, totouch, 1)
 end
 
+local noslashtrails
+local function RemoveTrail(hum)
+    local con = getconnections(hum.AnimationPlayed)[1]
+    if noslashtrails then
+        con:Disable()
+    else
+        con:Enable()
+    end
+end
+
 plr.CharacterAdded:Connect(function(new)
     tpingtohunter = false
     char = new
     hrp = char:WaitForChild("HumanoidRootPart")
     humanoid = char:WaitForChild("Humanoid")
+    task.spawn(RemoveTrail, humanoid)
 
     Entity = char:WaitForChild("Entity")
     health = Entity:WaitForChild("Health")
@@ -666,13 +677,13 @@ end)
 
 local Actions = require(Services.Actions)
 
-local old = Actions.StartSwing
+local startswing = Actions.StartSwing
 Actions.StartSwing = function(...)
     if settings.KA then
         return
     end
 
-    return old(...)
+    return startswing(...)
 end
 
 local inventory_module = require(Services.UI.Inventory)
@@ -753,9 +764,10 @@ local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
 
 local othercharacters = {}
 local function SetupCharacterListeners(v)
-    othercharacters[v.Name] = v.Character
+    othercharacters[#othercharacters + 1] = v.Character
     v.CharacterAdded:Connect(function(new)
-        othercharacters[v.Name] = new
+        task.spawn(RemoveTrail, new:WaitForChild("Humanoid"))
+        othercharacters[#othercharacters + 1] = new
     end)
 end
 
@@ -767,10 +779,6 @@ end
 
 Players.PlayerAdded:Connect(function(v)
     SetupCharacterListeners(v)
-end)
-
-Players.PlayerRemoving:Connect(function(v)
-    othercharacters[v.Name] = nil
 end)
 
 task.spawn(function()
@@ -2818,9 +2826,26 @@ do
 
     if getupvalue then
         local graphics = require(Services.Graphics)
-        local old5 = graphics.DoEffect
-        local effects = getupvalue(old5, 1)
-        for i, old4 in next, effects do
+        local effects = getupvalue(graphics.DoEffect, 1)
+
+        for i, v in next, effects do
+            if i == "Slash Trail" then
+                Performance_tab:AddToggle({
+                    Name = "No Slash Trails",
+                    Default = false,
+                    Callback = function(bool)
+                        noslashtrails = bool
+
+                        task.spawn(RemoveTrail, char:WaitForChild("Humanoid"))
+                        for i, v in next, othercharacters do
+                            task.spawn(RemoveTrail, v:WaitForChild("Humanoid"))
+                        end
+                    end
+                })
+
+                continue
+            end
+
             local DisableEffect
             Performance_tab:AddToggle({
                 Name = "Remove " .. i,
@@ -2835,7 +2860,7 @@ do
                     return
                 end
 
-                return old4(...)
+                return v(...)
             end
         end
     end
