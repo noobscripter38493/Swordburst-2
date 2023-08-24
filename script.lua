@@ -649,7 +649,6 @@ plr.CharacterAdded:Connect(function(new)
     char = new
     hrp = char:WaitForChild("HumanoidRootPart")
     humanoid = char:WaitForChild("Humanoid")
-    task.spawn(RemoveTrail, humanoid)
 
     Entity = char:WaitForChild("Entity")
     health = Entity:WaitForChild("Health")
@@ -678,6 +677,8 @@ plr.CharacterAdded:Connect(function(new)
             end
         end
     end
+    
+    RemoveTrail(humanoid)
 end)
 
 local Actions = require(Services.Actions)
@@ -769,10 +770,10 @@ local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
 
 local othercharacters = {}
 local function SetupCharacterListeners(v)
-    othercharacters[#othercharacters + 1] = v.Character
+    othercharacters[v.Name] = v.Character
     v.CharacterAdded:Connect(function(new)
         task.spawn(RemoveTrail, new:WaitForChild("Humanoid"))
-        othercharacters[#othercharacters + 1] = new
+        othercharacters[v.Name] = new
     end)
 end
 
@@ -2835,7 +2836,7 @@ do
                     Callback = function(bool)
                         noslashtrails = bool
 
-                        task.spawn(RemoveTrail, char:WaitForChild("Humanoid"))
+                        task.spawn(RemoveTrail, humanoid)
                         for i, v in next, othercharacters do
                             task.spawn(RemoveTrail, v:WaitForChild("Humanoid"))
                         end
