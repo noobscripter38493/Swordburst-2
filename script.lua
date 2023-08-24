@@ -631,7 +631,12 @@ end
 
 local noslashtrails
 local function RemoveTrail(hum)
-    local con = getconnections(hum.AnimationPlayed)[1]
+    local con
+    while not con do
+        con = getconnections(hum.AnimationPlayed)[1]
+        task.wait(1)
+    end
+    
     if noslashtrails then
         con:Disable()
     else
@@ -2255,6 +2260,7 @@ do
     local animSettings = Profile:WaitForChild("AnimSettings")
 
     local Animations = {}
+    local blacklisted = {"Dagger", "SwordShield", "Daggers", "Misc"}
     for _, v in next, Database:WaitForChild("Animations"):GetChildren() do
         table.insert(Animations, v.Name)
 
