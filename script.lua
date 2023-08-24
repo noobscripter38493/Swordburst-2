@@ -636,7 +636,7 @@ local function RemoveTrail(hum)
         con = getconnections(hum.AnimationPlayed)[1]
         task.wait(1)
     end
-    
+
     if noslashtrails then
         con:Disable()
     else
@@ -2262,25 +2262,18 @@ do
     local Animations = {}
     local blacklisted = {"Dagger", "SwordShield", "Daggers", "Misc"}
     for _, v in next, Database:WaitForChild("Animations"):GetChildren() do
-        table.insert(Animations, v.Name)
+        if table.find(blacklisted, v.Name) then 
+            continue 
+        end
 
+        table.insert(Animations, v.Name)
         if not animSettings:FindFirstChild(v.Name) then
             local string_value = Instance.new("StringValue")
-
             string_value.Name = v.Name
             string_value.Value = ""
             string_value.Parent = animSettings
         end
     end
-
-    local shouldAnimate
-    Character_tab:AddToggle({
-        Name = "Weapon Animation",
-        Default = false,
-        Callback = function(bool)
-            shouldAnimate = bool
-        end
-    })
 
     Character_tab:AddDropdown({
         Name = "Weapon Animations",
@@ -2297,7 +2290,7 @@ do
             return settings.Weapon_Animation
         end
 
-        if not shouldAnimate or bool == false then
+        if bool == false then
             return OldCalculateCombatStyle(bool)
         end
 
