@@ -700,6 +700,7 @@ local function getMobHealth(mob)
 end
 
 local sprinting
+local infspiritdash
 if iscclosure(hookmetamethod) or setreadonly and getrawMT then
     if getnamecallmethod then
         local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
@@ -707,16 +708,19 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
             local args = {...}
 
             if self == Event and ncm == "FireServer" then
-                if args[1] == "Actions" and args[2][1] == "Sprint" then
+                if args[1] == "Skills" and args[2][1] == "UseSkill" then
+                    if args[2][2] == "Spirit Dash" and infspiritdash then
+                        return
+                    end
+
+                elseif args[1] == "Actions" and args[2][1] == "Sprint" then
                     if args[2][2] == "Enabled" then
                         sprinting = true
                         
                     elseif args[2][2] == "Disabled" then
                         sprinting = false
-                    end
 
-                elseif settings.InfSprint and args[1] == "Actions" then
-                    if args[2][2] == "Step" then
+                    elseif settings.InfSprint and args[2][2] == "Step" then
                         return
                     end
                 end
@@ -2301,6 +2305,14 @@ do
         Default = false,
         Callback = function(bool)
             settings.InfJump = bool
+        end
+    })
+
+    Character_tab:AddToggle({
+        Name = "Spirit Dash not consume stamina",
+        Default = false,
+        Callback = function(bool)
+            infspiritdash = bool
         end
     })
 
