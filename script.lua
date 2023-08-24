@@ -2244,7 +2244,7 @@ do
     local animSettings = Profile:WaitForChild("AnimSettings")
 
     local Animations = {}
-    local BlacklistedAnimations = {"Spear", "Misc", "Daggers", "SwordShield", "Dagger"}
+    local BlacklistedAnimations = {"Misc", "Daggers", "SwordShield", "Dagger"}
     for _, v in next, Database:WaitForChild("Animations"):GetChildren() do
         if not table.find(BlacklistedAnimations, v.Name) then
             table.insert(Animations, v.Name)
