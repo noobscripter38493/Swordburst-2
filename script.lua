@@ -2748,26 +2748,10 @@ do
         end
     })
 
-    local noparticles
-    workspace.DescendantAdded:Connect(function(c)
-        if noparticles then
-            if c:IsA("ParticleEmitter") or c:IsA("Trail") then
-                c.Lifetime = NumberRange.new(0)
-            end
-        end
-    end)
-
-    Performance_tab:AddToggle({
-        Name = "No Particles",
-        Default = false,
-        Callback = function(bool)
-            noparticles = bool
-        end
-    })
-
+    local textureremove
     local function DeleteTextures(v)
         if not textureremove then return end
-        
+
         if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") or v:IsA("DepthOfFieldEffect") then
             v.Enabled = false
 
@@ -2799,7 +2783,6 @@ do
 
     local Terrain = workspace.Terrain
     local Lighting = game.Lighting
-    local textureremove
     Performance_tab:AddButton({
         Name = 'FPS BOOSTER TEXTURE DELETER',
         Callback = function()
