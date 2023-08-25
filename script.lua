@@ -2766,6 +2766,8 @@ do
     })
 
     local function DeleteTextures(v)
+        if not textureremove then return end
+        
         if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") or v:IsA("DepthOfFieldEffect") then
             v.Enabled = false
 
