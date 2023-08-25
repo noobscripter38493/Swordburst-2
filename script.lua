@@ -2953,6 +2953,26 @@ do
         })
     end
 
+    local plr = game.Players.LocalPlayer
+    local playerui = plr.PlayerGui.CardinalUI.PlayerUI
+    local scrollcontent = playerui.Chat.ScrollContent
+    local alwayschatscroll
+    local newidx; newidx = hookmetamethod(game, "__newindex", function(self, i, v)
+        if self == scrollcontent and i == "ScrollingEnabled" and alwayschatscroll then
+            v = true
+        end
+        
+        return newidx(self, i, v)
+    end)
+
+    Misc_tab:AddToggle({
+        Name = 'always chat scroll',
+        Default = false,
+        Callback = function(bool)
+            alwayschatscroll = bool
+        end
+    })
+
     Misc_tab:AddToggle({
         Name = "Infinite Zoom Distance",
         Default = false,
