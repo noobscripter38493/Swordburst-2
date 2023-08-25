@@ -65,7 +65,7 @@ local info = MPS:GetProductInfo(placeid)
 local hasfilefunctions = isfolder and makefolder and writefile and readfile
 if hasfilefunctions and placeid ~= 540240728 and placeid ~= 566212942 then
     local s = "SB2 Script/LastFloorUpdates"
-    local a = (s .. "/%s"):format(placeid)
+    local a = s .. tostring(placeid)
     if not isfolder("SB2 Script") or not isfolder(s) then
         makefolder("SB2 Script")
         makefolder(s)
@@ -457,7 +457,7 @@ local HttpS = game:GetService("HttpService")
 
 local hasfilefunctions = isfolder and makefolder and writefile and readfile
 if hasfilefunctions then
-    local fileName = ("SB2 Script/%s Settings.json"):format(plr.UserId)
+    local fileName = `SB2 Script/{plr.UserId} Settings.json`
     local function save_settings()
         writefile(fileName, HttpS:JSONEncode(settings))
     end
@@ -1746,9 +1746,8 @@ do
                     pauseKillAura = true
                     task.wait(1)
 
-                    local distance = (hrp.Position - touching.Position).Magnitude
                     for _ = 1, 15 do
-                        if health2.Value > 0 and stamina.Value > 20 and distance <= 100 then
+                        if health2.Value > 0 and stamina.Value > 20 then
                             Event:FireServer("Skills", {"UseSkill", skill, {}})
                             Event:FireServer("Combat", remote_key, {"Attack", enemy, skill, "2"})
                             task.wait(.2)
@@ -2478,7 +2477,7 @@ do
             local o3 = minutes == 1 and "Minute" or "Minutes"
             local o4 = seconds == 1 and "Second" or "Seconds"
 
-            local displayed = ("%s %s | %s %s | %s %s | %s %s"):format(days, o1, hours, o2, minutes, o3, seconds, o4)
+            local displayed = `{days} {o1} | {hours} {o2} | {minutes} {o3} | {seconds} {o4}`
             time_label:Set("Time Elapsed: " .. displayed)
         end
     end)
@@ -2521,7 +2520,7 @@ do
                     content = ping_everyone and "@everyone",
                     username = "i <3 swordburst 2",
                     embeds = {{
-                        title = ("%s Rarity Item Drop (%s)"):format(item_rarity, item_name),
+                        title = `{item_rarity} Rarity Item Drop ({item_name})`,
                         color = 16711680,
 
                         fields = {{
@@ -2665,7 +2664,7 @@ do
 
     for i, v in next, rarities do
         FastTrade:AddButton({
-            Name = ("Add %s Upgrade Crystals"):format(v),
+            Name = `Add {v} Upgrade Crystals`,
             Callback = function()
                 local Item = Inventory:FindFirstChild(v .. " Upgrade Crystal")
                 if Item and Item.Count.Value >= Amount then
@@ -2766,45 +2765,57 @@ do
         end
     })
 
+    local function DeleteTextures(v)
+        if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") or v:IsA("DepthOfFieldEffect") then
+            v.Enabled = false
+
+        elseif v:IsA("Part") or v:IsA("Union") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
+            v.Material = "Plastic"
+            v.Reflectance = 0
+
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            v.Transparency = 1
+
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+            v.Lifetime = NumberRange.new(0)
+
+        elseif v:IsA("Explosion") then
+            v.BlastPressure = 1
+            v.BlastRadius = 1
+
+        elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") or v:IsA("Sparkles") then
+            v.Enabled = false
+
+        elseif v:IsA("MeshPart") then
+            v.Material = "Plastic"
+            v.Reflectance = 0
+            v.TextureID = 10385902758728957
+        end
+    end
+
+    game.DescendantAdded:Connect(DeleteTextures)
+
+    local Terrain = workspace.Terrain
+    local Lighting = game.Lighting
+    local textureremove
     Performance_tab:AddButton({
-        Name = 'delete all textures',
-        Default = false,
+        Name = 'FPS BOOSTER TEXTURE DELETER',
         Callback = function()
-            local decalsyeeted = true -- Leaving this on makes games look shitty but the fps goes up by at least 20.
-            local g = game
-            local w = g.Workspace
-            local l = g.Lighting
-            local t = w.Terrain
-            t.WaterWaveSize = 0
-            t.WaterWaveSpeed = 0
-            t.WaterReflectance = 0
-            t.WaterTransparency = 0
-            l.GlobalShadows = false
-            l.FogEnd = 9e9
-            l.Brightness = 0
-            for i, v in pairs(g:GetDescendants()) do
-                if v:IsA("Part") or v:IsA("Union") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
-                    v.Material = "Plastic"
-                    v.Reflectance = 0
-                elseif v:IsA("Decal") or v:IsA("Texture") and decalsyeeted then
-                    v.Transparency = 1
-                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
-                    v.Lifetime = NumberRange.new(0)
-                elseif v:IsA("Explosion") then
-                    v.BlastPressure = 1
-                    v.BlastRadius = 1
-                elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") or v:IsA("Sparkles") then
-                    v.Enabled = false
-                elseif v:IsA("MeshPart") then
-                    v.Material = "Plastic"
-                    v.Reflectance = 0
-                    v.TextureID = 10385902758728957
-                end
+            if textureremove then
+                return
             end
-            for i, e in pairs(l:GetChildren()) do
-                if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") then
-                    e.Enabled = false
-                end
+
+            textureremove = true
+            
+            Terrain.WaterWaveSize = 0
+            Terrain.WaterWaveSpeed = 0
+            Terrain.WaterReflectance = 0
+            Terrain.WaterTransparency = 0
+            Lighting.GlobalShadows = false
+            Lighting.FogEnd = 9e9
+            Lighting.Brightness = 0
+            for i, v in next, game:GetDescendants() do
+                DeleteTextures(v)
             end
         end
     })
