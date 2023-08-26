@@ -743,7 +743,7 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
                 end
 
             elseif self == rf and ncm == "InvokeServer" then
-                if checkcaller and checkcaller() and args[1] == "Equipment" then
+                if not checkcaller() and args[1] == "Equipment" then
                     if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
                         return
                     end
