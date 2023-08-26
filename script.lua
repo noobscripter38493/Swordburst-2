@@ -2951,10 +2951,27 @@ do
     end)
 
     Misc_tab:AddToggle({
-        Name = 'always chat scroll',
+        Name = 'chat scroll while moving',
         Default = false,
         Callback = function(bool)
             alwayschatscroll = bool
+        end
+    })
+
+    local autochatscroll
+    scrollcontent.ChildAdded:Connect(function()
+        task.wait(.1)
+
+        if autochatscroll then
+            scrollcontent.CanvasPosition = Vector2.new(0, scrollcontent.CanvasSize.Y.Offset - scrollcontent.AbsoluteSize.Y)
+        end
+    end)
+
+    Misc_tab:AddToggle({
+        Name = "Auto chat Scroll",
+        Default = false,
+        Callback = function(bool)
+            autochatscroll = bool
         end
     })
 
