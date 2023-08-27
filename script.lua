@@ -103,7 +103,7 @@ local firetouchinterest = firetouchinterest
 local setclipboard = setclipboard or writeclipboard or write_clipboard
 local getconnections = getconnections
 local firesignal = firesignal or getconnections and function(signal, args)
-    for _, v in next, getconnections(signal) do
+    for _, v in getconnections(signal) do
         v:Fire(args)
     end
 end
@@ -400,7 +400,7 @@ local humanoid = char:WaitForChild("Humanoid")
 
 local Services
 while not Services do
-    for _, v in next, (getloadedmodules or getnilinstances)() do
+    for _, v in (getloadedmodules or getnilinstances)() do
         if v.Name == "MainModule" then
             Services = v.Services
             break
@@ -437,7 +437,8 @@ local settings = { -- defaults
     WebhookURL = "",
     Inline = false,
     NoClip = false,
-    WeaponSkill = "Weapon Class Skill"
+    WeaponSkill = "Weapon Class Skill",
+    Whitelist = {}
 }
 
 local doLoad = {
@@ -450,7 +451,8 @@ local doLoad = {
     Autofarm_Y_Offsets = true,
     WebhookURL = true,
     Tween_Speed = true,
-    excludedMobs = true
+    excludedMobs = true,
+    Whitelist = true
 }
 
 local HttpS = game:GetService("HttpService")
@@ -467,7 +469,7 @@ if hasfilefunctions then
     end, save_settings)
 
     local saved_settings = HttpS:JSONDecode(readfile(fileName))
-    for i, v in next, saved_settings do
+    for i, v in saved_settings do
         if doLoad[i] then
             settings[i] = v
         end
@@ -482,11 +484,11 @@ if hasfilefunctions then
 end
 
 local all_on_floor = {"Chests"}
-for _, v in next, bosses_on_floor[placeid] do
+for _, v in bosses_on_floor[placeid] do
     table.insert(all_on_floor, v)
 end
 
-for _, v in next, mobs_on_floor[placeid] do
+for _, v in mobs_on_floor[placeid] do
     table.insert(all_on_floor, v)
 end
 
@@ -538,7 +540,7 @@ local parts = {}
 local function setNoClipParts()
     table.clear(parts)
 
-    for _, part in next, char:GetDescendants() do
+    for _, part in char:GetDescendants() do
         if part:IsA("BasePart") and part.CanCollide then
             table.insert(parts, part)
         end
@@ -552,7 +554,7 @@ setNoClipParts()
 local tpingtohunter
 local function noclip()
     if settings.Autofarm or settings.NoClip or tpingtohunter then
-        for _, v in next, parts do
+        for _, v in parts do
             v.CanCollide = false
         end
     end
@@ -610,7 +612,7 @@ local savedcframe
 local function GetClosestPartFromVector(v3)
     local closest_magnitude = math.huge
     local closest_part
-    for _, v in next, workspace:GetDescendants() do
+    for _, v in workspace:GetDescendants() do
         if v.Parent.Name == "TeleportSystem" and v.Name == "Part" then
             local distance = (v3 - v.Position).Magnitude
             if distance < closest_magnitude then
@@ -670,7 +672,7 @@ plr.CharacterAdded:Connect(function(new)
             Tp(totouch)
 
             task.wait(1)
-            for i, v in next, totouch.Parent:GetChildren() do
+            for i, v in totouch.Parent:GetChildren() do
                 if v ~= totouch then
                     Tp(v)
                 end
@@ -744,7 +746,7 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
 
             elseif self == rf and ncm == "InvokeServer" then
                 if not checkcaller() and args[1] == "Equipment" then
-                    if getupvalue(inventory_module.GetInventoryData, 1) ~= Rs.Profiles[plr.Name] then
+                    if getupvalue(inventory_module.GetInventoryData, 1) ~= Profile then
                         return
                     end
                 end
@@ -755,7 +757,7 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
     end
 end
 
-local lib = loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/orion/main/orionnnn.lua'))()
+local lib = loadfile("orion.lua")()
 local orion = protected:WaitForChild("Orion")
 
 local window = lib:MakeWindow({
@@ -777,7 +779,7 @@ local function SetupCharacterListeners(v)
     end)
 end
 
-for i, v in next, Players:GetChildren() do
+for i, v in Players:GetChildren() do
     if v ~= plr then
         SetupCharacterListeners(v)
     end
@@ -793,7 +795,7 @@ end)
 
 task.spawn(function()
     while true do
-        for i, v in next, othercharacters do
+        for i, v in othercharacters do
             if not settings.Autofarm then
                 v.Parent = workspace
                 continue
@@ -839,7 +841,7 @@ do
         local closest_magnitude = math.huge
         local closest_mob
 
-        for _, mob in next, mobs_table do
+        for _, mob in mobs_table do
             local name = isChest(mob.Name)
             if MobExclusion[name or mob.Name] then
                 continue
@@ -867,7 +869,7 @@ do
         local closest_magnitude = math.huge
         local closest_mob
 
-        for _, mob in next, mobs_table do
+        for _, mob in mobs_table do
             local name = isChest(mob.Name)
             if MobExclusion[name or mob.Name] then
                 continue
@@ -901,7 +903,7 @@ do
         local closest_magnitude = math.huge
         local closest_boss
 
-        for _, boss in next, mobs_table do
+        for _, boss in mobs_table do
             local name = isChest(boss.Name)
             if MobExclusion[name or boss.Name] then
                 continue
@@ -929,13 +931,13 @@ do
         local closest_magnitude = math.huge
         local closest_boss
 
-        for _, boss in next, mobs_table do
+        for _, boss in mobs_table do
             local name = isChest(boss.Name)
             if MobExclusion[name or boss.Name] then
                 continue
             end
 
-            for _, bossName in next, bosses do
+            for _, bossName in bosses do
                 if boss.Name == bossName and distanceCheck(boss) then
                     local boss_hrp = boss:FindFirstChild("HumanoidRootPart")
                     if not boss_hrp then continue end
@@ -1086,7 +1088,7 @@ do
    
                 local closestsafepoint
                 local closestmag = math.huge
-                for i, v in next, safepoints do
+                for i, v in safepoints do
                     local pos = Vector2.new(hrp.Position.X, hrp.Position.Z)
                     local mag = (pos - v).Magnitude
                     if mag < closestmag then
@@ -1108,7 +1110,7 @@ do
         if mob_name == "Suspended Unborn" then
             local closestmag = 9e9
             local closestcircle
-            for i, v in next, suspendedcircles do
+            for i, v in suspendedcircles do
                 local mag = (v.Position - hrp.Position).Magnitude
                 if mag < closestmag then
                     closestmag = mag
@@ -1118,8 +1120,8 @@ do
 
             local SafePointsNot = SafePoints(13, closestcircle)
             local safepoints = {}
-            for i, v in next, SafePointsNot do
-                for i2, v2 in next, suspendedcircles do
+            for i, v in SafePointsNot do
+                for i2, v2 in suspendedcircles do
                     if v2 == closestcircle then
                         continue
                     end
@@ -1137,7 +1139,7 @@ do
             local closestmag = 9e9
             local closestsafe
             local pos = Vector2.new(hrp.Position.X, hrp.Position.Z)
-            for i, v in next, safepoints do
+            for i, v in safepoints do
                 local mag = (v - pos).Magnitude
                 if mag < closestmag then
                     closestmag = mag
@@ -1275,7 +1277,7 @@ do
         end)
     end)
 
-    for _, mob in next, mobs:GetChildren() do
+    for _, mob in mobs:GetChildren() do
         task.spawn(function()
             mob:WaitForChild("HumanoidRootPart")
             mobs_table[mob] = mob
@@ -1562,7 +1564,7 @@ do
             end
 
             local animation_style = animations[CalculateCombatStyle()]
-            for _, v in next, animation_style do
+            for _, v in animation_style do
                 if v.Name:find("Swing") then
                     local length = v.Length
                     v:AdjustSpeed(1 / length)
@@ -1642,7 +1644,7 @@ do
     if firesignal and not UserInputS.TouchEnabled then
         local ka_button
         while not ka_button do
-            for _, v in next, orion:GetDescendants() do
+            for _, v in orion:GetDescendants() do
                 if v:IsA("TextLabel") and v.Text == "Kill Aura" then
                     ka_button = v.Parent:FindFirstChild("TextButton")
                     break
@@ -1664,7 +1666,7 @@ do
 
         local found
         while not found do
-            for _, v in next, orion:GetDescendants() do
+            for _, v in orion:GetDescendants() do
                 if v:IsA("TextLabel") and v.Text == "Kill Aura Keybind" then
                     found = true
                     v.Parent.TextButton.MouseButton1Down:Connect(function()
@@ -1694,7 +1696,7 @@ do
 
     local skillsData = Database:WaitForChild("Skills")
     local skill_classes = {}
-    for _, v in next, skillsData:GetChildren() do
+    for _, v in skillsData:GetChildren() do
         if v:FindFirstChild("Class") then
             skill_classes[v.Class.Value] = v.Name
         end
@@ -1865,13 +1867,13 @@ local function GetItemImage(ItemData)
 end
 
 local ItemDatas = {}
-for _, v in next, Database:WaitForChild("Items"):GetChildren() do
+for _, v in Database:WaitForChild("Items"):GetChildren() do
     task.spawn(function()
         local ItemData = GetItemData(v)
         if ItemData.Type == "Weapon" or ItemData.Type == "Clothing" then
             local stats = ItemData.stats
             local base
-            for _, v2 in next, stats do
+            for _, v2 in stats do
                 if v2[1] == "Damage" or v2[1] == "Defense" then
                     base = v2[2]
                     ItemData.base = base
@@ -1920,7 +1922,7 @@ do
         local highest_weapon
         local highest_armor
 
-        for _, item in next, Inventory:GetChildren() do
+        for _, item in Inventory:GetChildren() do
             local ItemData = ItemDatas[item.Name]
 
             local class = ItemData.Type
@@ -1982,7 +1984,7 @@ do
         end
     end
     
-    for i, v in next, names do
+    for i, v in names do
         farm_tab2:AddToggle({
             Name = "Auto Dismantle " .. v,
             Default = false,
@@ -2003,7 +2005,7 @@ do
         PremiumOnly = false
     })
 
-    for _, mob_name in next, all_on_floor do
+    for _, mob_name in all_on_floor do
         local default = MobExclusion[mob_name] == true
         farm_tab3:AddToggle({
             Name = mob_name,
@@ -2022,7 +2024,7 @@ do
         PremiumOnly = false
     })
 
-    for i, mob_name in next, all_on_floor do
+    for i, mob_name in all_on_floor do
         if not Autofarm_Y_Offsets[mob_name] then
             Autofarm_Y_Offsets[mob_name] = 15
         end
@@ -2054,6 +2056,63 @@ do
             })
         end
     end
+end
+
+do
+    local autoflag_tab = window:MakeTab({
+        Name = "Auto Flag",
+        Icon = "",
+        PremiumOnly = false
+    })
+
+    local autoflag
+    autoflag_tab:AddToggle({
+        Name = "Auto Flag",
+        Default = false,
+        Callback = function(bool)
+            autoflag = bool
+        end
+    })
+
+    local Whitelist = settings.Whitelist
+    autoflag_tab:AddButton({
+        Name = "Flag everyone not on whitelist",
+        Callback = function(bool)
+            for i, p in Players:GetChildren() do
+                if p ~= plr and not Whitelist[p.Name] then
+                    Event:FireServer("Moderator", "Report", p)
+                end
+            end
+        end
+    })
+
+    local toggles = {}
+    local function CreateAutoFlagToggle(p)
+        toggles[p] = autoflag_tab:AddToggle({
+            Name = `Whitelist {p.Name}`,
+            Default = Whitelist[p.Name],
+            Callback = function(bool)
+                Whitelist[p.Name] = bool
+            end
+        })
+    end
+
+    for i, p in Players:GetChildren() do
+        if p ~= plr then
+            CreateAutoFlagToggle(p)
+        end
+    end
+
+    Players.PlayerAdded:Connect(function(p)
+        CreateAutoFlagToggle(p)
+        if autoflag then
+            Event:FireServer("Moderator", "Report", p)
+        end
+    end)
+
+    Players.PlayerRemoving:Connect(function(p)
+        toggles[p]:Remove()
+    end)
 end
 
 do
@@ -2244,7 +2303,7 @@ do
 
     local Animations = {}
     local blacklisted = {"Dagger", "SwordShield", "Daggers", "Misc"}
-    for _, v in next, Database:WaitForChild("Animations"):GetChildren() do
+    for _, v in Database:WaitForChild("Animations"):GetChildren() do
         if table.find(blacklisted, v.Name) then 
             continue 
         end
@@ -2398,7 +2457,7 @@ do
     local isEquipped = getfenv(GetItemData).isEquipped
     local function Dismantle_Rarity(rarity)
         local items = {}
-        for _, item in next, Inventory:GetChildren() do
+        for _, item in Inventory:GetChildren() do
             if isEquipped(item) then
                 continue
             end
@@ -2439,7 +2498,7 @@ do
         end
     })
 
-    for i, v in next, names do
+    for i, v in names do
         Smithing:AddButton({
             Name = "Dismantle All " .. v,
             Callback = function()
@@ -2617,7 +2676,7 @@ do
             end
         })
 
-        for i, v in next, names do
+        for i, v in names do
             Stats:AddToggle({
                 Name = "Webhook Ignore Rarity | " .. v,
                 Default = false,
@@ -2662,7 +2721,7 @@ do
         })
     end
 
-    for i, v in next, rarities do
+    for i, v in rarities do
         FastTrade:AddButton({
             Name = `Add {v} Upgrade Crystals`,
             Callback = function()
@@ -2799,7 +2858,7 @@ do
             Lighting.GlobalShadows = false
             Lighting.FogEnd = 9e9
             Lighting.Brightness = 0
-            for i, v in next, game:GetDescendants() do
+            for i, v in game:GetDescendants() do
                 DeleteTextures(v)
             end
         end
@@ -2808,7 +2867,7 @@ do
     local graphics = require(Services.Graphics)
     local effects = getupvalue(graphics.DoEffect, 1)
 
-    for i, v in next, effects do
+    for i, v in effects do
         if i == "Slash Trail" then
             Performance_tab:AddToggle({
                 Name = "No Slash Trails",
@@ -2817,7 +2876,7 @@ do
                     noslashtrails = bool
 
                     task.spawn(RemoveTrail, humanoid)
-                    for i, v in next, othercharacters do
+                    for i, v in othercharacters do
                         task.spawn(RemoveTrail, v:WaitForChild("Humanoid"))
                     end
                 end
@@ -2848,7 +2907,7 @@ do
     local sound_names = {"SwordHit", "Unsheath", "SwordSlash"}
     local sounds = {}
 
-    for _, v in next, workspace:GetDescendants() do
+    for _, v in workspace:GetDescendants() do
         if table.find(sound_names, v.Name) then
             sounds[v] = v
         end
@@ -2871,7 +2930,7 @@ do
         Default = false,
         Callback = function(bool)
             tomute = bool
-            for _, v in next, sounds do
+            for _, v in sounds do
                 v.Volume = tomute and 0 or .3
             end
         end
@@ -2887,7 +2946,7 @@ do
 
     if setupvalue then
         local players_names = {}
-        for _, v in next, Players:GetPlayers() do
+        for _, v in Players:GetPlayers() do
             table.insert(players_names, v.Name)
         end
 
@@ -2902,7 +2961,7 @@ do
 
         local function update_inventoryViewer_list(player)
             local names = {}
-            for _, v in next, Players:GetPlayers() do
+            for _, v in Players:GetPlayers() do
                 if not player or player.Name ~= v.Name then
                     table.insert(names, v.Name)
                 end
