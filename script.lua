@@ -41,43 +41,25 @@ local function create_confirm(text)
     return coroutine.yield()
 end
 
-local lastknownupdate = {
-    --[540240728] = "nobody cares", -- arcadia -- floor 1
-    [737272595] = "2023-07-24T19:43:59.333Z", -- battle arena floor 1
-    --[566212942] = "nobody cares", -- floor 6 helmfrith
-    [542351431] = "2023-07-24T19:43:59.333Z", -- floor 1
-    [548231754] = "2023-07-24T19:44:19.293Z", -- floor 2
-    [555980327] = "2023-07-24T19:43:43.107Z", -- floor 3
-    [572487908] = "2023-07-24T19:40:14.107Z", -- floor 4
-    [580239979] = "2023-07-24T19:42:32.867Z", -- floor 5
-    [582198062] = "2023-07-24T19:42:16.3Z", -- floor 7
-    [548878321] = "2023-07-24T19:39:34.563Z", -- floor 8
-    [573267292] = "2023-07-24T19:41:18.803Z", -- floor 9
-    [2659143505] = "2023-07-24T19:41:06.977Z", -- floor 10
-    [5287433115] = "2023-07-24T19:40:36.777Z", -- floor 11
-    [6144637080] = "2023-07-25T20:17:19.97164Z", -- floor 12
-    [13965775911] = "2023-07-27T21:16:05.2416692Z" -- atheon's realm
-}
-
 local placeid = game.PlaceId
 local MPS = game:GetService("MarketplaceService")
 local info = MPS:GetProductInfo(placeid)
 local hasfilefunctions = isfolder and makefolder and writefile and readfile
 if hasfilefunctions and placeid ~= 540240728 and placeid ~= 566212942 then
-    local s = "SB2 Script/LastFloorUpdates"
-    local a = s .. tostring(placeid)
-    if not isfolder("SB2 Script") or not isfolder(s) then
+    local LastFloorUpdates = "SB2 Script/LastFloorUpdates"
+    if not isfolder("SB2 Script") or not isfolder(LastFloorUpdates) then
         makefolder("SB2 Script")
-        makefolder(s)
+        makefolder(LastFloorUpdates)
     end
 
-    if not isfile(a) then
-        writefile(a, info.Updated)
+    local FloorUpdateFile = LastFloorUpdates .. tostring(placeid)
+    if not isfile(FloorUpdateFile) then
+        writefile(FloorUpdateFile, info.Updated)
     end
     
-    lastknownupdate[placeid] = readfile(a)
-    if info.Updated ~= lastknownupdate[placeid] then
-        writefile(a, info.Updated)
+    local lastknownupdate = readfile(FloorUpdateFile)
+    if info.Updated ~= lastknownupdate then
+        writefile(FloorUpdateFile, info.Updated)
         if not create_confirm("update detected. use script at risk. t =" .. info.Updated .. "\n\tContinue?") then
             return
         end
@@ -96,8 +78,8 @@ end
 local getnamecallmethod = getnamecallmethod
 local getupvalue = getupvalue or debug.getupvalue
 local setupvalue = setupvalue or debug.setupvalue
-local getrawMT = getrawmetatable or debug.getmetatable or debug.getrawmetatable
-local setrawMT = setrawmetatable or debug.setmetatable or debug.setrawmetatable
+local getrawMT = getrawmetatable or debug.getmetatable
+local setrawMT = setrawmetatable or debug.setmetatable
 local setreadonly = setreadonly or makereadonly or makewritable
 local firetouchinterest = firetouchinterest
 local setclipboard = setclipboard or writeclipboard or write_clipboard
@@ -107,7 +89,7 @@ local firesignal = firesignal or getconnections and function(signal, args)
         v:Fire(args)
     end
 end
-local request = (syn and syn.request) or (fluxus and fluxus.request) or request
+local request = syn and syn.request or fluxus and fluxus.request or request
 
 if syn and checkcallstack then
     local old; old = hookfunc(writefile, function(a, b)
@@ -400,7 +382,7 @@ local humanoid = char:WaitForChild("Humanoid")
 
 local Services
 while not Services do
-    for _, v in (getloadedmodules or getnilinstances)() do
+    for _, v in getloadedmodules() do
         if v.Name == "MainModule" then
             Services = v.Services
             break
@@ -720,44 +702,40 @@ end
 
 local sprinting
 local infspiritdash
-if iscclosure(hookmetamethod) or setreadonly and getrawMT then
-    if getnamecallmethod then
-        local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
-            local ncm = getnamecallmethod()
-            local args = {...}
+local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
+    local ncm = getnamecallmethod()
+    local args = {...}
 
-            if self == Event and ncm == "FireServer" then
-                if args[1] == "Skills" and args[2][1] == "UseSkill" then
-                    if args[2][2] == "Spirit Dash" and infspiritdash then
-                        return
-                    end
-
-                elseif args[1] == "Actions" and args[2][1] == "Sprint" then
-                    if args[2][2] == "Enabled" then
-                        sprinting = true
-                        
-                    elseif args[2][2] == "Disabled" then
-                        sprinting = false
-
-                    elseif settings.InfSprint and args[2][2] == "Step" then
-                        return
-                    end
-                end
-
-            elseif self == rf and ncm == "InvokeServer" then
-                if not checkcaller() and args[1] == "Equipment" then
-                    if getupvalue(inventory_module.GetInventoryData, 1) ~= Profile then
-                        return
-                    end
-                end
+    if self == Event and ncm == "FireServer" then
+        if args[1] == "Skills" and args[2][1] == "UseSkill" then
+            if args[2][2] == "Spirit Dash" and infspiritdash then
+                return
             end
 
-            return nc(self, ...)
-        end)
-    end
-end
+        elseif args[1] == "Actions" and args[2][1] == "Sprint" then
+            if args[2][2] == "Enabled" then
+                sprinting = true
+                
+            elseif args[2][2] == "Disabled" then
+                sprinting = false
 
-local lib =  loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/orion/main/orionnnn.lua"))()
+            elseif settings.InfSprint and args[2][2] == "Step" then
+                return
+            end
+        end
+
+    elseif self == rf and ncm == "InvokeServer" then
+        if not checkcaller() and args[1] == "Equipment" then
+            if getupvalue(inventory_module.GetInventoryData, 1) ~= Profile then
+                return
+            end
+        end
+    end
+
+    return nc(self, ...)
+end)
+
+local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/orion/main/orionnnn.lua"))()
 local orion = protected:WaitForChild("Orion")
 
 local window = lib:MakeWindow({
@@ -815,11 +793,7 @@ end)
 
 local split = string.split
 do
-    local farm_tab = window:MakeTab({
-        Name = "Autofarm",
-        Icon = "",
-        PremiumOnly = false
-    })
+    local farm_tab = window:MakeTab("Autofarm")
 
     farm_tab:AddParagraph("Warning", "SB2 Mods are extremely active and autofarm will likely get you banned")
     local mobs_table = {}
@@ -1489,11 +1463,7 @@ end
 
 local alwaysswinganimation
 do
-    local combat = window:MakeTab({
-        Name = "Combat",
-        Icon = "",
-        PremiumOnly = false
-    })
+    local combat = window:MakeTab("Combat")
 
     local range = Instance.new("Part")
     range.Size = Vector3.new(50, 50, 50)
@@ -1896,12 +1866,6 @@ local function getUpgrade(item)
 end
 
 do
-    local farm_tab2 = window:MakeTab({
-        Name = "Farm Tab (util)",
-        Icon = "",
-        PremiumOnly = false
-    })
-
     --[[
     formulas
 
@@ -1909,6 +1873,8 @@ do
     legends: math.floor(base + (base * 0.05 * upgrade_count))
 
     ]]
+
+    local farm_tab2 = window:MakeTab("Farm Tab util")
 
     local function AutoEquip()
         if not settings.AutoEquip then
@@ -1999,11 +1965,7 @@ do
 end
 
 do
-    local farm_tab3 = window:MakeTab({
-        Name = "Farm Exclusion",
-        Icon = "",
-        PremiumOnly = false
-    })
+    local farm_tab3 = window:MakeTab("Farm Exclusion")
 
     for _, mob_name in all_on_floor do
         local default = MobExclusion[mob_name] == true
@@ -2018,11 +1980,7 @@ do
 end
 
 do
-    local AutofarmYOffsetTab = window:MakeTab({
-        Name = "Autofarm Y Offsets",
-        Icon = "",
-        PremiumOnly = false
-    })
+    local AutofarmYOffsetTab = window:MakeTab("Autofarm Y Offsets")
 
     for i, mob_name in all_on_floor do
         if not Autofarm_Y_Offsets[mob_name] then
@@ -2059,11 +2017,7 @@ do
 end
 
 do
-    local autoflag_tab = window:MakeTab({
-        Name = "Auto Flag",
-        Icon = "",
-        PremiumOnly = false
-    })
+    local autoflag_tab = window:MakeTab("Auto Flag")
 
     local autoflag
     autoflag_tab:AddToggle({
@@ -2117,11 +2071,7 @@ end
 
 do
     if firetouchinterest then
-        local teleports_tab = window:MakeTab({
-            Name = 'Teleports',
-            Icon = "",
-            PremiumOnly = false
-        })
+        local teleports_tab = window:MakeTab("Teleports")
 
         local function makehuntertp()
             local huntertweens = {}
@@ -2293,11 +2243,7 @@ do
 end
 
 do
-    local Character_tab = window:MakeTab({
-        Name = "Character",
-        Icon = "",
-        PremiumOnly = false
-    })
+    local Character_tab = window:MakeTab("Character")
 
     local animSettings = Profile:WaitForChild("AnimSettings")
 
@@ -2448,11 +2394,7 @@ do
 end
 
 do
-    local Smithing = window:MakeTab({
-        Name = "Smithing",
-        Icon = "",
-        PremiumOnly = false
-    })
+    local Smithing = window:MakeTab("Smithing")
 
     local isEquipped = getfenv(GetItemData).isEquipped
     local function Dismantle_Rarity(rarity)
@@ -2511,11 +2453,7 @@ do
 end
 
 do
-    local Stats = window:MakeTab({
-        Name = "Session Stats",
-        Icon = "",
-        PremiumOnly = false
-    })
+    local Stats = window:MakeTab("Session Stats")
 
     local time_label = Stats:AddLabel("Elapsed Time")
     task.spawn(function()
@@ -2523,13 +2461,13 @@ do
         while true do task.wait(1)
             local seconds = floor(time())
             local minutes = floor(seconds / 60)
-            seconds = seconds - (60 * minutes)
+            seconds = seconds - 60 * minutes
 
             local hours = floor(minutes / 60)
-            minutes = minutes - (60 * hours)
+            minutes = minutes - 60 * hours
 
             local days = floor(hours / 24)
-            hours = hours - (24 * days)
+            hours = hours - 24 * days
 
             local o1 = days == 1 and "Day" or "Days"
             local o2 = hours == 1 and "Hour" or "Hours"
@@ -2569,7 +2507,6 @@ do
             local item_potential = tostring(ItemData.potential)
             local item_base = tostring(ItemData.base)
             local item_level = tostring(ItemData.level)
-            local was_dismantled = tostring(dismantle[item_rarity])
             local shouldInline = settings.Inline
 
             request({
@@ -2581,7 +2518,6 @@ do
                     embeds = {{
                         title = `{item_rarity} Rarity Item Drop ({item_name})`,
                         color = 16711680,
-
                         fields = {{
                             name = "Item Level",
                             value = item_level,
@@ -2598,12 +2534,7 @@ do
                             name = "Item Potential",
                             value = item_potential,
                             inline = shouldInline
-                        }, {
-                            name = "Item Was Dismantled",
-                            value = was_dismantled,
-                            inline = shouldInline
                         }},
-
                         image = {
                             url = item_image
                         }
@@ -2690,11 +2621,7 @@ do
 end
 
 do
-    local FastTrade = window:MakeTab({
-        Name = "Crystal Trade",
-        Icon = "",
-        PremiumOnly = false
-    })
+    local FastTrade = window:MakeTab("Crystal Trade")
     
     local Amount = 0
     if UserInputS.TouchEnabled then
@@ -2738,11 +2665,7 @@ do
 end
 
 do
-    local Performance_tab = window:MakeTab({
-        Name = "Perf Boosters",
-        Icon = "",
-        PremiumOnly = false
-    })
+    local Performance_tab = window:MakeTab("Perf Boosters")
 
     local screen = game.CoreGui.ScreenGui
     local frame = Instance.new("Frame")
@@ -2938,11 +2861,7 @@ do
 end
 
 do
-    local Misc_tab = window:MakeTab({
-        Name = "Misc",
-        Icon = "",
-        PremiumOnly = false
-    })
+    local Misc_tab = window:MakeTab("Misc")
 
     if setupvalue then
         local players_names = {}
@@ -3057,50 +2976,42 @@ do
 end
 
 do
-    local credits = window:MakeTab({
-        Name = "Credits",
-        Icon = "",
-        PremiumOnly = false
+    local credits = window:MakeTab("Credits")
+
+    credits:AddParagraph("Credits", "Made by OneTaPuXd on v3rm")
+    credits:AddParagraph("discord: ragingbirito")
+    credits:AddButton({
+        Name = "Copy v3rm profile to clipboard",
+        Callback = function()
+            setclipboard("https://v3rmillion.net/member.php?action=profile&uid=1229592")
+        end
     })
 
-    credits:AddParagraph("Credits", "Made by OneTaPuXd on v3rm | PM Bugs")
-    credits:AddParagraph("discord: ragingbirito")
-    if setclipboard then
-        credits:AddButton({
-            Name = "Copy v3rm url to clipboard",
-            Callback = function()
-                setclipboard("https://v3rmillion.net/member.php?action=profile&uid=1229592")
-            end
-        })
+    credits:AddButton({
+        Name = "copy v3rm thread to clipboard",
+        Callback = function()
+            setclipboard("https://v3rmillion.net/showthread.php?tid=1172798")
+        end
+    })
 
-        credits:AddButton({
-            Name = "copy v3rm thread to clipboard",
-            Callback = function()
-                setclipboard("https://v3rmillion.net/showthread.php?tid=1172798")
-            end
-        })
-    end
-
-    if request then
-        credits:AddButton({
-            Name = "Discord Server (Auto Prompt) code: eWGZ8rYpxR",
-            Callback = function()
-                request({
-                    Url = "http://127.0.0.1:6463/rpc?v=1",
-                    Method = "POST",
-                    Headers = {
-                        ["Content-Type"] = "application/json",
-                        ["Origin"] = "https://discord.com"
+    credits:AddButton({
+        Name = "Discord Server (Auto Prompt) code: eWGZ8rYpxR",
+        Callback = function()
+            request({
+                Url = "http://127.0.0.1:6463/rpc?v=1",
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json",
+                    ["Origin"] = "https://discord.com"
+                },
+                Body = HttpS:JSONEncode({
+                    cmd = "INVITE_BROWSER",
+                    args = {
+                        code = "eWGZ8rYpxR"
                     },
-                    Body = HttpS:JSONEncode({
-                        cmd = "INVITE_BROWSER",
-                        args = {
-                            code = "eWGZ8rYpxR"
-                        },
-                        nonce = HttpS:GenerateGUID()
-                    })
+                    nonce = HttpS:GenerateGUID()
                 })
-            end
-        })
-    end
+            })
+        end
+    })
 end
