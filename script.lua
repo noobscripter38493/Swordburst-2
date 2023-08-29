@@ -757,7 +757,7 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
     end
 end
 
-local lib = loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/orion/main/orionnnn.lua'))()
+local lib = loadfile("orion.lua")()
 local orion = protected:WaitForChild("Orion")
 
 local window = lib:MakeWindow({
@@ -2828,7 +2828,7 @@ do
             v.BlastPressure = 1
             v.BlastRadius = 1
 
-        elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") or v:IsA("Sparkles") then
+        elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") or v:IsA("Sparkles") or v:IsA("PointLight") then
             v.Enabled = false
 
         elseif v:IsA("MeshPart") then
