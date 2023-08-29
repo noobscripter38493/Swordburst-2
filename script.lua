@@ -757,7 +757,7 @@ if iscclosure(hookmetamethod) or setreadonly and getrawMT then
     end
 end
 
-local lib = loadfile("orion.lua")()
+local lib =  loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/orion/main/orionnnn.lua"))()
 local orion = protected:WaitForChild("Orion")
 
 local window = lib:MakeWindow({
