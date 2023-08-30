@@ -1949,6 +1949,15 @@ do
             Event:FireServer("Equipment", {"Dismantle", {item}})
         end
     end
+
+    local delete
+    farm_tab2:AddToggle({
+        Name = "Auto Delete Commons (common = useless)",
+        Default = false,
+        Callback = function(bool)
+            delete = bool
+        end
+    })
     
     for i, v in names do
         farm_tab2:AddToggle({
@@ -1962,6 +1971,11 @@ do
     end
 
     Inventory.ChildAdded:Connect(AutoDismantle)
+    Inventory.ChildAdded:Connect(function(v)
+        if delete and ItemDatas[item.Name].rarity == "Common" then
+            rf:InvokeServer("Equipment", {"Delete", v})
+        end
+    end)
 end
 
 do
@@ -2440,11 +2454,26 @@ do
         end
     })
 
+    Smithing:AddButton({
+        Name = "Delete All Commons",
+        Callback = function()
+            for _, item in Inventory:GetChildren() do
+                if isEquipped(item) then
+                    continue
+                end
+
+                if ItemDatas[item.Name].rarity == "Common" and not item:FindFirstChild("Count") then
+                    rf:InvokeServer("Equipment", {"Delete", item})
+                end
+            end
+        end
+    })
+
     for i, v in names do
         Smithing:AddButton({
             Name = "Dismantle All " .. v,
             Callback = function()
-                if create_confirm("Confirm Dismantle? (CANNOT BE UNDONE)") then
+                if create_confirm("Confirm Dismantle?") then
                     Dismantle_Rarity(rarities[i])
                 end
             end
