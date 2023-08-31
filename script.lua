@@ -91,17 +91,7 @@ local firesignal = firesignal or getconnections and function(signal, args)
 end
 local request = syn and syn.request or fluxus and fluxus.request or request
 
-if syn and checkcallstack then
-    local old; old = hookfunc(writefile, function(a, b)
-        if a:match("SB2 Script | OneTaPuXd on v3rm") then
-            return
-        end
-        
-        return old(a, b)
-    end)
-end
-
-local teleport_execute = queue_on_teleport or (fluxus and fluxus.queue_on_teleport) or (syn and syn.queue_on_teleport)
+local teleport_execute = queue_on_teleport or syn and syn.queue_on_teleport
 if teleport_execute then
     teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
 end
@@ -997,7 +987,7 @@ do
                 task.spawn(function()
                     gettingcircles = true
 
-                    task.wait(5)
+                    task.wait(6)
 
                     gettingcircles = false
                     table.clear(suspendedcircles)
@@ -1014,23 +1004,23 @@ do
         if mob_name == "Atheon" then
             local name = AtheonAttack.n 
             local t = AtheonAttack.t 
-            if AtheonAttack.n == "Nuke" and os.time() - t < 4 then
-                return true
+            if AtheonAttack.n == "Nuke" then
+                return os.time() - t < 4
 
-            elseif AtheonAttack.n == "LavaDash" and os.time() - t < 5 then
-                return true
+            elseif AtheonAttack.n == "LavaDash" then
+                return os.time() - t < 5
 
-            elseif AtheonAttack.n == "Meteors" and os.time() - t < 5 then
-                return true
+            elseif AtheonAttack.n == "Meteors" then
+                return gettingmeteors
             end
         end
 
-        if mob_name == "Warlord" and os.time() - WarlordCircleAttackT < 5.5 then
-            return true
+        if mob_name == "Warlord" then
+            return os.time() - WarlordCircleAttackT < 5.5
         end
 
-        if mob_name == "Suspended Unborn" and gettingcircles then
-            return true
+        if mob_name == "Suspended Unborn" then
+            return gettingcircles
         end
     end
 
