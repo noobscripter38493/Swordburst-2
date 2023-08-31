@@ -410,7 +410,8 @@ local settings = { -- defaults
     Inline = false,
     NoClip = false,
     WeaponSkill = "Weapon Class Skill",
-    Whitelist = {}
+    Whitelist = {},
+    SpeedGlitchBind = "J"
 }
 
 local doLoad = {
@@ -424,7 +425,8 @@ local doLoad = {
     WebhookURL = true,
     Tween_Speed = true,
     excludedMobs = true,
-    Whitelist = true
+    Whitelist = true,
+    SpeedGlitchBind = true
 }
 
 local HttpS = game:GetService("HttpService")
@@ -1177,7 +1179,7 @@ do
     local IsWaitingFromHealthFloat = false
     local function playerHealthChecks()
         local minPercentage = settings.Autofarm_Idle_Min / 100
-        local maxPercantage = settings.Autofarm_Idle_Max / 100
+        local maxPercentage = settings.Autofarm_Idle_Max / 100
 
         if not IsWaitingFromHealthFloat and playerHealth < minPercentage * maxPlayerHealth then
             IsWaitingFromHealthFloat = true
@@ -1185,7 +1187,7 @@ do
             return floatPart
         end
 
-        if IsWaitingFromHealthFloat and playerHealth > maxPercantage * maxPlayerHealth then
+        if IsWaitingFromHealthFloat and playerHealth > maxPercentage * maxPlayerHealth then
             IsWaitingFromHealthFloat = false
         end
 
@@ -1601,57 +1603,18 @@ do
         })
     end
 
-    if firesignal and not UserInputS.TouchEnabled then
-        local ka_button
-        while not ka_button do
-            for _, v in orion:GetDescendants() do
-                if v:IsA("TextLabel") and v.Text == "Kill Aura" then
-                    ka_button = v.Parent:FindFirstChild("TextButton")
-                    break
-                end
-            end
-
-            task.wait(1)
-        end
-
+    if not UserInputS.TouchEnabled then
         local ka_bind = combat:AddBind({
             Name = "Kill Aura Keybind",
             Default = Enum.KeyCode[settings.KA_Keybind],
-            Hold = false,
+            BindSetCallback = function(key)
+                settings.ka_bind = split(tostring(key), "Code.")[2]
+            end,
             Callback = function()
                 firesignal(ka_button.MouseButton1Down)
                 firesignal(ka_button.MouseButton1Up)
             end
         })
-
-        local found
-        while not found do
-            for _, v in orion:GetDescendants() do
-                if v:IsA("TextLabel") and v.Text == "Kill Aura Keybind" then
-                    found = true
-                    v.Parent.TextButton.MouseButton1Down:Connect(function()
-                        if inputbegan and inputbegan.Connected then
-                            return
-                        end
-
-                        inputbegan = UserInputS.InputBegan:Connect(function(inputobj)
-                            if inputobj.UserInputType == Enum.UserInputType.Keyboard then
-                                inputbegan:Disconnect()
-
-                                local key = inputobj.KeyCode
-                                settings.KA_Keybind = split(tostring(key), "Code.")[2]
-                                task.wait(.5)
-                                ka_bind:Set(key)
-                            end
-                        end)
-                    end)
-
-                    break
-                end
-            end
-
-            task.wait(1)
-        end
     end
 
     local skillsData = Database:WaitForChild("Skills")
@@ -1797,6 +1760,7 @@ local rates = setmetatable({Burst = .06, Tribute = .05, Legendary = .05}, {
 local ui_module = Services.UI
 local dismantler_module = require(ui_module.Dismantle)
 local GetItemData = inventory_module.GetItemData
+local isEquipped = getfenv(GetItemData).isEquipped
 
 local upgrade_amount = {
     Burst = 25,
@@ -2358,6 +2322,74 @@ do
         end
     })
 
+    local whirlspin = require(Services.Skills).skillHandlers["Whirlwind Spin"]
+    local Equip = Profile:WaitForChild("Equip")
+    local function SpeedGlitch()
+        local leftval = Equip.Left.Value
+        local rightval = Equip.Right.Value
+
+        local leftwep
+        local rightwep
+        local longswordleft
+        local longswordright
+        for i, v in Inventory:GetChildren() do
+            local ItemData = ItemDatas[v.Name]
+            if ItemData.classname == "Longsword" then
+                if longswordleft then
+                    longswordright = v
+                else
+                    longswordleft = v
+                end
+            end
+
+            if v.Value == leftval then
+                leftwep = v
+
+            elseif v.Value == rightval then
+                rightwep = v
+            end
+        end
+
+        if not longswordleft and not longswordright then
+            return
+        end
+        
+        rf:InvokeServer("Equipment", {"EquipWeapon", longswordright, "Right"})
+        rf:InvokeServer("Equipment", {"EquipWeapon", longswordleft, "Left"})
+
+        task.wait(.5)
+
+        task.spawn(whirlspin)
+
+        if rightwep then
+            rf:InvokeServer("Equipment", {"EquipWeapon", rightwep, "Right"})
+        end
+
+        if leftwep then
+            rf:InvokeServer("Equipment", {"EquipWeapon", leftwep, "Left"})
+        end
+
+        task.wait(.7)
+    
+        setfpscap(1)
+        task.wait(1)
+        setfpscap(60)
+    end
+
+    Character_tab:AddButton({
+        Name = "Speed Glitch (requires 2 longswords in inv)",
+        Callback = SpeedGlitch
+    })
+
+    local speedglitchbind = Character_tab:AddBind({
+        Name = "Speed Glitch Keybind",
+        Default = Enum.KeyCode[settings.SpeedGlitchBind],
+        BindSetCallback = function(key)
+            settings.SpeedGlitchBind = split(tostring(key), "Code.")[2]
+        end,
+        Callback = SpeedGlitch
+    })
+
     local walkspeed = humanoid.WalkSpeed
     if UserInputS.TouchEnabled then
         Character_tab:AddTextbox({
@@ -2399,8 +2431,6 @@ end
 
 do
     local Smithing = window:MakeTab("Smithing")
-
-    local isEquipped = getfenv(GetItemData).isEquipped
     local function Dismantle_Rarity(rarity)
         local items = {}
         for _, item in Inventory:GetChildren() do
@@ -2424,24 +2454,18 @@ do
     local crystalForge_module = require(ui_module.CrystalForge)
     Smithing:AddButton({
         Name = "Open Crystal Forge",
-        Callback = function()
-            crystalForge_module.Open()
-        end
+        Callback = crystalForge_module.Open 
     })
 
     local upgrade_module = require(ui_module.Upgrade)
     Smithing:AddButton({
         Name = "Open Upgrader",
-        Callback = function()
-            upgrade_module.Open()
-        end
+        Callback = upgrade_module.Open
     })
 
     Smithing:AddButton({
         Name = "Open Dismantler",
-        Callback = function()
-            dismantler_module.Open()
-        end
+        Callback = dismantler_module.Open
     })
 
     Smithing:AddButton({
