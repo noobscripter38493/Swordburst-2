@@ -1604,6 +1604,18 @@ do
     end
 
     if not UserInputS.TouchEnabled then
+        local ka_button
+        while not ka_button do
+            for _, v in orion:GetDescendants() do
+                if v:IsA("TextLabel") and v.Text == "Kill Aura" then
+                    ka_button = v.Parent:FindFirstChild("TextButton")
+                    break
+                end
+            end
+
+            task.wait(1)
+        end
+
         local ka_bind = combat:AddBind({
             Name = "Kill Aura Keybind",
             Default = Enum.KeyCode[settings.KA_Keybind],
