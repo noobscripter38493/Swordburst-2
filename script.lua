@@ -412,7 +412,8 @@ local settings = { -- defaults
     NoClip = false,
     WeaponSkill = "Weapon Class Skill",
     Whitelist = {},
-    SpeedGlitchBind = "J"
+    SpeedGlitchBind = "J",
+    GuiBind = "Delete"
 }
 
 local doLoad = {
@@ -1626,7 +1627,7 @@ do
             Name = "Kill Aura Keybind",
             Default = Enum.KeyCode[settings.KA_Keybind],
             BindSetCallback = function(key)
-                settings.ka_bind = split(tostring(key), "Code.")[2]
+                settings.ka_bind = key
             end,
             Callback = function()
                 firesignal(ka_button.MouseButton1Down)
@@ -2403,7 +2404,7 @@ do
         Name = "Speed Glitch Keybind",
         Default = Enum.KeyCode[settings.SpeedGlitchBind],
         BindSetCallback = function(key)
-            settings.SpeedGlitchBind = split(tostring(key), "Code.")[2]
+            settings.SpeedGlitchBind = key
         end,
         Callback = SpeedGlitch
     })
@@ -3028,10 +3029,13 @@ do
 
     Misc_tab:AddBind({
         Name = "GUI Keybind",
-        Default = Enum.KeyCode.RightShift,
+        Default = Enum.KeyCode[settings.GuiBind],
         Hold = false,
         Callback = function()
             orion.Enabled = not orion.Enabled
+        end,
+        BindSetCallback = function(key)
+            settings.GuiBind = key
         end
     })
 end
