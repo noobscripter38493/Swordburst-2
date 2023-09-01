@@ -4,6 +4,8 @@ if getgenv().SB2Script then
     return
 end
 
+getgenv().SB2Script = true
+
 while not game:IsLoaded()  do
     task.wait(1)
 end
@@ -15,8 +17,6 @@ end
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
-
-local protected = gethui and gethui() or CoreGui
 local screen = Instance.new("ScreenGui", CoreGui)
 local function create_confirm(text)
     local popup = CoreGui.RobloxGui.PopupFrame
@@ -61,12 +61,11 @@ if hasfilefunctions and placeid ~= 540240728 and placeid ~= 566212942 then
     if info.Updated ~= lastknownupdate then
         writefile(FloorUpdateFile, info.Updated)
         if not create_confirm("update detected. use script at risk. t =" .. info.Updated .. "\n\tContinue?") then
+            getgenv().SB2Script = false
             return
         end
     end
 end
-
-getgenv().SB2Script = true
 
 local info = debug.info
 local islclosure = islclosure or function(f)
@@ -333,7 +332,9 @@ local bosses_on_floor = {
         "Warlord"
     },
 
-    [13965775911] = {"Atheon"}, -- "Atheon's realm
+    [13965775911] = { -- Atheon's realm
+        "Atheon"
+    },
 
     [11331145451] = { -- halloween
         "Magnor, the Necromancer",
@@ -729,17 +730,13 @@ local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
 end)
 
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/orion/main/orionnnn.lua"))()
-local orion = protected:WaitForChild("Orion")
+--local lib = loadfile("orion.lua")()
+local orion = CoreGui:WaitForChild("Orion")
 
-local window = lib:MakeWindow({
-    Name = "SB2 Script | OneTaPuXd on v3rm | .gg/eWGZ8rYpxR",
-    HidePremium = false,
-    SaveConfig = false,
-    ConfigFolder = false
-})
+local window = lib:MakeWindow("SB2 | discord: ragingbirito | v3rm: OneTaPuXd | .gg/eWGZ8rYpxR")
 
-local rarities = {"Common", "Uncommon", "Rare", "Legendary"}
-local names = {"Commons", "Uncommons", "Rares", "Legendaries"}
+local rarities = {"Common", "Uncommon", "Rare", "Legendary", "Tribute"}
+local names = {"Commons", "Uncommons", "Rares", "Legendaries", "Tributes"}
 
 local othercharacters = {}
 local function SetupCharacterListeners(v)
@@ -788,7 +785,7 @@ local split = string.split
 do
     local farm_tab = window:MakeTab("Autofarm")
 
-    farm_tab:AddParagraph("Warning", "SB2 Mods are extremely active and autofarm will likely get you banned")
+    farm_tab:AddParagraph("note", "this feature will get u banned")
     local mobs_table = {}
 
     local function distanceCheck(enemy)
@@ -1252,7 +1249,7 @@ do
     end
 
     farm_tab:AddToggle({
-        Name = "Autofarm (HIGH BAN RISK)",
+        Name = "Autofarm",
         Default = false,
         Callback = function(bool)
             settings.Autofarm = bool
@@ -1969,7 +1966,7 @@ do
 end
 
 do
-    local AutofarmYOffsetTab = window:MakeTab("Autofarm Y Offsets")
+    local AutofarmYOffsetTab = window:MakeTab("AF Y Offsets")
 
     for i, mob_name in all_on_floor do
         if not Autofarm_Y_Offsets[mob_name] then
