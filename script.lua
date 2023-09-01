@@ -620,6 +620,7 @@ local function RemoveTrail(hum)
     end
 end
 
+local searchforclosesttpondeath
 plr.CharacterAdded:Connect(function(new)
     tpingtohunter = false
     char = new
@@ -637,7 +638,7 @@ plr.CharacterAdded:Connect(function(new)
     stamina.Value = 100
     hasMaxStamina = true
 
-    if savedcframe then
+    if savedcframe and searchforclosesttpondeath then
         task.wait(1)
 
         local savedpos = savedcframe.Position
@@ -1315,6 +1316,14 @@ do
         Options = mobs_on_floor[placeid],
         Callback = function(mob)
             settings.Prioritized_Mob = mob
+        end
+    })
+
+    farm_tab:AddToggle({
+        Name = "Get Closest TP to saved position when die",
+        Default = false,
+        Callback = function(bool)
+            searchforclosesttpondeath = bool
         end
     })
 
