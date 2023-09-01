@@ -730,8 +730,14 @@ local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
     return nc(self, ...)
 end)
 
-local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/orion/main/orionnnn.lua"))()
---local lib = loadfile("orion.lua")()
+local lib
+local editing = false
+if not editing then
+    lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/orion/main/orionnnn.lua"))()
+else
+    lib = loadfile("orion.lua")()
+end
+
 local orion = CoreGui:WaitForChild("Orion")
 
 local window = lib:MakeWindow("SB2 | discord: ragingbirito | v3rm: OneTaPuXd | .gg/eWGZ8rYpxR")
@@ -1567,13 +1573,13 @@ do
         end
     end)
 
-    combat:AddToggle({
+    local ka_button = combat:AddToggle({
         Name = "Kill Aura",
         Default = false,
         Callback = function(bool)
             settings.KA = bool
         end
-    })
+    }).Button
 
     combat:AddToggle({
         Name = "Attack Players",
@@ -1611,18 +1617,6 @@ do
     end
 
     if not UserInputS.TouchEnabled then
-        local ka_button
-        while not ka_button do
-            for _, v in orion:GetDescendants() do
-                if v:IsA("TextLabel") and v.Text == "Kill Aura" then
-                    ka_button = v.Parent:FindFirstChild("TextButton")
-                    break
-                end
-            end
-
-            task.wait(1)
-        end
-
         local ka_bind = combat:AddBind({
             Name = "Kill Aura Keybind",
             Default = Enum.KeyCode[settings.KA_Keybind],
