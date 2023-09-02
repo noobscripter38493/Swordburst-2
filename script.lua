@@ -372,12 +372,16 @@ local hrp = char:WaitForChild("HumanoidRootPart")
 local humanoid = char:WaitForChild("Humanoid")
 
 local Services
-while not Services do
+while true do
     for _, v in getloadedmodules() do
         if v.Name == "MainModule" then
             Services = v.Services
             break
         end
+    end
+    
+    if Services then
+    	break
     end
 
     task.wait(1)
@@ -428,7 +432,8 @@ local doLoad = {
     Tween_Speed = true,
     excludedMobs = true,
     Whitelist = true,
-    SpeedGlitchBind = true
+    SpeedGlitchBind = true,
+    GuiBind = true
 }
 
 local HttpS = game:GetService("HttpService")
@@ -731,7 +736,7 @@ local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
 end)
 
 local lib
-local editing = false
+local editing = true
 if not editing then
     lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/orion/main/orionnnn.lua"))()
 else
@@ -1573,13 +1578,18 @@ do
         end
     end)
 
-    local ka_button = combat:AddToggle({
+    combat:AddToggle({
         Name = "Kill Aura",
         Default = false,
         Callback = function(bool)
             settings.KA = bool
-        end
-    }).Button
+        end,
+        Keybind = true,
+        DefaultKeybind = settings.KA_Keybind,
+        BindSetCallback = function(key)
+            settings.KA_Keybind = key
+        end,
+    })
 
     combat:AddToggle({
         Name = "Attack Players",
@@ -1612,20 +1622,6 @@ do
             ValueName = "Range",
             Callback = function(v)
                 settings.KA_Range = v
-            end
-        })
-    end
-
-    if not UserInputS.TouchEnabled then
-        local ka_bind = combat:AddBind({
-            Name = "Kill Aura Keybind",
-            Default = Enum.KeyCode[settings.KA_Keybind],
-            BindSetCallback = function(key)
-                settings.ka_bind = key
-            end,
-            Callback = function()
-                firesignal(ka_button.MouseButton1Down)
-                firesignal(ka_button.MouseButton1Up)
             end
         })
     end
@@ -1692,7 +1688,6 @@ do
                         end
                     end
 
-                    task.wait(1)
                     pauseKillAura = false
                 end
             end
@@ -2223,6 +2218,7 @@ do
     end
 end
 
+local fps = getfpscap and getfpscap() or 60
 do
     local Character_tab = window:MakeTab("Character")
 
@@ -2386,7 +2382,7 @@ do
     
         setfpscap(1)
         task.wait(1)
-        setfpscap(60)
+        setfpscap(fps)
     end
 
     Character_tab:AddButton({
@@ -2396,7 +2392,7 @@ do
 
     local speedglitchbind = Character_tab:AddBind({
         Name = "Speed Glitch Keybind",
-        Default = Enum.KeyCode[settings.SpeedGlitchBind],
+        Default = settings.SpeedGlitchBind,
         BindSetCallback = function(key)
             settings.SpeedGlitchBind = key
         end,
@@ -2957,16 +2953,16 @@ do
     end
 
     if setfpscap then
-        local fps = getfpscap and getfpscap() or 60
         Misc_tab:AddSlider({
             Name = "Set FPS Cap (Requires executor FPS unlocker on)",
-            Min = 0,
-            Max = 500,
+            Min = 1,
+            Max = 1000,
             Default = fps,
             Color = Color3.new(255, 255, 255),
             Increment = 1,
             ValueName = "FPS",
             Callback = function(v)
+                fps = v
                 setfpscap(v)
             end
         })
@@ -3023,7 +3019,7 @@ do
 
     Misc_tab:AddBind({
         Name = "GUI Keybind",
-        Default = Enum.KeyCode[settings.GuiBind],
+        Default = settings.GuiBind,
         Hold = false,
         Callback = function()
             orion.Enabled = not orion.Enabled
