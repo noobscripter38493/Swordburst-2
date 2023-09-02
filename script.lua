@@ -736,7 +736,7 @@ local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
 end)
 
 local lib
-local editing = false
+local editing = true
 if not editing then
     lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/orion/main/orionnnn.lua"))()
 else
