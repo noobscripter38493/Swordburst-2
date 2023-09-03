@@ -4,7 +4,7 @@ if getgenv().SB2Script then
     return
 end
 
-getgenv().SB2Script = true
+getgenv().SB2Script = truee
 
 while not game:IsLoaded()  do
     task.wait(1)
@@ -2926,7 +2926,7 @@ do
             Default = plr.Name,
             Options = players_names,
             Callback = function(player)
-                setupvalue(inventory_module.GetInventoryData, 1, Profiles[player])
+                setupvalue(inventory_module.GetInventoryData, 2, Profiles[player])
             end
         })
 
