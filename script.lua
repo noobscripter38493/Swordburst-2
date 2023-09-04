@@ -731,7 +731,7 @@ local nc; nc = hookmetamethod(game, "__namecall", function(self, ...)
 
     elseif self == rf and ncm == "InvokeServer" then
         if not checkcaller() and args[1] == "Equipment" then
-            if getupvalue(inventory_module.GetInventoryData, 1) ~= Profile then
+            if getupvalue(inventory_module.GetInventoryData, 2) ~= Profile then
                 return
             end
         end
@@ -2920,60 +2920,55 @@ end
 do
     local Misc_tab = window:MakeTab("Misc")
 
-    if setupvalue then
-        local players_names = {}
+    local players_names = {}
+    for _, v in Players:GetPlayers() do
+        table.insert(players_names, v.Name)
+    end
+
+    local inventory_viewer = Misc_tab:AddDropdown({
+        Name = "Inventory Viewer (Open Inventory)",
+        Default = plr.Name,
+        Options = players_names,
+        Callback = function(player)
+            setupvalue(inventory_module.GetInventoryData, 2, Profiles[player])
+        end
+    })
+
+    local function update_inventoryViewer_list(player)
+        local names = {}
         for _, v in Players:GetPlayers() do
-            table.insert(players_names, v.Name)
+            if not player or player.Name ~= v.Name then
+                table.insert(names, v.Name)
+            end
         end
 
-        local inventory_viewer = Misc_tab:AddDropdown({
-            Name = "Inventory Viewer (Open Inventory)",
-            Default = plr.Name,
-            Options = players_names,
-            Callback = function(player)
-                setupvalue(inventory_module.GetInventoryData, 2, Profiles[player])
-            end
-        })
+        inventory_viewer:Refresh(names, true)
+    end
 
-        local function update_inventoryViewer_list(player)
-            local names = {}
-            for _, v in Players:GetPlayers() do
-                if not player or player.Name ~= v.Name then
-                    table.insert(names, v.Name)
-                end
-            end
-
-            inventory_viewer:Refresh(names, true)
+    Players.PlayerAdded:Connect(function(player)
+        while not Profiles:FindFirstChild(player.Name) do
+            task.wait(1)
         end
 
-        Players.PlayerAdded:Connect(function(player)
-            while not Profiles:FindFirstChild(player.Name) do
-                task.wait(1)
-            end
+        update_inventoryViewer_list()
+    end)
 
-            update_inventoryViewer_list()
-        end)
+    Players.PlayerRemoving:Connect(update_inventoryViewer_list)
 
-        Players.PlayerRemoving:Connect(update_inventoryViewer_list)
-    end
+    Misc_tab:AddSlider({
+        Name = "Set FPS Cap (Requires executor FPS unlocker on)",
+        Min = 1,
+        Max = 1000,
+        Default = fps,
+        Color = Color3.new(255, 255, 255),
+        Increment = 1,
+        ValueName = "FPS",
+        Callback = function(v)
+            fps = v
+            setfpscap(v)
+        end
+    })
 
-    if setfpscap then
-        Misc_tab:AddSlider({
-            Name = "Set FPS Cap (Requires executor FPS unlocker on)",
-            Min = 1,
-            Max = 1000,
-            Default = fps,
-            Color = Color3.new(255, 255, 255),
-            Increment = 1,
-            ValueName = "FPS",
-            Callback = function(v)
-                fps = v
-                setfpscap(v)
-            end
-        })
-    end
-
-    local plr = game.Players.LocalPlayer
     local playerui = plr.PlayerGui.CardinalUI.PlayerUI
     local scrollcontent = playerui.Chat.ScrollContent
     local alwayschatscroll
