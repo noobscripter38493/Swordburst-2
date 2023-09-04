@@ -2336,15 +2336,12 @@ do
                 rightwep = v
             end
         end
-
-        if not longswordleft and not longswordright then
-            return
-        end
         
-        rf:InvokeServer("Equipment", {"EquipWeapon", longswordright, "Right"})
-        rf:InvokeServer("Equipment", {"EquipWeapon", longswordleft, "Left"})
-
-        task.wait(.5)
+        if longswordleft and longswordright then
+            rf:InvokeServer("Equipment", {"EquipWeapon", longswordright, "Right"})
+            rf:InvokeServer("Equipment", {"EquipWeapon", longswordleft, "Left"})
+            task.wait(.5)
+        end
 
         task.spawn(whirlspin)
 
