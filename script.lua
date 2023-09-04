@@ -4,7 +4,7 @@ if getgenv().SB2Script then
     return
 end
 
-getgenv().SB2Script = truee
+getgenv().SB2Script = true
 
 while not game:IsLoaded()  do
     task.wait(1)
@@ -96,7 +96,12 @@ if teleport_execute then
 end
 
 local mobs_on_floor = {
-    [540240728] = {}, -- arcadia -- floor 1
+    [540240728] = { -- arcadia -- floor 1
+        "Dummy",
+        "Statue",
+        "Platemail"
+    },
+    
     [737272595] = {}, -- battle arena floor 1
     [566212942] = {}, -- floor 6 helmfrith
 
