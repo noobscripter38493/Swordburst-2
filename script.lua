@@ -419,7 +419,6 @@ local settings = { -- defaults
     WebhookURL = "",
     Inline = false,
     NoClip = false,
-    WeaponSkill = "Weapon Class Skill",
     Whitelist = {},
     SpeedGlitchBind = "J",
     GuiBind = "Delete"
@@ -1643,17 +1642,6 @@ do
     local hotkeys = Profile.Hotkeys
     local skills = Profile.Skills
 
-    local selectSkill
-    task.spawn(function()
-        hotkeys:WaitForChild("Summon Pistol")
-
-        while not selectSkill do
-            task.wait(1)
-        end
-
-        selectSkill:Refresh({"Summon Pistol"})
-    end)
-
     local skillauraing = {}
     range.Touched:Connect(function(touching)
         if skillauraing[touching] then
@@ -1674,13 +1662,7 @@ do
             if hasMaxStamina and health2 and health2.Value > 0 then
                 style = CalculateCombatStyle(false)
 
-                local skill
-                if settings.WeaponSkill == "Weapon Class Skill" then
-                    skill = skill_classes[style]
-                else
-                    skill = "Summon Pistol"
-                end
-
+                local skill = skill_classes[style]
                 if skill then
                     pauseKillAura = true
                     task.wait(1)
@@ -1715,15 +1697,6 @@ do
             end
 
             settings.SkillAura = bool
-        end
-    })
-    
-    selectSkill = combat:AddDropdown({
-        Name = "Select Skill to Use",
-        Default = settings.WeaponSkill,
-        Options = {"Weapon Class Skill"},
-        Callback = function(skill)
-            settings.WeaponSkill = skill
         end
     })
 
