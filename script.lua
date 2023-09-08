@@ -1665,9 +1665,10 @@ do
                 local skill = skill_classes[style]
                 if skill then
                     pauseKillAura = true
+
                     task.wait(1)
 
-                    for _ = 1, 15 do
+                    for _ = 1, 10 do
                         if health2.Value > 0 and stamina.Value > 20 then
                             Event:FireServer("Skills", {"UseSkill", skill, {}})
                             Event:FireServer("Combat", remote_key, {"Attack", enemy, skill, "2"})
@@ -1675,6 +1676,8 @@ do
                         end
                     end
 
+                    task.wait(1)
+                    
                     pauseKillAura = false
                 end
             end
@@ -2694,6 +2697,22 @@ end
 do
     local Performance_tab = window:MakeTab("Perf Boosters")
 
+    if not UserInputS.TouchEnabled then
+        Performance_tab:AddSlider({
+            Name = "FPS Cap",
+            Min = 1,
+            Max = 1000,
+            Default = fps,
+            Color = Color3.new(255, 255, 255),
+            Increment = 1,
+            ValueName = "FPS",
+            Callback = function(v)
+                fps = v
+                setfpscap(v)
+            end
+        })
+    end
+
     local screen = game.CoreGui.ScreenGui
     local frame = Instance.new("Frame")
     frame.Position = UDim2.fromOffset(0, -50)
@@ -2764,7 +2783,7 @@ do
     local function DeleteTextures(v)
         if not textureremove then return end
 
-        if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") or v:IsA("DepthOfFieldEffect") then
+        if v:IsA("BlurEffect") or v:IsA("SunRaysEffect") or v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") or v:IsA("Sparkles") or v:IsA("PointLight") then
             v.Enabled = false
 
         elseif v:IsA("Part") or v:IsA("Union") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
@@ -2780,9 +2799,6 @@ do
         elseif v:IsA("Explosion") then
             v.BlastPressure = 1
             v.BlastRadius = 1
-
-        elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") or v:IsA("Sparkles") or v:IsA("PointLight") then
-            v.Enabled = false
 
         elseif v:IsA("MeshPart") then
             v.Material = "Plastic"
@@ -2927,20 +2943,6 @@ do
     end)
 
     Players.PlayerRemoving:Connect(update_inventoryViewer_list)
-
-    Misc_tab:AddSlider({
-        Name = "Set FPS Cap (Requires executor FPS unlocker on)",
-        Min = 1,
-        Max = 1000,
-        Default = fps,
-        Color = Color3.new(255, 255, 255),
-        Increment = 1,
-        ValueName = "FPS",
-        Callback = function(v)
-            fps = v
-            setfpscap(v)
-        end
-    })
 
     local playerui = plr.PlayerGui.CardinalUI.PlayerUI
     local scrollcontent = playerui.Chat.ScrollContent
