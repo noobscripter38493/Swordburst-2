@@ -362,7 +362,8 @@ local Database = Rs:WaitForChild("Database")
 local Event = Rs:WaitForChild("Event")
 local rf = Rs:WaitForChild("Function")
 
-task.spawn(function()
+local spawn = task.spawn
+spawn(function()
     local vim = game:GetService("VirtualInputManager")
     while true do
         vim:SendKeyEvent(true, Enum.KeyCode.Home, false, game)
@@ -460,7 +461,7 @@ if hasfilefunctions then
         end
     end
 
-    task.spawn(function()
+    spawn(function()
         while true do
             save_settings()
             task.wait(5)
@@ -672,6 +673,7 @@ end)
 local Actions = require(Services.Actions)
 
 local startswing = Actions.StartSwing
+local stopswing = Actions.StopSwing
 Actions.StartSwing = function()
     if settings.KA then
         return
@@ -767,7 +769,7 @@ local othercharacters = {}
 local function SetupCharacterListeners(v)
     othercharacters[v.Name] = v.Character
     v.CharacterAdded:Connect(function(new)
-        task.spawn(RemoveTrail, new:WaitForChild("Humanoid"))
+        spawn(RemoveTrail, new:WaitForChild("Humanoid"))
         othercharacters[v.Name] = new
     end)
 end
@@ -786,7 +788,7 @@ Players.PlayerRemoving:Connect(function(v)
     othercharacters[v.Name] = nil
 end)
 
-task.spawn(function()
+spawn(function()
     while true do
         for i, v in othercharacters do
             if not settings.Autofarm then
@@ -989,7 +991,7 @@ do
             elseif c.Size.X == AtheonMeteorDiameter then
                 if gettingmeteors then return end
 
-                task.spawn(function()
+                spawn(function()
                     gettingmeteors = true
                     AtheonAttack.n = "Meteors"
                     AtheonAttack.t = os.time()
@@ -1007,7 +1009,7 @@ do
                     return 
                 end
 
-                task.spawn(function()
+                spawn(function()
                     gettingcircles = true
 
                     task.wait(6)
@@ -1265,7 +1267,7 @@ do
     end)
 
     for _, mob in mobs:GetChildren() do
-        task.spawn(function()
+        spawn(function()
             mob:WaitForChild("HumanoidRootPart")
             mobs_table[mob] = mob
         end)
@@ -1289,7 +1291,7 @@ do
 
             while settings.Autofarm do
                 if not tpingtohunter then
-                    task.spawn(TweenF)
+                    spawn(TweenF)
                 end
 
                 task.wait()
@@ -1547,14 +1549,27 @@ do
 
     table.clear(Actions)
 
-    task.spawn(function()
-        while true do
-            if #attacking == 0 and not alwaysswinganimation then
-                task.wait()
+    local was
+    spawn(function()
+        while true do task.wait()
+            if alwaysswinganimation then
+                was = true
+                spawn(startswing)
+
+            elseif was then
+                was = false
+                stopswing()
+            end
+
+            if not settings.KA then
                 continue
             end
 
-            startswing()
+            if #attacking > 0 then
+                spawn(startswing)
+            else
+                stopswing()
+            end
         end
     end)
 
@@ -1779,7 +1794,7 @@ end
 
 local ItemDatas = {}
 for _, v in Database:WaitForChild("Items"):GetChildren() do
-    task.spawn(function()
+    spawn(function()
         local ItemData = GetItemData(v)
         if ItemData.Type == "Weapon" or ItemData.Type == "Clothing" then
             local stats = ItemData.stats
@@ -2059,7 +2074,7 @@ do
         end
 
         local function makespecialtpbutton(name, pos)
-            task.spawn(function()
+            spawn(function()
                 plr:RequestStreamAroundAsync(pos, 3)
                 task.wait(1)
 
@@ -2341,7 +2356,7 @@ do
             task.wait(.5)
         end
 
-        task.spawn(whirlspin)
+        spawn(whirlspin)
 
         if rightwep then
             rf:InvokeServer("Equipment", {"EquipWeapon", rightwep, "Right"})
@@ -2400,7 +2415,7 @@ do
         })
     end
 
-    task.spawn(function()
+    spawn(function()
         while true do
             if not sprinting then
                 humanoid.WalkSpeed = walkspeed
@@ -2481,7 +2496,7 @@ do
     local Stats = window:MakeTab("Session Stats")
 
     local time_label = Stats:AddLabel("Elapsed Time")
-    task.spawn(function()
+    spawn(function()
         local floor = math.floor
         while true do task.wait(1)
             local seconds = floor(time())
@@ -2843,9 +2858,9 @@ do
                 Callback = function(bool)
                     noslashtrails = bool
 
-                    task.spawn(RemoveTrail, humanoid)
+                    spawn(RemoveTrail, humanoid)
                     for i, v in othercharacters do
-                        task.spawn(RemoveTrail, v:WaitForChild("Humanoid"))
+                        spawn(RemoveTrail, v:WaitForChild("Humanoid"))
                     end
                 end
             })
