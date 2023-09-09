@@ -800,8 +800,6 @@ end)
 local split = string.split
 do
     local farm_tab = window:MakeTab("Autofarm")
-
-    farm_tab:AddParagraph("note", "this feature will get u banned")
     local mobs_table = {}
 
     local function distanceCheck(enemy)
@@ -2356,7 +2354,7 @@ do
         task.wait(.7)
     
         setfpscap(1)
-        task.wait(1)
+        task.wait()
         setfpscap(fps)
     end
 
