@@ -672,12 +672,21 @@ end)
 local Actions = require(Services.Actions)
 
 local startswing = Actions.StartSwing
-Actions.StartSwing = function(...)
+Actions.StartSwing = function()
     if settings.KA then
         return
     end
 
-    return startswing(...)
+    return startswing()
+end
+
+local attackrequest = combat_module.AttackRequest
+combat_module.AttackRequest = function(...)
+    if settings.KA then
+        return
+    end
+
+    return attackrequest(...)
 end
 
 local inventory_module = require(Services.UI.Inventory)
@@ -1545,16 +1554,7 @@ do
                 continue
             end
 
-            local animation_style = animations[CalculateCombatStyle()]
-            for _, v in animation_style do
-                if v.Name:find("Swing") then
-                    local length = v.Length
-                    v:AdjustSpeed(1 / length)
-                    v:Play()
-
-                    task.wait(.6)
-                end
-            end
+            startswing()
         end
     end)
 
