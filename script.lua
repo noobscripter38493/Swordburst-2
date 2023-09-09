@@ -1677,7 +1677,7 @@ do
                     end
 
                     task.wait(1)
-                    
+
                     pauseKillAura = false
                 end
             end
@@ -1731,7 +1731,7 @@ do
         end
 
         local t = os.time()
-        if skills:FindFirstChild("Cursed Enhancement") and t - lastcd >= 18 and autoce and stamina.Value >= 30 then
+        if skills:FindFirstChild("Cursed Enhancement") and t - lastcd >= 16 and autoce and stamina.Value >= 30 then
             lastcd = t
             Event:FireServer("Skills", {"UseSkill", "Cursed Enhancement", {}})
         end
@@ -1925,10 +1925,9 @@ do
     local farm_tab3 = window:MakeTab("Farm Exclusion")
 
     for _, mob_name in all_on_floor do
-        local default = MobExclusion[mob_name] == true
         farm_tab3:AddToggle({
             Name = mob_name,
-            Default = default,
+            Default = MobExclusion[mob_name] == true,
             Callback = function(bool)
                 MobExclusion[mob_name] = bool
             end
@@ -2079,8 +2078,6 @@ do
                         Tp(totouch)
                     end
                 })
-
-                print("Created TP", name)
             end)
         end
 
@@ -2364,7 +2361,7 @@ do
     end
 
     Character_tab:AddButton({
-        Name = "Speed Glitch (requires 2 longswords in inv)",
+        Name = "Speed Glitch",
         Callback = SpeedGlitch
     })
 
@@ -2820,15 +2817,19 @@ do
 
             textureremove = true
             
-            Terrain.WaterWaveSize = 0
-            Terrain.WaterWaveSpeed = 0
-            Terrain.WaterReflectance = 0
-            Terrain.WaterTransparency = 0
-            Lighting.GlobalShadows = false
-            Lighting.FogEnd = 9e9
-            Lighting.Brightness = 0
             for i, v in game:GetDescendants() do
                 DeleteTextures(v)
+            end
+
+            while true do
+                Terrain.WaterWaveSize = 0
+                Terrain.WaterWaveSpeed = 0
+                Terrain.WaterReflectance = 0
+                Terrain.WaterTransparency = 0
+                Lighting.GlobalShadows = false
+                Lighting.FogEnd = 9e9
+                Lighting.Brightness = 0
+                task.wait(1)
             end
         end
     })
