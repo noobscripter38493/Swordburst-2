@@ -2325,6 +2325,9 @@ do
     local whirlspin = require(Services.Skills).skillHandlers["Whirlwind Spin"]
     local Equip = Profile:WaitForChild("Equip")
     local function SpeedGlitch()
+        local temp = alwaysswinganimation
+        alwaysswinganimation = false
+
         local leftval = Equip.Left.Value
         local rightval = Equip.Right.Value
 
@@ -2371,6 +2374,8 @@ do
         setfpscap(1)
         task.wait()
         setfpscap(fps)
+
+        alwaysswinganimation = temp
     end
 
     Character_tab:AddButton({
