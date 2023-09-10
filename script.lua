@@ -14,9 +14,17 @@ if game.GameId ~= 212154879 then
     return
 end
 
+local UserInputS = game:GetService("UserInputService")
+local TweenS = game:GetService("TweenService")
+local RunS = game:GetService("RunService")
+local Rs = game:GetService("ReplicatedStorage")
+local Database = Rs:WaitForChild("Database")
+local Event = Rs:WaitForChild("Event")
+local rf = Rs:WaitForChild("Function")
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
+
 local screen = Instance.new("ScreenGui", CoreGui)
 local function create_confirm(text)
     local popup = CoreGui.RobloxGui.PopupFrame
@@ -357,14 +365,6 @@ local bosses_on_floor = {
     }
 }
 
-local UserInputS = game:GetService("UserInputService")
-local TweenS = game:GetService("TweenService")
-local RunS = game:GetService("RunService")
-local Rs = game:GetService("ReplicatedStorage")
-local Database = Rs:WaitForChild("Database")
-local Event = Rs:WaitForChild("Event")
-local rf = Rs:WaitForChild("Function")
-
 local spawn = task.spawn
 spawn(function()
     local vim = game:GetService("VirtualInputManager")
@@ -552,23 +552,27 @@ end
 RunS.Stepped:Connect(noclip)
 
 local autoheal
-local lastheal = 9e9
+local lastheal = 0
+
 local playerHealth
 local maxPlayerHealth
 local Entity = char:WaitForChild("Entity")
 local stamina = Entity:WaitForChild("Stamina")
 local health = Entity:WaitForChild("Health")
+local function Heal()
+    local t = os.time()
+    if level >= 50 and t - lastheal >= 25 and autoheal and playerHealth / maxPlayerHealth <= .7 and stamina.Value >= 40 then
+        lastheal = t
+        Event:FireServer("Skills", {"UseSkill", "Heal", {}})
+    end
+end
+
 local function setUpPlayerHealthValues()
     playerHealth = health.Value
     maxPlayerHealth = health.MaxValue
     local currentHealthSignal = health:GetPropertyChangedSignal("Value"):Connect(function()
         playerHealth = health.Value
-
-        local t = os.time()
-        if level >= 50 and t - lastheal >= 25 and autoheal and playerHealth / maxPlayerHealth <= .7 and stamina.Value >= 40 then
-            lastheal = t
-            Event:FireServer("Skills", {"UseSkill", "Heal", {}})
-        end
+        Heal()
     end)
 
     local maxHealthSignal = health:GetPropertyChangedSignal("MaxValue"):Connect(function()
@@ -1733,6 +1737,9 @@ do
         Default = false,
         Callback = function(bool)
             autoheal = bool
+            if bool then
+                Heal()
+            end
         end
     })
 
@@ -2325,7 +2332,8 @@ do
         end
     })
 
-    local whirlspin = require(Services.Skills).skillHandlers["Whirlwind Spin"]
+    local skillhandlers = require(Services.Skills).skillHandlers
+    local whirlspin = skillhandlers["Whirlwind Spin"]
     local Equip = Profile:WaitForChild("Equip")
     local function SpeedGlitch()
         local temp = alwaysswinganimation
