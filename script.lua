@@ -42,27 +42,30 @@ local function create_confirm(text)
 end
 
 local placeid = game.PlaceId
-local MPS = game:GetService("MarketplaceService")
-local info = MPS:GetProductInfo(placeid)
 local hasfilefunctions = isfolder and makefolder and writefile and readfile
-if hasfilefunctions and placeid ~= 540240728 and placeid ~= 566212942 then
-    local LastFloorUpdates = "SB2 Script/LastFloorUpdates"
-    if not isfolder("SB2 Script") or not isfolder(LastFloorUpdates) then
-        makefolder("SB2 Script")
-        makefolder(LastFloorUpdates)
-    end
+if not UserInputS.TouchEnabled then
+    if hasfilefunctions and placeid ~= 540240728 and placeid ~= 566212942 then
+        local MPS = game:GetService("MarketplaceService")
+        local info = MPS:GetProductInfo(placeid)
 
-    local FloorUpdateFile = LastFloorUpdates .. tostring(placeid)
-    if not isfile(FloorUpdateFile) then
-        writefile(FloorUpdateFile, info.Updated)
-    end
-    
-    local lastknownupdate = readfile(FloorUpdateFile)
-    if info.Updated ~= lastknownupdate then
-        writefile(FloorUpdateFile, info.Updated)
-        if not create_confirm("update detected. use script at risk. t =" .. info.Updated .. "\n\tContinue?") then
-            getgenv().SB2Script = false
-            return
+        local LastFloorUpdates = "SB2 Script/LastFloorUpdates"
+        if not isfolder("SB2 Script") or not isfolder(LastFloorUpdates) then
+            makefolder("SB2 Script")
+            makefolder(LastFloorUpdates)
+        end
+
+        local FloorUpdateFile = LastFloorUpdates .. tostring(placeid)
+        if not isfile(FloorUpdateFile) then
+            writefile(FloorUpdateFile, info.Updated)
+        end
+        
+        local lastknownupdate = readfile(FloorUpdateFile)
+        if info.Updated ~= lastknownupdate then
+            writefile(FloorUpdateFile, info.Updated)
+            if not create_confirm("update detected. use script at risk. t =" .. info.Updated .. "\n\tContinue?") then
+                getgenv().SB2Script = false
+                return
+            end
         end
     end
 end
@@ -2818,7 +2821,7 @@ do
         elseif v:IsA("MeshPart") then
             v.Material = "Plastic"
             v.Reflectance = 0
-            v.TextureID = 10385902758728957
+            v.TextureID = 0
         end
     end
 
