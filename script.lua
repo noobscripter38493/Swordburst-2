@@ -1725,7 +1725,7 @@ do
 
     local autoce
     combat:AddToggle({
-        Name = "Auto Cursed Enhancement",
+        Name = "Auto Cursed Enhancement (6s cooldown after done)",
         Default = false,
         Callback = function(bool)
             autoce = bool
@@ -1733,7 +1733,7 @@ do
     })
 
     combat:AddToggle({
-        Name = "Auto Heal",
+        Name = "Auto Heal (25s cooldown)",
         Default = false,
         Callback = function(bool)
             autoheal = bool
