@@ -6,8 +6,9 @@ end
 
 getgenv().SB2Script = true
 
+local wait = task.wait
 while not game:IsLoaded()  do
-    task.wait(1)
+    wait(1)
 end
 
 if game.GameId ~= 212154879 then
@@ -100,6 +101,7 @@ local firesignal = firesignal or getconnections and function(signal, args)
     end
 end
 local request = syn and syn.request or fluxus and fluxus.request or request
+local sethiddenproperty = sethiddenproperty or sethiddenprop or set_hidden_prop
 
 local teleport_execute = queue_on_teleport or syn and syn.queue_on_teleport
 if teleport_execute then
@@ -370,9 +372,9 @@ spawn(function()
     local vim = game:GetService("VirtualInputManager")
     while true do
         vim:SendKeyEvent(true, Enum.KeyCode.Home, false, game)
-        task.wait(1)
+        wait(1)
         vim:SendKeyEvent(false, Enum.KeyCode.Home, false, game)
-        task.wait(60 * 15)
+        wait(60 * 15)
     end
 end)
 
@@ -393,7 +395,7 @@ while true do
     	break
     end
 
-    task.wait(1)
+    wait(1)
 end
 
 local combat_module = require(Services.Combat)
@@ -467,7 +469,7 @@ if hasfilefunctions then
     spawn(function()
         while true do
             save_settings()
-            task.wait(5)
+            wait(5)
         end
     end)
 end
@@ -535,7 +537,7 @@ local function setNoClipParts()
         end
     end
 
-    task.wait(1)
+    wait(1)
 end
 
 setNoClipParts()
@@ -620,7 +622,7 @@ end
 
 local function Tp(totouch)
     firetouchinterest(hrp, totouch, 0)
-    task.wait(.1)
+    wait(.1)
     firetouchinterest(hrp, totouch, 1)
 end
 
@@ -629,7 +631,7 @@ local function RemoveTrail(hum)
     local con
     while not con do
         con = getconnections(hum.AnimationPlayed)[1]
-        task.wait(1)
+        wait(1)
     end
 
     if noslashtrails then
@@ -658,14 +660,14 @@ plr.CharacterAdded:Connect(function(new)
     hasMaxStamina = true
 
     if savedcframe and searchforclosesttpondeath then
-        task.wait(1)
+        wait(1)
 
         local savedpos = savedcframe.Position
         local totouch = GetClosestPartFromVector(savedpos)
         if totouch then
             Tp(totouch)
 
-            task.wait(1)
+            wait(1)
             for i, v in totouch.Parent:GetChildren() do
                 if v ~= totouch then
                     Tp(v)
@@ -811,7 +813,7 @@ spawn(function()
             end
         end
 
-        task.wait(1)
+        wait(1)
     end
 end)
 
@@ -970,6 +972,7 @@ do
         local height = settings.Height
         floatPart.CFrame = hrp.CFrame * CFrame.new(0, height, 0)
     end)
+    
     floatPart.Parent = workspace
 
     local AtheonAttack = {
@@ -1003,7 +1006,7 @@ do
                     AtheonAttack.n = "Meteors"
                     AtheonAttack.t = os.time()
 
-                    task.wait(5)
+                    wait(5)
 
                     AtheonAttack.n = nil
                     gettingmeteors = false
@@ -1019,7 +1022,7 @@ do
                 spawn(function()
                     gettingcircles = true
 
-                    task.wait(6)
+                    wait(6)
 
                     gettingcircles = false
                     table.clear(suspendedcircles)
@@ -1301,7 +1304,7 @@ do
                     spawn(TweenF)
                 end
 
-                task.wait()
+                wait()
             end
         end
     })
@@ -1537,7 +1540,7 @@ do
                 Event:FireServer("Combat", remote_key, {"Attack", enemy, nil, "2"})
             end
 
-            task.wait(.33)
+            wait(.33)
         end
     end
 
@@ -1558,7 +1561,7 @@ do
 
     local was
     spawn(function()
-        while true do task.wait()
+        while true do wait()
             if alwaysswinganimation then
                 was = true
                 spawn(startswing)
@@ -1686,17 +1689,17 @@ do
                 if skill then
                     pauseKillAura = true
 
-                    task.wait(1)
+                    wait(1)
 
                     for _ = 1, 10 do
                         if health2.Value > 0 and stamina.Value > 20 then
                             Event:FireServer("Skills", {"UseSkill", skill, {}})
                             Event:FireServer("Combat", remote_key, {"Attack", enemy, skill, "2"})
-                            task.wait(.2)
+                            wait(.2)
                         end
                     end
 
-                    task.wait(1)
+                    wait(1)
 
                     pauseKillAura = false
                 end
@@ -1838,6 +1841,13 @@ do
     non legends: math.floor(base + (base * 0.04 * upgrade_count))
     legends: math.floor(base + (base * 0.05 * upgrade_count))
 
+    ------
+
+    local damage = 50612
+    local base = 20245
+    local upgrade = 25
+    local rate = string.format("%.2f", (damage - base) / (base * upgrade))
+    print(rate)
     ]]
 
     local farm_tab2 = window:MakeTab("Farm Tab util")
@@ -1847,7 +1857,7 @@ do
             return
         end
 
-        task.wait(1)
+        wait(1)
 
         local highest_damage = 0
         local highest_defense = 0
@@ -1905,7 +1915,7 @@ do
     })
 
     local function AutoDismantle(item)
-        task.wait(1)
+        wait(1)
 
         if item:FindFirstChild("Count") then
             return
@@ -2077,7 +2087,7 @@ do
                         huntertweens[#huntertweens + 1] = huntertween
                         
                         huntertween:Play()
-                        task.wait()
+                        wait()
                     end
                 end
             })
@@ -2086,7 +2096,7 @@ do
         local function makespecialtpbutton(name, pos)
             spawn(function()
                 plr:RequestStreamAroundAsync(pos, 3)
-                task.wait(1)
+                wait(1)
 
                 local totouch
                 if name == "Atheon (changes servers)" then
@@ -2300,7 +2310,7 @@ do
             while pressing do
                 pcall(function()
                     humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                    task.wait(1/10)
+                    wait(1/10)
                 end)
             end
         end
@@ -2367,7 +2377,7 @@ do
         if longswordleft and longswordright then
             rf:InvokeServer("Equipment", {"EquipWeapon", longswordright, "Right"})
             rf:InvokeServer("Equipment", {"EquipWeapon", longswordleft, "Left"})
-            task.wait(.5)
+            wait(.5)
         end
 
         spawn(whirlspin)
@@ -2380,10 +2390,10 @@ do
             rf:InvokeServer("Equipment", {"EquipWeapon", leftwep, "Left"})
         end
 
-        task.wait(.7)
+        wait(.7)
     
         setfpscap(1)
-        task.wait()
+        wait()
         setfpscap(fps)
 
         alwaysswinganimation = temp
@@ -2437,7 +2447,7 @@ do
                 humanoid.WalkSpeed = walkspeed
             end
     
-            task.wait(.1)
+            wait(.1)
         end
     end)
 end
@@ -2514,7 +2524,7 @@ do
     local time_label = Stats:AddLabel("Elapsed Time")
     spawn(function()
         local floor = math.floor
-        while true do task.wait(1)
+        while true do wait(1)
             local seconds = floor(time())
             local minutes = floor(seconds / 60)
             seconds = seconds - 60 * minutes
@@ -2712,7 +2722,7 @@ do
                 if Item and Item.Count.Value >= Amount then
                     for i = 1, Amount do
                         Event:FireServer("Trade", "TradeAddItem", {Item})
-                        task.wait(.1)
+                        wait(.1)
                     end
                 end
             end
@@ -2787,7 +2797,7 @@ do
                 end
             end)
 
-            game.RunService:Set3dRenderingEnabled(not bool)
+            RunS:Set3dRenderingEnabled(not bool)
             frame.Visible = bool
         end
     })
@@ -2845,6 +2855,8 @@ do
             end
 
             textureremove = true
+
+            sethiddenproperty(workspace.Terrain, "Decoration", false)
             
             for i, v in game:GetDescendants() do
                 DeleteTextures(v)
@@ -2858,7 +2870,7 @@ do
                 Lighting.GlobalShadows = false
                 Lighting.FogEnd = 9e9
                 Lighting.Brightness = 0
-                task.wait(1)
+                wait(1)
             end
         end
     })
@@ -2966,7 +2978,7 @@ do
 
     Players.PlayerAdded:Connect(function(player)
         while not Profiles:FindFirstChild(player.Name) do
-            task.wait(1)
+            wait(1)
         end
 
         update_inventoryViewer_list()
@@ -2995,7 +3007,7 @@ do
 
     local autochatscroll
     scrollcontent.ChildAdded:Connect(function()
-        task.wait(.1)
+        wait(.1)
 
         if autochatscroll then
             scrollcontent.CanvasPosition = Vector2.new(0, scrollcontent.CanvasSize.Y.Offset - scrollcontent.AbsoluteSize.Y)
