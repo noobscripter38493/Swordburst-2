@@ -52,14 +52,17 @@ end
 
 local placeid = game.PlaceId
 local hasfilefunctions = isfolder and makefolder and writefile and readfile
+if hasfilefunctions and not isfolder("SB2 Script") then
+    makefolder("SB2 Script")
+end
+
 if not UserInputS.TouchEnabled then
     if hasfilefunctions and placeid ~= 540240728 and placeid ~= 566212942 then
         local MPS = game:GetService("MarketplaceService")
         local info = MPS:GetProductInfo(placeid)
 
         local LastFloorUpdates = "SB2 Script/LastFloorUpdates"
-        if not isfolder("SB2 Script") or not isfolder(LastFloorUpdates) then
-            makefolder("SB2 Script")
+        if not isfolder(LastFloorUpdates) then
             makefolder(LastFloorUpdates)
         end
 
