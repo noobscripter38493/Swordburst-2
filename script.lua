@@ -255,19 +255,19 @@ local mobs_on_floor = {
     [13965775911] = {}, -- atheon's realm
 
     [11331145451] = { -- HALLOWEEN EVENT
-        "Sorcerer",
-        "Spiritual Hound",
-        "Stone Gargoyle",
+        "Tremor",
+        "Rotten Brute",
+        "Cursed Giant",
         "Black Widow",
-        "Mutated Pumpkin",
-        "Bloodshard Spider",
-        "Candy Chest",
-        "Hostile Omen",
-        "Elkwood Giant",
-        "Cursed Skeleton",
-        "Harbinger",
-        "Mud Brute",
-        "Pumpkin Reaper"
+        "Dark Spirit",
+        "Abyssal Spider",
+        "Crumbling Gargoyle",
+        "Decayed Warrior",
+        "Vampiric Bat",
+        "Big Fat Rat",
+        "Count Dracula, Vlad Tepes",
+        "Enraged Wendigo",
+        "Headless Horseman"
     },
 
     [13051622258] = { -- EASTER EVENT
