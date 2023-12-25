@@ -2268,7 +2268,7 @@ do
             string_value.Parent = animSettings
         end
     end
-
+--[[
     Character_tab:AddDropdown({
         Name = "Weapon Animations",
         Default = CalculateCombatStyle(),
@@ -2276,7 +2276,7 @@ do
         Callback = function(animation)
             settings.Weapon_Animation = animation
         end
-    })
+    })]]
 
     local OldCalculateCombatStyle = CalculateCombatStyle
     combat_module.CalculateCombatStyle = function(bool)
