@@ -275,6 +275,15 @@ local mobs_on_floor = {
         "Gemulite",
         "Crystalite",
         "Egg Mimic"
+    },
+
+    [15716179871] = { -- WINTER EVENT 2023
+        "Frostgre",
+        "Icy Imp",
+        "Gemulite",
+        "Crystalite",
+        "Galcius Howler",
+        "Icy Snowman"
     }
 }
 
@@ -367,6 +376,12 @@ local bosses_on_floor = {
     [13051622258] = { -- EASTER EVENT
         "Killer Bunny",
         "Alpha Killer Bunny"
+    },
+    
+    [15716179871] = { -- WINTER EVENT 2023
+        "Vyroth, The Frostflame",
+        "Krampus",
+        "Rat"
     }
 }
 
