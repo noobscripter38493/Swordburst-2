@@ -286,6 +286,11 @@ local mobs_on_floor = {
         "Galcius Howler",
         "Icy Snowman",
         "Dark Frost Goblin"
+    },
+
+    [16810524216] = {
+        "Eternal Blossom Knight",
+        "Ancient Blossom Knight"
     }
 }
 
@@ -387,8 +392,12 @@ local bosses_on_floor = {
         "Ghost of the Present",
         "Kloff, Marauder of the Frost",
         "Ghost of the Past",
-        "Ghost of the Future",
-        
+        "Ghost of the Future"
+    },
+
+    [16810524216] = {
+        "Azeis, Spirit of the Eternal Blossom",
+        "Tworz, The Ancient"
     }
 }
 
