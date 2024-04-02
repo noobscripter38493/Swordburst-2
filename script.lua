@@ -2076,14 +2076,8 @@ do
                     local data = GetItemData(v2)
                     if data.Type == "Weapon" and data.level <= tonumber(match(level.Text, "%d+")) then
                         rf:InvokeServer("Equipment", {"EquipWeapon", v2, "Right"})
-
-                        equippedwep = true
-                        break
+                        return
                     end
-                end
-
-                if equippedwep then
-                    break
                 end
             end
         end
