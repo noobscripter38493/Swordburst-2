@@ -2042,13 +2042,13 @@ end
 do
     local equiphigher_tab = window:MakeTab("Equip Higher Level Weapon")
 
-    local weapon_name
+    local wep_to_equip
     equiphigher_tab:AddTextbox({
         Name = "Weapon Name",
         Default = "",
         TextDisappear = false,
         Callback = function(text)
-            weapon_name = text
+            wep_to_equip = text
         end
     })
 
@@ -2058,6 +2058,7 @@ do
             local wep = Profile.Inventory:FindFirstChild(wep_to_equip)
             local WEPITEMSLOT = wep and wep.Value
 
+            local equippedwep
             for _, v in next, Profiles:GetChildren() do
                 if v.Name == plr.Name then
                     continue
@@ -2071,11 +2072,17 @@ do
                     local data = GetItemData(v2)
                     if data.level <= tonumber(string.match(level.Text, "%d+")) then
                         local Type = data.Type
-                        if Type == "Weapon" and not equippedwep and v2.Value == WEPITEMSLOT then
+                        if Type == "Weapon" and v2.Value == WEPITEMSLOT then
                             rf:InvokeServer("Equipment", {"EquipWeapon", v2, "Right"})
+
                             equippedwep = true
+                            break
                         end
                     end
+                end
+
+                if equippedwep then
+                    break
                 end
             end
         end
