@@ -2056,7 +2056,11 @@ do
         Name = "Equip Weapon",
         Callback = function()
             local wep = Profile.Inventory:FindFirstChild(wep_to_equip)
-            local WEPITEMSLOT = wep and wep.Value
+            if not wep then
+                return
+            end
+                
+            local WEPITEMSLOT = wep.Value
 
             local equippedwep
             for _, v in next, Profiles:GetChildren() do
@@ -2070,14 +2074,11 @@ do
                     end
                     
                     local data = GetItemData(v2)
-                    if data.level <= tonumber(string.match(level.Text, "%d+")) then
-                        local Type = data.Type
-                        if Type == "Weapon" and v2.Value == WEPITEMSLOT then
-                            rf:InvokeServer("Equipment", {"EquipWeapon", v2, "Right"})
+                    if data.Type == "Weapon" and data.level <= tonumber(match(level.Text, "%d+")) then
+                        rf:InvokeServer("Equipment", {"EquipWeapon", v2, "Right"})
 
-                            equippedwep = true
-                            break
-                        end
+                        equippedwep = true
+                        break
                     end
                 end
 
