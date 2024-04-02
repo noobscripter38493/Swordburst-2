@@ -2040,6 +2040,49 @@ do
 end
 
 do
+    local equiphigher_tab = window:MakeTab("Equip Higher Level Weapon")
+
+    local weapon_name
+    equiphigher_tab:AddTextbox({
+        Name = "Weapon Name",
+        Default = "",
+        TextDisappear = false,
+        Callback = function(text)
+            weapon_name = text
+        end
+    })
+
+    equiphigher_tab:AddButton({
+        Name = "Equip Weapon",
+        Callback = function()
+            local wep = Profile.Inventory:FindFirstChild(wep_to_equip)
+            local WEPITEMSLOT = wep and wep.Value
+
+            for _, v in next, Profiles:GetChildren() do
+                if v.Name == plr.Name then
+                    continue
+                end
+                
+                for i2, v2 in next, v.Inventory:GetChildren() do
+                    if v2.Value ~= WEPITEMSLOT then
+                        continue
+                    end
+                    
+                    local data = GetItemData(v2)
+                    if data.level <= tonumber(string.match(level.Text, "%d+")) then
+                        local Type = data.Type
+                        if Type == "Weapon" and not equippedwep and v2.Value == WEPITEMSLOT then
+                            rf:InvokeServer("Equipment", {"EquipWeapon", v2, "Right"})
+                            equippedwep = true
+                        end
+                    end
+                end
+            end
+        end
+    })
+end
+
+do
     local autoflag_tab = window:MakeTab("Auto Flag")
 
     local autoflag
@@ -3084,21 +3127,7 @@ end
 do
     local credits = window:MakeTab("Credits")
 
-    credits:AddParagraph("Credits", "Made by OneTaPuXd on v3rm")
     credits:AddParagraph("discord: ragingbirito")
-    credits:AddButton({
-        Name = "Copy v3rm profile to clipboard",
-        Callback = function()
-            setclipboard("https://v3rmillion.net/member.php?action=profile&uid=1229592")
-        end
-    })
-
-    credits:AddButton({
-        Name = "copy v3rm thread to clipboard",
-        Callback = function()
-            setclipboard("https://v3rmillion.net/showthread.php?tid=1172798")
-        end
-    })
 
     credits:AddButton({
         Name = "Discord Server (Auto Prompt) code: eWGZ8rYpxR",
