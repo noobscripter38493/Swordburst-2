@@ -332,7 +332,7 @@ local bosses_on_floor = {
 
     [582198062] = { -- floor 7
         "Frogazoid",
-        "Smashroom"
+        "Smashroom the Mushroom Behemoth"
     },
 
     [548878321] = { -- floor 8
