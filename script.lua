@@ -2329,16 +2329,18 @@ do
             string_value.Parent = animSettings
         end
     end
---[[
-    Character_tab:AddDropdown({
-        Name = "Weapon Animations",
-        Default = CalculateCombatStyle(),
-        Options = Animations,
-        Callback = function(animation)
-            settings.Weapon_Animation = animation
-        end
-    })
-]]
+    
+    pcall(function()
+        Character_tab:AddDropdown({
+            Name = "Weapon Animations",
+            Default = CalculateCombatStyle(),
+            Options = Animations,
+            Callback = function(animation)
+                settings.Weapon_Animation = animation
+            end
+        })
+    end)
+    
     local OldCalculateCombatStyle = CalculateCombatStyle
     combat_module.CalculateCombatStyle = function(bool)
         if getfenv(2) == getfenv(1) and bool == nil then
