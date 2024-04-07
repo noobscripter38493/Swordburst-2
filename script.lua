@@ -2330,7 +2330,7 @@ do
         end
     end
     
-    -[[
+    --[[
         Character_tab:AddDropdown({
             Name = "Weapon Animations",
             Default = CalculateCombatStyle(),
