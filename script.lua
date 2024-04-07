@@ -2330,7 +2330,7 @@ do
         end
     end
     
-    pcall(function()
+    -[[
         Character_tab:AddDropdown({
             Name = "Weapon Animations",
             Default = CalculateCombatStyle(),
@@ -2339,7 +2339,7 @@ do
                 settings.Weapon_Animation = animation
             end
         })
-    end)
+    ]]
     
     local OldCalculateCombatStyle = CalculateCombatStyle
     combat_module.CalculateCombatStyle = function(bool)
