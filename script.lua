@@ -717,13 +717,13 @@ local Actions = require(Services.Actions)
 
 local startswing = Actions.StartSwing
 local stopswing = Actions.StopSwing
-Actions.StartSwing = function()
+--[[Actions.StartSwing = function()
     if settings.KA then
         return
     end
 
     return startswing()
-end
+end]]
 
 local attackrequest = combat_module.AttackRequest
 combat_module.AttackRequest = function(...)
@@ -1592,7 +1592,7 @@ do
     })
 
     table.clear(Actions)
-
+--[[
     local was
     spawn(function()
         while true do wait()
@@ -1615,7 +1615,7 @@ do
                 stopswing()
             end
         end
-    end)
+    end)]]
 
     range.Touched:Connect(function(touching)
         if not settings.KA or touching.Parent == char or touching.Name ~= "HumanoidRootPart" then
