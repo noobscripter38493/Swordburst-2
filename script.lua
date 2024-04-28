@@ -2060,16 +2060,14 @@ do
                 return
             end
                 
-            local WEPITEMSLOT = wep.Value
-
-            local equippedwep
-            for _, v in next, Profiles:GetChildren() do
+            local wepItemSlot = wep.Value
+            for _, v in Profiles:GetChildren() do
                 if v.Name == plr.Name then
                     continue
                 end
                 
-                for i2, v2 in next, v.Inventory:GetChildren() do
-                    if v2.Value ~= WEPITEMSLOT then
+                for _, v2 in v.Inventory:GetChildren() do
+                    if v2.Value ~= wepItemSlot then
                         continue
                     end
                     
