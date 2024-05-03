@@ -489,11 +489,12 @@ if hasfilefunctions then
         writefile(fileName, HttpS:JSONEncode(settings))
     end
 
-    xpcall(function()
-        HttpS:JSONDecode(readfile(fileName))
-    end, save_settings)
+    local saveFile = isfile(fileName)
+    if not saveFile then
+        save_settings()
+    end
 
-    local saved_settings = HttpS:JSONDecode(readfile(fileName))
+    local saved_settings = HttpS:JSONDecode(saveFile)
     for i, v in saved_settings do
         if doLoad[i] then
             settings[i] = v
@@ -803,7 +804,7 @@ end
 
 local orion = CoreGui:WaitForChild("Orion")
 
-local window = lib:MakeWindow("SB2 | discord: ragingbirito | v3rm: OneTaPuXd | .gg/eWGZ8rYpxR")
+local window = lib:MakeWindow("SB2 | discord: ragingbirito | v3rm: raging | .gg/eWGZ8rYpxR")
 
 local rarities = {"Common", "Uncommon", "Rare", "Legendary", "Tribute"}
 local names = {"Commons", "Uncommons", "Rares", "Legendaries", "Tributes"}
@@ -2040,46 +2041,77 @@ do
 end
 
 do
-    local equiphigher_tab = window:MakeTab("Equip Higher Level Weapon")
+    local equiphigher_tab = window:MakeTab("Item Level Req Bypass")
+    equiphigher_tab:AddParagraph("Equip items from inventory // made by wally")
 
-    local wep_to_equip
-    equiphigher_tab:AddTextbox({
-        Name = "Weapon Name",
-        Default = "",
-        TextDisappear = false,
-        Callback = function(text)
-            wep_to_equip = text
-        end
-    })
-
-    equiphigher_tab:AddButton({
-        Name = "Equip Weapon",
-        Callback = function()
-            local wep = Profile.Inventory:FindFirstChild(wep_to_equip)
-            if not wep then
-                return
-            end
-                
-            local wepItemSlot = wep.Value
-            for _, v in Profiles:GetChildren() do
-                if v.Name == plr.Name then
-                    continue
-                end
-                
-                for _, v2 in v.Inventory:GetChildren() do
-                    if v2.Value ~= wepItemSlot then
-                        continue
-                    end
-                    
-                    local data = GetItemData(v2)
-                    if data.Type == "Weapon" and data.level <= level then
-                        rf:InvokeServer("Equipment", {"EquipWeapon", v2, "Right"})
-                        return
-                    end
-                end
-            end
-        end
-    })
+    local CardinalClient = (function()
+    	for i, v in next, getreg() do
+    		if type(v) == "table" and rawget(v, 'Services') then
+    			return v
+    		end
+    	end
+    end)()
+    
+    local ReplicatedStorage = game:GetService('ReplicatedStorage')
+    local ItemDatabase = ReplicatedStorage:WaitForChild('Database'):WaitForChild('Items')
+    
+    local PlrProfile = ReplicatedStorage:WaitForChild('Profiles'):WaitForChild(game.Players.LocalPlayer.Name)
+    local PlrInventory = PlrProfile:WaitForChild('Inventory')
+    
+    local UI = CardinalClient.Services.UI;
+    local UIScript = getfenv(UI.SafeInit).script
+    
+    local Inventory = require(UIScript.Inventory)
+    local Util = CardinalClient.Services
+    
+    _G['HasRequiredLevel'] = _G['HasRequiredLevel'] or Inventory.HasRequiredLevel
+    _G['GetOptions'] = _G['GetOptions'] or Inventory.GetOptions
+    _G['ItemAction'] = _G['ItemAction'] or Inventory.itemAction
+    
+    _G['EquipStore'] = {}
+    
+    local function FindSuitableInventoryItem(Target)
+    	for _, Item in next, PlrInventory:GetChildren() do
+    		local DatabaseEntry = ItemDatabase[Item.Name]
+    		if DatabaseEntry then
+    			local ItemType = DatabaseEntry.Type.Value
+    			if ItemType == Target.Type.Value then
+    				return {
+    					Name = Item.Name,
+    					Value = _G['LastSelectedItem'].Value,
+    				}
+    			end
+    		end
+    	end
+    end
+    
+    function Inventory.GetOptions(...)
+    	local input = ...
+    	if type(input) == 'table' then
+    		_G['LastSelectedItem'] = input.item
+    	end
+    	return _G['GetOptions'](...)
+    end
+    
+    function Inventory.HasRequiredLevel(...)
+    	local item = ...;
+    	if item then
+    		local replacement = FindSuitableInventoryItem(item)
+    		if replacement then
+    			_G['EquipStore'][_G['LastSelectedItem']] = replacement
+    			return true
+    		end
+    	end
+    	return _G['HasRequiredLevel'](...)
+    end
+    
+    function Inventory.itemAction(...)
+    	local input, func = ...
+    	if type(input) == 'table' and _G.EquipStore[input.item] then
+    		input.item = _G['EquipStore'][input.item]
+    	end
+    	return _G['ItemAction'](...)
+    end
 end
 
 do
