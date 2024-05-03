@@ -2042,7 +2042,7 @@ end
 
 do
     local equiphigher_tab = window:MakeTab("Item Level Req Bypass")
-    equiphigher_tab:AddParagraph("Equip items from inventory // made by wally")
+    equiphigher_tab:AddParagraph("Enabled by default. Equip items from inventory // made by wally")
 
     local CardinalClient = (function()
     	for i, v in next, getreg() do
