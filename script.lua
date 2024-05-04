@@ -493,7 +493,7 @@ if hasfilefunctions then
         save_settings()
     end
 
-    local saved_settings = HttpS:JSONDecode(realfile(fileName))
+    local saved_settings = HttpS:JSONDecode(readfile(fileName))
     for i, v in saved_settings do
         if doLoad[i] then
             settings[i] = v
