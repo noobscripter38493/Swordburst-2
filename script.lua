@@ -489,12 +489,11 @@ if hasfilefunctions then
         writefile(fileName, HttpS:JSONEncode(settings))
     end
 
-    local saveFile = isfile(fileName)
-    if not saveFile then
+    if not isfile(fileName) then
         save_settings()
     end
 
-    local saved_settings = HttpS:JSONDecode(saveFile)
+    local saved_settings = HttpS:JSONDecode(realfile(fileName))
     for i, v in saved_settings do
         if doLoad[i] then
             settings[i] = v
