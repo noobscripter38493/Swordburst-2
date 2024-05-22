@@ -489,9 +489,9 @@ if hasfilefunctions then
         writefile(fileName, HttpS:JSONEncode(settings))
     end
 
-    if not isfile(fileName) then
-        save_settings()
-    end
+    xpcall(function()
+        HttpS:JSONDecode(readfile(fileName))
+    end, save_settings)
 
     local saved_settings = HttpS:JSONDecode(readfile(fileName))
     for i, v in saved_settings do
