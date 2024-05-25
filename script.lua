@@ -25,7 +25,7 @@ _G.PortalVis = _G.PortalVis or function(bool)
     Portals.Parent = bool and workspace or nil
 end
 _G.Settings = Https:JSONDecode(readfile("Settings.json"))
-PortalVis(false)
+_G.PortalVis(false)
 
 queueonteleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/aaa/main/script.lua"))()')
 
