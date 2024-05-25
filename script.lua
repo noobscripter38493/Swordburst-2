@@ -24,7 +24,7 @@ local Portals = workspace:WaitForChild("Portals")
 _G.PortalVis = _G.PortalVis or function(bool)
     Portals.Parent = bool and workspace or nil
 end
-_G.Settings = Https:JSONDecode(readfile("Settings.json"))
+_G.Settings = _G.Settings or Https:JSONDecode(readfile("Settings.json"))
 _G.PortalVis(false)
 setrawmetatable(_G, {__index = _G.Settings})
 
