@@ -13,19 +13,19 @@ local plr = Players.LocalPlayer
 local char = plr.Character
 local hrp = char.HumanoidRootPart
 
-local Portals = workspace:WaitForChild("Portals")
-_G.PortalVis = _G.PortalVis or function(bool)
-    Portals.Parent = bool and workspace or nil
-end
-_G.Settings = Https:JSONDecode(readfile("Settings.json"))
-PortalVis(false)
-
 spawn(function()
     while true do
         writefile("Settings.json", HttpS:JSONEncode(_G.Settings))
         wait(5)
     end
 end)
+
+local Portals = workspace:WaitForChild("Portals")
+_G.PortalVis = _G.PortalVis or function(bool)
+    Portals.Parent = bool and workspace or nil
+end
+_G.Settings = Https:JSONDecode(readfile("Settings.json"))
+PortalVis(false)
 
 queueonteleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/noobscripter38493/aaa/main/script.lua"))()')
 
