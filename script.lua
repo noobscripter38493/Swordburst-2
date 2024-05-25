@@ -13,6 +13,7 @@ local plr = Players.LocalPlayer
 local char = plr.Character
 local hrp = char.HumanoidRootPart
 
+_G.Settings = _G.Settings or Https:JSONDecode(readfile("Settings.json"))
 spawn(function()
     while true do
         writefile("Settings.json", HttpS:JSONEncode(_G.Settings))
@@ -25,7 +26,6 @@ local Portals = workspace:WaitForChild("Portals")
 _G.PortalVis = _G.PortalVis or function(bool)
     Portals.Parent = bool and workspace or nil
 end
-_G.Settings = _G.Settings or Https:JSONDecode(readfile("Settings.json"))
 _G.PortalVis(false)
 setrawmetatable(_G, {__index = _G.Settings})
 
