@@ -16,6 +16,7 @@ local hrp = char.HumanoidRootPart
 spawn(function()
     while true do
         writefile("Settings.json", HttpS:JSONEncode(_G.Settings))
+            print("writing")
         wait(5)
     end
 end)
