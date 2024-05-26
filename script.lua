@@ -803,7 +803,7 @@ end
 
 local orion = CoreGui:WaitForChild("Orion")
 
-local window = lib:MakeWindow("SB2 | discord: ragingbirito | v3rm: raging | .gg/eWGZ8rYpxR")
+local window = lib:MakeWindow("v3rm: raging | .gg/eWGZ8rYpxR")
 
 local rarities = {"Common", "Uncommon", "Rare", "Legendary", "Tribute"}
 local names = {"Commons", "Uncommons", "Rares", "Legendaries", "Tributes"}
@@ -3160,7 +3160,7 @@ end
 do
     local credits = window:MakeTab("Credits")
 
-    credits:AddParagraph("discord: ragingbirito")
+    --credits:AddParagraph("dis")
 
     credits:AddButton({
         Name = "Discord Server (Auto Prompt) code: eWGZ8rYpxR",
