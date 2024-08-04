@@ -726,7 +726,7 @@ plr.CharacterAdded:Connect(function(new)
 end)
 
 local Actions = require(Services.Actions)
---[[
+
 local startswing = Actions.StartSwing
 local stopswing = Actions.StopSwing
 Actions.StartSwing = function()
@@ -735,7 +735,7 @@ Actions.StartSwing = function()
     end
 
     return startswing()
-end]]
+end
 --[[
 local attackrequest = combat_module.AttackRequest
 combat_module.AttackRequest = function(...)
@@ -744,8 +744,8 @@ combat_module.AttackRequest = function(...)
     end
 
     return attackrequest(...)
-end
-]]
+end]]
+
 local inventory_module = require(Services.UI.Inventory)
 
 local hookmetamethod = hookmetamethod or function(t, metamethod, hook)
@@ -2370,18 +2370,16 @@ do
             string_value.Parent = animSettings
         end
     end
-    
-    --[[
-        Character_tab:AddDropdown({
-            Name = "Weapon Animations",
-            Default = CalculateCombatStyle(),
-            Options = Animations,
-            Callback = function(animation)
-                settings.Weapon_Animation = animation
-            end
-        })
-    ]]
-    --[[
+
+    Character_tab:AddDropdown({
+        Name = "Weapon Animations",
+        Default = CalculateCombatStyle(),
+        Options = Animations,
+        Callback = function(animation)
+            settings.Weapon_Animation = animation
+        end
+    })
+
     local OldCalculateCombatStyle = CalculateCombatStyle
     combat_module.CalculateCombatStyle = function(bool)
         if getfenv(2) == getfenv(1) and bool == nil then
@@ -2396,7 +2394,7 @@ do
     end
 
     CalculateCombatStyle = combat_module.CalculateCombatStyle
-]]
+
     Character_tab:AddToggle({
         Name = "Always Swing Animation",
         Default = false,
