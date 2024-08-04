@@ -1795,6 +1795,8 @@ do
     local lastcd = 0
     range.Touched:Connect(function(touching)
         local enemy = touching.Parent
+        if not enemy then return end
+            
         local mob = table.find(mobs_on_floor[placeid], enemy.Name)
         local boss = table.find(bosses_on_floor[placeid], enemy.Name)
 
