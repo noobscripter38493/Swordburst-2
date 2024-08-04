@@ -726,7 +726,7 @@ plr.CharacterAdded:Connect(function(new)
 end)
 
 local Actions = require(Services.Actions)
-
+--[[
 local startswing = Actions.StartSwing
 local stopswing = Actions.StopSwing
 Actions.StartSwing = function()
@@ -735,7 +735,7 @@ Actions.StartSwing = function()
     end
 
     return startswing()
-end
+end]]
 
 local attackrequest = combat_module.AttackRequest
 combat_module.AttackRequest = function(...)
