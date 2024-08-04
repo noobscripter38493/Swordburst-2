@@ -2381,7 +2381,7 @@ do
             end
         })
     ]]
-    
+    --[[
     local OldCalculateCombatStyle = CalculateCombatStyle
     combat_module.CalculateCombatStyle = function(bool)
         if getfenv(2) == getfenv(1) and bool == nil then
@@ -2396,7 +2396,7 @@ do
     end
 
     CalculateCombatStyle = combat_module.CalculateCombatStyle
-
+]]
     Character_tab:AddToggle({
         Name = "Always Swing Animation",
         Default = false,
