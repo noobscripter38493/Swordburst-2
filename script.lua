@@ -736,7 +736,7 @@ Actions.StartSwing = function()
 
     return startswing()
 end]]
-
+--[[
 local attackrequest = combat_module.AttackRequest
 combat_module.AttackRequest = function(...)
     if settings.KA then
@@ -745,7 +745,7 @@ combat_module.AttackRequest = function(...)
 
     return attackrequest(...)
 end
-
+]]
 local inventory_module = require(Services.UI.Inventory)
 
 local hookmetamethod = hookmetamethod or function(t, metamethod, hook)
