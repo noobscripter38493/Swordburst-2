@@ -2370,7 +2370,7 @@ do
             string_value.Parent = animSettings
         end
     end
-
+--[[
     Character_tab:AddDropdown({
         Name = "Weapon Animations",
         Default = CalculateCombatStyle(),
@@ -2391,7 +2391,7 @@ do
         end
 
         return settings.Weapon_Animation
-    end
+    end]]
 
     CalculateCombatStyle = combat_module.CalculateCombatStyle
 
