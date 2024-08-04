@@ -291,6 +291,13 @@ local mobs_on_floor = {
     [16810524216] = {
         "Eternal Blossom Knight",
         "Ancient Blossom Knight"
+    },
+
+    [18729767954] = {
+        "Jelly Slime",
+        "Burger Mimic",
+        "Cheese-Dip Slime",
+        "Rapapouillie"
     }
 }
 
@@ -398,6 +405,11 @@ local bosses_on_floor = {
     [16810524216] = {
         "Azeis, Spirit of the Eternal Blossom",
         "Tworz, The Ancient"
+    },
+
+    [18729767954] = {
+        "The Waiter",
+        "Ramseis, Chef of Souls"
     }
 }
 
