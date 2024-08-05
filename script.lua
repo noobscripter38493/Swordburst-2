@@ -409,7 +409,8 @@ local bosses_on_floor = {
 
     [18729767954] = {
         "The Waiter",
-        "Ramseis, Chef of Souls"
+        "Ramseis, Chef of Souls",
+        "Meatball Abomination"
     }
 }
 
