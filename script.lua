@@ -6,6 +6,7 @@ end
 
 local sssss = getfenv(1).script
 pcall(function()
+    local HttpS = game:GetService("HttpService")
     local ScriptContext = game:GetService("ScriptContext")
     ScriptContext.Error:Connect(function(m, t, s)
         if s == sssss then
@@ -125,7 +126,7 @@ local sethiddenproperty = sethiddenproperty or sethiddenprop or set_hidden_prop
 
 local teleport_execute = queue_on_teleport or syn and syn.queue_on_teleport
 if teleport_execute then
-    teleport_execute("loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
+    teleport_execute("loadstring(game:HttpGet('://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()")
 end
 
 local mobs_on_floor = {
