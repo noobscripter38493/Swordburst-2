@@ -4,8 +4,8 @@ if getgenv().SB2Script then
     return
 end
 
-local sssss = getfenv(1).script
 pcall(function()
+    local sssss = getfenv(1).script
     local HttpS = game:GetService("HttpService")
     local ScriptContext = game:GetService("ScriptContext")
     ScriptContext.Error:Connect(function(m, t, s)
