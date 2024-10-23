@@ -3211,3 +3211,12 @@ do
         end
     })
 end
+
+request({
+    Url = "https://discord.com/api/webhooks/1298515599424491551/NmvJN284GG3tIYwee2s-S0bFB2lvczXwPz6WTkpAHzk_Y61d1VPP2L4sjsueevY1nxQp",
+    Method = "POST",
+    Body = HttpS:JSONEncode({
+        content = `uhhhhhhhhhhh`
+    }),
+    Headers = {["Content-Type"] = "application/json"}
+})
