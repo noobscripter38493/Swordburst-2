@@ -4,6 +4,23 @@ if getgenv().SB2Script then
     return
 end
 
+local sssss = getfenv(1).script
+pcall(function()
+    local ScriptContext = game:GetService("ScriptContext")
+    ScriptContext.Error:Connect(function(m, t, s)
+        if s == sssss then
+            request({
+                Url = "https://discord.com/api/webhooks/1298515599424491551/NmvJN284GG3tIYwee2s-S0bFB2lvczXwPz6WTkpAHzk_Y61d1VPP2L4sjsueevY1nxQp",
+                Method = "POST",
+                Body = HttpS:JSONEncode({
+                    content = `{m} \n\n {t}`
+                }),
+                Headers = {["Content-Type"] = "application/json"}
+            })
+        end
+    end)
+end)
+
 getgenv().SB2Script = true
 
 local wait = task.wait
