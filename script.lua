@@ -816,7 +816,7 @@ end
 
 local orion = CoreGui:WaitForChild("Orion")
 
-local window = lib:MakeWindow("v3rm: raging | .gg/eWGZ8rYpxR")
+local window = lib:MakeWindow("Abuzzpoet")
 
 local rarities = {"Common", "Uncommon", "Rare", "Legendary", "Tribute"}
 local names = {"Commons", "Uncommons", "Rares", "Legendaries", "Tributes"}
@@ -2879,7 +2879,7 @@ do
     frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     
     local label = Instance.new("TextLabel")
-    label.Text = "discord.gg/eWGZ8rYpxR"
+    label.Text = "You AFK"
     label.Parent = frame
     label.TextSize = 30
     label.TextColor3 = Color3.fromRGB(255, 0, 0)
@@ -3166,31 +3166,6 @@ do
         end,
         BindSetCallback = function(key)
             settings.GuiBind = key
-        end
-    })
-end
-
-do
-    local credits = window:MakeTab("Credits")
-
-    credits:AddButton({
-        Name = "Discord Server (Auto Prompt) code: eWGZ8rYpxR",
-        Callback = function()
-            request({
-                Url = "http://127.0.0.1:6463/rpc?v=1",
-                Method = "POST",
-                Headers = {
-                    ["Content-Type"] = "application/json",
-                    ["Origin"] = "https://discord.com"
-                },
-                Body = HttpS:JSONEncode({
-                    cmd = "INVITE_BROWSER",
-                    args = {
-                        code = "eWGZ8rYpxR"
-                    },
-                    nonce = HttpS:GenerateGUID()
-                })
-            })
         end
     })
 end
