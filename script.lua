@@ -1,5 +1,5 @@
 -- loadfile('SB2 Script/SCRIPT.lua')()
--- loadstring(game:HttpGet('https://raw.githubusercontent.com/noobscripter38493/Swordburst-2/main/script.lua'))()
+-- loadstring(game:HttpGet('https://raw.githubusercontent.com/Abuzzpoet/Swordburst-2/main/script.lua'))()
 if getgenv().SB2Script then
     return
 end
@@ -816,7 +816,7 @@ end
 
 local orion = CoreGui:WaitForChild("Orion")
 
-local window = lib:MakeWindow("v3rm: raging | .gg/eWGZ8rYpxR")
+local window = lib:MakeWindow("Abuzzpoet")
 
 local rarities = {"Common", "Uncommon", "Rare", "Legendary", "Tribute"}
 local names = {"Commons", "Uncommons", "Rares", "Legendaries", "Tributes"}
@@ -2756,7 +2756,7 @@ do
             TextDisappear = true,
             Callback = function(url)
                 url = url:gsub(" ", "")
-                if not url:find("https://discord.com/api/webhooks/") and not url:find("https://discordapp.com/api/webhooks/") then
+                if not (url:find("https://canary.discord.com/api/webhooks/") or url:find("https://discord.com/api/webhooks/") or url:find("https://discordapp.com/api/webhooks/")) then
                     return WebhookErr("Domain not Discord")
                 end
 
@@ -2879,7 +2879,7 @@ do
     frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     
     local label = Instance.new("TextLabel")
-    label.Text = "discord.gg/eWGZ8rYpxR"
+    label.Text = "You AFK"
     label.Parent = frame
     label.TextSize = 30
     label.TextColor3 = Color3.fromRGB(255, 0, 0)
@@ -3166,31 +3166,6 @@ do
         end,
         BindSetCallback = function(key)
             settings.GuiBind = key
-        end
-    })
-end
-
-do
-    local credits = window:MakeTab("Credits")
-
-    credits:AddButton({
-        Name = "Discord Server (Auto Prompt) code: eWGZ8rYpxR",
-        Callback = function()
-            request({
-                Url = "http://127.0.0.1:6463/rpc?v=1",
-                Method = "POST",
-                Headers = {
-                    ["Content-Type"] = "application/json",
-                    ["Origin"] = "https://discord.com"
-                },
-                Body = HttpS:JSONEncode({
-                    cmd = "INVITE_BROWSER",
-                    args = {
-                        code = "eWGZ8rYpxR"
-                    },
-                    nonce = HttpS:GenerateGUID()
-                })
-            })
         end
     })
 end
