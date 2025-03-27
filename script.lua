@@ -302,7 +302,9 @@ local mobs_on_floor = {
 }
 
 local bosses_on_floor = {
-    [540240728] = {}, -- arcadia -- floor 1
+    [540240728] = {
+        "Broken Bearus"
+    }, -- arcadia -- floor 1
     [737272595] = {}, -- battle arena floor 1
     [566212942] = {}, -- floor 6 helmfrith
 
