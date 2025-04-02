@@ -476,7 +476,8 @@ local settings = { -- defaults
     NoClip = false,
     Whitelist = {},
     SpeedGlitchBind = "J",
-    GuiBind = "Delete"
+    GuiBind = "Delete",
+    anchorCharacter = false
 }
 
 local doLoad = {
@@ -1309,7 +1310,7 @@ do
     end
 
     RunS.RenderStepped:Connect(function()
-        if settings.Autofarm or tpingtohunter then 
+        if settings.Autofarm or tpingtohunter or settings.anchorCharacter then 
             hrp.Velocity = Vector3.zero 
         end
     end)
@@ -2450,6 +2451,14 @@ do
             pressing = false
         end
     end)
+
+    Character_tab:AddToggle({
+        Name = "Anchor Character",
+        Default = false,
+        Callback = function(bool)
+            settings.anchorCharacter = bool
+        end
+    })
 
     Character_tab:AddToggle({
         Name = "No Clip",
