@@ -1310,7 +1310,7 @@ do
     end
 
     RunS.RenderStepped:Connect(function()
-        if settings.Autofarm or tpingtohunter or settings.anchorCharacter then 
+        if settings.Autofarm or tpingtohunter then 
             hrp.Velocity = Vector3.zero 
         end
     end)
@@ -2457,6 +2457,12 @@ do
         Default = false,
         Callback = function(bool)
             settings.anchorCharacter = bool
+
+            local pos = hrp.CFrame
+            while settings.anchorCharacter do
+                hrp.CFrame = pos;
+                task.wait()
+            end
         end
     })
 
